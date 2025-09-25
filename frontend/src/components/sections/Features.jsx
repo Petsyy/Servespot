@@ -33,11 +33,11 @@ export default function Features() {
         How ServeSpot Empowers Communities
       </h3>
 
-      <div className="grid grid-cols-1 md:grid-cols-3  gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 align gap-8 text-center">
         {features.map((f, i) => (
           <Card key={i} className={`${f.bg} flex flex-col items-start`}>
             <div
-              className={`p-3 rounded-full ${f.iconBg} mb-4 flex items-center justify-center`}
+              className={`p-3 rounded-full ${f.iconBg} mb-4 flex items-center`}
             >
               {f.icon}
             </div>
