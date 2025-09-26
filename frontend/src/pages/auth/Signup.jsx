@@ -28,7 +28,7 @@ export default function Signup() {
             <input
               type="email"
               className="w-full mt-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-              placeholder="you@example.com"
+              placeholder="Enter your email"
             />
           </div>
 
