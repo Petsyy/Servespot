@@ -1,17 +1,21 @@
-import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import LandingPage from "./pages/LandingPage";
-import Login from "./pages/auth/Login";
-import Signup from "./pages/auth/Signup";
+import NotFound from "./pages/NotFound";
+import RoleLogin from "./pages/role/RoleLogin";
+import RoleSignup from "./pages/role/RoleSignup";
+import VolunteerSignup from "./pages/volunteer/VolunteerSignup";
+import OrganizationSignup from "./pages/organization/OrganizationSignup";
+
 
 export default function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-      </Routes>
-    </Router>
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/role/login" element={<RoleLogin />} />
+      <Route path="/role/signup" element={<RoleSignup />} />
+      <Route path="/volunteer/signup" element={<VolunteerSignup />} />
+      <Route path="/organization/signup" element={<OrganizationSignup />} />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
   );
 }
