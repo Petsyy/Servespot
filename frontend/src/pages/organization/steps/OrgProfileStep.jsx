@@ -1,6 +1,8 @@
 import React, { useState } from "react";
+import { toast } from "react-toastify";
 import Button from "../../../components/ui/Button";
 import FormInput from "../../../components/ui/FormInput";
+import {useNavigate} from "react-router-dom";
 import { Building2 } from "lucide-react";
 
 const ORG_TYPES = [
@@ -12,9 +14,15 @@ const ORG_TYPES = [
   "Government Unit",
 ];
 
-export default function OrgProfileStep({ formData, updateField, onPrev, onSubmit }) {
+export default function OrgProfileStep({
+  formData,
+  updateField,
+  onPrev,
+  onSubmit,
+}) {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
 
   const validate = () => {
     const e = {};
@@ -32,8 +40,16 @@ export default function OrgProfileStep({ formData, updateField, onPrev, onSubmit
     ev.preventDefault();
     if (!validate()) return;
     setIsSubmitting(true);
+    toast.success(
+      <div>
+        <span className="text-sm text-black">
+          Organization profile completed successfully!
+        </span>
+      </div>
+    );
     setTimeout(() => {
       setIsSubmitting(false);
+      navigate('/organization/login');
       onSubmit();
     }, 1200);
   };
@@ -51,7 +67,10 @@ export default function OrgProfileStep({ formData, updateField, onPrev, onSubmit
       </div>
 
       {/* Card */}
-      <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow p-6 md:p-8 space-y-5">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white rounded-xl shadow p-6 md:p-8 space-y-5"
+      >
         <div className="w-12 h-12 mx-auto -mt-1 mb-2 rounded-full bg-green-100 flex items-center justify-center">
           <Building2 className="w-6 h-6 text-green-600" />
         </div>

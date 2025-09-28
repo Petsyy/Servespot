@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { toast } from "react-toastify";
 import Button from "../../../components/ui/Button";
 import FormInput from "../../../components/ui/FormInput";
 import { Users } from "lucide-react";
@@ -26,6 +27,13 @@ export default function AccountStep({ formData, updateField, onNext }) {
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
+      toast.success(
+        <div>
+          <span className="text-sm text-black">
+            Let's complete your profile to get started.
+          </span>
+        </div>
+      );
       onNext();
     }, 1500);
   };
@@ -40,7 +48,6 @@ export default function AccountStep({ formData, updateField, onNext }) {
         <p className="text-gray-600">
           Let's get started with your basic information
         </p>
-        
       </div>
 
       <form
@@ -50,7 +57,7 @@ export default function AccountStep({ formData, updateField, onNext }) {
         <div className="w-12 h-12 mx-auto -mt-1 mb-2 rounded-full bg-green-100 flex items-center justify-center">
           <Users className="w-6 h-6 text-green-600" />
         </div>
-        
+
         <FormInput
           label="Full Name"
           placeholder="Enter your full name"

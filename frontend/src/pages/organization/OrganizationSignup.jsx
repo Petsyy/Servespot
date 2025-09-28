@@ -47,8 +47,6 @@ export default function OrganizationSignup() {
           onPrev={() => setStep(1)}
           onSubmit={() => {
             // TODO: replace with real API call
-            console.log("Organization signup payload:", formData);
-            alert("Organization registered successfully!");
           }}
         />
       )}

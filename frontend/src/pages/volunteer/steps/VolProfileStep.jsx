@@ -1,7 +1,9 @@
+import { useState } from "react";
 import Button from "../../../components/ui/Button";
 import FormInput from "../../../components/ui/FormInput";
 import CheckboxGroup from "../../../components/ui/CheckboxGroup";
-import Footer from "../../../components/layout/Footer";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const skillsOptions = [
   "Tutoring",
@@ -24,7 +26,17 @@ const interestsOptions = [
   "Community Development",
 ];
 
-export default function ProfileStep({ formData, updateField, onPrev }) {
+export default function ProfileStep({
+  formData,
+  updateField,
+  onPrev,
+  onSubmit,
+}) {
+  const navigate = useNavigate();
+
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleCheckboxChange = (field, value) => {
     updateField(
       field,
@@ -36,7 +48,19 @@ export default function ProfileStep({ formData, updateField, onPrev }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    alert("Volunteer registered successfully!");
+    setIsSubmitting(true);
+    toast.success(
+      <div>
+        <span className="text-sm text-black">
+          Volunteer profile completed successfully!
+        </span>
+      </div>
+    );
+    setTimeout(() => {
+      setIsSubmitting(false);
+      navigate("/volunteer/login");
+      onSubmit();
+    }, 1500);
   };
 
   return (
@@ -46,7 +70,8 @@ export default function ProfileStep({ formData, updateField, onPrev }) {
           Complete Volunteer Profile
         </h2>
         <p className="text-gray-600">
-          Tell us more about yourself so we can match you with the right opportunities.
+          Tell us more about yourself so we can match you with the right
+          opportunities.
         </p>
       </div>
 
@@ -127,12 +152,11 @@ export default function ProfileStep({ formData, updateField, onPrev }) {
           <Button type="button" variant="outline" onClick={onPrev}>
             Back
           </Button>
-          <Button type="submit" variant="primary">
-            Submit
+          <Button type="submit" variant="primary" loading={isSubmitting}>
+            {isSubmitting ? "Submitting..." : "Submit"}
           </Button>
         </div>
       </form>
-      <Footer />
     </div>
   );
 }

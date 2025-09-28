@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Button from "../../../components/ui/Button";
 import FormInput from "../../../components/ui/FormInput";
 import { Building2 } from "lucide-react";
+import { toast } from "react-toastify";
 
 export default function OrgAccountStep({ formData, updateField, onNext }) {
   const [errors, setErrors] = useState({});
@@ -20,14 +21,21 @@ export default function OrgAccountStep({ formData, updateField, onNext }) {
     return Object.keys(e).length === 0;
   };
 
-  const handleNext = (ev) => {
-    ev.preventDefault();
+  const handleNext = (e) => {
+    e.preventDefault();
     if (!validate()) return;
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
+      toast.success(
+        <div>
+          <span className="text-sm text-black">
+            Let's complete your profile to get started.
+          </span>
+        </div>
+      );
       onNext();
-    }, 1500); // simulated delay
+    }, 1500);
   };
 
   return (

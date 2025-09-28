@@ -44,9 +44,6 @@ export default function LoginForm({
         className="bg-white rounded-xl shadow p-6 space-y-5"
       >
         <div className="flex flex-col items-center text-center mb-4">
-          <div className="p-3 rounded-full bg-green-50 mb-2">
-            <Icon className="w-6 h-6 text-green-600" />
-          </div>
           <h3 className="font-semibold text-lg">{role} Login</h3>
           <p className="text-gray-500 text-sm">
             Enter your credentials to access your {role.toLowerCase()} dashboard
@@ -98,11 +95,6 @@ export default function LoginForm({
             className="text-green-600 hover:underline"
           >
             Sign up here
-          </Link>
-        </p>
-        <p className="text-sm text-center">
-          <Link to="/" className="text-gray-500 hover:underline">
-            ← Back to Home
           </Link>
         </p>
       </form>
