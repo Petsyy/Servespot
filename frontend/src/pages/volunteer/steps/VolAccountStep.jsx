@@ -8,24 +8,22 @@ export default function AccountStep({ formData, updateField, onNext }) {
   const [isLoading, setIsLoading] = useState(false);
 
   const validate = () => {
-    const newErrors = {};
-    if (!formData.fullName.trim()) newErrors.fullName = "Full name is required";
+    const e = {};
+    if (!formData.fullName.trim()) e.fullName = "Full name is required";
     if (!/\S+@\S+\.\S+/.test(formData.email))
-      newErrors.email = "Valid email is required";
+      e.email = "Valid email is required";
     if (formData.password.length < 8)
-      newErrors.password = "Password must be at least 8 characters";
+      e.password = "Password must be at least 8 characters";
     if (formData.password !== formData.confirmPassword)
-      newErrors.confirmPassword = "Passwords do not match";
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+      e.confirmPassword = "Passwords do not match";
+    setErrors(e);
+    return Object.keys(e).length === 0;
   };
 
   const handleNext = (e) => {
     e.preventDefault();
     if (!validate()) return;
-
     setIsLoading(true);
-
     setTimeout(() => {
       setIsLoading(false);
       onNext();
@@ -35,12 +33,14 @@ export default function AccountStep({ formData, updateField, onNext }) {
   return (
     <div className="w-full max-w-lg">
       <div className="text-center mb-6">
+        <span className="text-gray-600"> Step 1 of 2</span>
         <h2 className="text-2xl font-bold text-gray-900">
-          Create Your Account
+          Create Volunteer Account
         </h2>
         <p className="text-gray-600">
           Let's get started with your basic information
         </p>
+        
       </div>
 
       <form
