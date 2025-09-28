@@ -23,9 +23,7 @@ export default function OrgAccountStep({ formData, updateField, onNext }) {
   const handleNext = (ev) => {
     ev.preventDefault();
     if (!validate()) return;
-
     setIsLoading(true);
-
     setTimeout(() => {
       setIsLoading(false);
       onNext();

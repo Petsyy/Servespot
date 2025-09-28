@@ -1,11 +1,11 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Heart, Users, Building2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/layout/Navbar";
 import Footer from "../../components/layout/Footer";
-import { useNavigate } from "react-router-dom";
 import Button from "../../components/ui/Button";
 
-export default function RoleSignin() {
+export default function RoleSignup() {
   const navigate = useNavigate();
 
   const [loadingVolunteer, setLoadingVolunteer] = useState(false);
@@ -15,7 +15,7 @@ export default function RoleSignin() {
     setLoadingVolunteer(true);
     setTimeout(() => {
       setLoadingVolunteer(false);
-      navigate("/volunteer/login");
+      navigate("/volunteer/signup");
     }, 1500);
   };
 
@@ -23,7 +23,7 @@ export default function RoleSignin() {
     setLoadingOrg(true);
     setTimeout(() => {
       setLoadingOrg(false);
-      navigate("/organization/login");
+      navigate("/organization/signup");
     }, 1500);
   };
 
@@ -68,7 +68,7 @@ export default function RoleSignin() {
                 loading={loadingVolunteer}
                 variant="primary"
               >
-                {loadingVolunteer ? "Redirecting..." : "Login as Volunteer"}
+                {loadingVolunteer ? "Redirecting..." : "Get Started as Volunteer"}
               </Button>
             </div>
           </div>
@@ -78,11 +78,11 @@ export default function RoleSignin() {
             <div className="w-12 h-12 flex items-center justify-center rounded-full bg-green-100 mb-4">
               <Building2 className="w-7 h-7 text-green-600" />
             </div>
-            <h2 className="text-lg font-semibold text-gray-800 mb-2">
+            <h2 className="text-lg font-semibold text-gray-800 mb-1.5 ">
               I'm an Organization
             </h2>
             <p className="text-gray-600 mb-6">
-              Connect with passionate volunteers, gain the support you need to bring your projects to life, and amplify your organizations.
+              Connect with passionate volunteers, gain the support you need to bring your projects to life, and amplify your organization’s lasting impact in the community.
             </p>
             <div className="w-full flex flex-col gap-3">
               <Button
@@ -90,7 +90,7 @@ export default function RoleSignin() {
                 loading={loadingOrg}
                 variant="outline"
               >
-                {loadingOrg ? "Redirecting..." : "Login as Organization"}
+                {loadingOrg ? "Redirecting..." : "Get Started as Organization"}
               </Button>
             </div>
           </div>
@@ -98,7 +98,7 @@ export default function RoleSignin() {
       </main>
 
       {/* Footer */}
-      <Footer showAuthButtons={false} />
+      <Footer />
     </div>
   );
 }

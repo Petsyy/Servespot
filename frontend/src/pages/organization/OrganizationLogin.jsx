@@ -1,15 +1,15 @@
 import React from "react";
-import { Users } from "lucide-react";
+import { Building2 } from "lucide-react";
 import LoginForm from "../../components/ui/LoginForm";
 
-export default function VolunteerLogin() {
+export default function OrganizationLogin() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-green-50 px-4">
       <LoginForm
-        role="Volunteer"
-        icon={Users}
+        role="Organization"
+        icon={Building2}
         onSubmit={(data) => {
-          console.log("Volunteer login data:", data);
+          console.log("Organization login data:", data);
         }}
       />
     </div>
