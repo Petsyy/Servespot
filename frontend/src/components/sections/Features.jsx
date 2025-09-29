@@ -29,9 +29,12 @@ const features = [
 export default function Features() {
   return (
     <section className="py-16 px-6 md:px-20">
-      <h3 className="text-3xl font-bold text-gray-900 mb-12 text-center">
+      <h3 className="text-3xl font-bold text-gray-900 mb-5 text-center">
         How ServeSpot Empowers Communities
       </h3>
+      <p className="text-center text-gray-600 mb-5">
+        Simple onboarding, flexible tasks, and meaningful recognition.
+      </p>
 
       <div className="grid grid-cols-1 md:grid-cols-3 align gap-8 text-center">
         {features.map((f, i) => (
