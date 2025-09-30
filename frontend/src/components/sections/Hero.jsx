@@ -5,7 +5,11 @@ import { useNavigate } from "react-router-dom";
 export default function Hero() {
   const navigate = useNavigate();
   return (
-    <section className="flex flex-col md:flex-row items-center justify-between bg-green-50 px-10 md:px-20 py-16">
+    <section
+      id="hero"
+      className="flex flex-col md:flex-row items-center justify-between bg-green-50 px-10 md:px-20 py-16 pt-32 scroll-mt-24"
+    >
+      {/* Left Content */}
       <div className="max-w-xl">
         <h2 className="text-5xl font-bold text-gray-900 leading-tight mb-6">
           Connect. <span className="text-green-600"> Volunteer.</span> Impact.
@@ -17,14 +21,15 @@ export default function Hero() {
         </p>
         <div className="flex space-x-4">
           <Button variant="primary" onClick={() => navigate("/opportunities")}>
-            Find Opportunities {">"}
+            Find Opportunities
           </Button>
           <Button variant="outline" onClick={() => navigate("/post-task")}>
-            Post a Task {">"}
+            Post a Task
           </Button>
         </div>
       </div>
-      
+
+      {/* Right Image */}
       <div className="mt-10 md:mt-0">
         <img
           src="/images/community-group.png"
