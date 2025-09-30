@@ -9,6 +9,8 @@ import VolunteerSignup from "./pages/volunteer/VolunteerSignup";
 import OrganizationSignup from "./pages/organization/OrganizationSignup";
 import VolunteerLogin from "./pages/volunteer/VolunteerLogin";
 import OrganizationLogin from "./pages/organization/OrganizationLogin";
+import VolunteerDashboard from "./pages/volunteer/VolunteerDashboard";
+import OrganizationDashboard from "./pages/organization/OrganizationDashboard";
 
 export default function App() {
   return (
@@ -21,6 +23,8 @@ export default function App() {
       <Route path="/organization/login" element={<OrganizationLogin />} />
       <Route path="/volunteer/signup" element={<VolunteerSignup />} />
       <Route path="/organization/signup" element={<OrganizationSignup />} />
+      <Route path="/volunteer/dashboard" element={<VolunteerDashboard />} />
+      <Route path="/organization/dashboard" element={<OrganizationDashboard />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
     <ToastContainer position="top-right" autoClose={2000} />
