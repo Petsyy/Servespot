@@ -1,8 +1,8 @@
 import React from "react";
 import { useState } from "react";
 import StepIndicator from "../../components/ui/StepIndicator";
-import OrgAccountStep from "./steps/OrgAccountStep";
-import OrgProfileStep from "./steps/OrgProfileStep";
+import OrganizationAccountStep from "./steps/OrganizationAccountStep";
+import OrganizationProfileStep from "./steps/OrganizationProfileStep";
 
 export default function OrganizationSignup() {
   const [step, setStep] = useState(1);
@@ -33,7 +33,7 @@ export default function OrganizationSignup() {
       </div>
 
       {step === 1 && (
-        <OrgAccountStep
+        <OrganizationAccountStep
           formData={formData}
           updateField={updateField}
           onNext={() => setStep(2)}
@@ -41,7 +41,7 @@ export default function OrganizationSignup() {
       )}
 
       {step === 2 && (
-        <OrgProfileStep
+        <OrganizationProfileStep
           formData={formData}
           updateField={updateField}
           onPrev={() => setStep(1)}

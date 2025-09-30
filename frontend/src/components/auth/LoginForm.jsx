@@ -2,27 +2,48 @@ import { useState } from "react";
 import { Mail, Lock } from "lucide-react";
 import Button from "../ui/Button";
 import FormInput from "../ui/FormInput";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { loginVolunteer, loginOrganization } from "../../services/api";
+import { toast } from "react-toastify";
 
 export default function LoginForm({
   role = "Volunteer", // or "Organization"
   icon: Icon,
-  onSubmit,
 }) {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setTimeout(() => {
+
+    try {
+      const response =
+        role === "Volunteer"
+          ? await loginVolunteer(formData)
+          : await loginOrganization(formData);
+
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+
+      console.log("✅ Token received:", response.data.token);
+
+      toast.success(`${role} login successful!`);
+      navigate(
+        role === "Volunteer"
+          ? "/volunteer/dashboard"
+          : "/organization/dashboard"
+      );
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Login failed");
+    } finally {
       setIsLoading(false);
-      onSubmit(formData);
-    }, 1200);
+    }
   };
 
   return (
@@ -74,7 +95,7 @@ export default function LoginForm({
           type="submit"
           variant="primary"
           className="w-full"
-          loading={isLoading}
+          disabled={isLoading}
         >
           {isLoading ? "Signing in..." : "Sign In"}
         </Button>
