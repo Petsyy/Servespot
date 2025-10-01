@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import Button from "../../../components/ui/Button";
-import FormInput from "../../../components/ui/FormInput";
+import Button from "@/components/ui/Button";
+import FormInput from "@/components/ui/FormInput";
 import { Building2, Eye, EyeOff } from "lucide-react"; // 👈 fixed EyeOff
 import { toast } from "react-toastify";
 

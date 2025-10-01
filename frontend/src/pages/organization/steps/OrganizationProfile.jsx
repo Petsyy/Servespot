@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { toast } from "react-toastify";
-import Button from "../../../components/ui/Button";
-import FormInput from "../../../components/ui/FormInput";
 import { useNavigate } from "react-router-dom";
 import { Building2 } from "lucide-react";
-import { signupOrganization } from "../../../services/api";
+import Button from "@/components/ui/Button";
+import FormInput from "@/components/ui/FormInput";
+import { signupOrganization } from "@/services/api";
 
 const ORG_TYPES = [
   "NGO",

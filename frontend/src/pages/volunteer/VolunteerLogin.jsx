@@ -1,6 +1,6 @@
 import React from "react";
 import { Users } from "lucide-react";
-import LoginForm from "../../components/auth/LoginForm";
+import LoginForm from "@/components/auth/LoginForm";
 
 export default function VolunteerLogin() {
   return (

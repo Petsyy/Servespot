@@ -9,9 +9,9 @@ import {
   Trophy,
   Medal,
 } from "lucide-react";
-import RoleNavbar from "../../components/layout/RoleNavbar";
-import Footer from "../../components/layout/Footer";
-import Button from "../../components/ui/Button";
+import RoleNavbar from "@/components/layout/RoleNavbar";
+import Footer from "@/components/layout/Footer";
+import Button from "@/components/ui/Button";
 
 export default function VolunteerLanding() {
   const navigate = useNavigate();

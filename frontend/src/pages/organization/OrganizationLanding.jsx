@@ -1,9 +1,8 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import RoleNavbar from "../../components/layout/RoleNavbar";
+import RoleNavbar from "@/components/layout/RoleNavbar";
 import { UserPlus, Clock, Award, ShieldCheck } from "lucide-react";
-import Footer from "../../components/layout/Footer";
-import Button from "../../components/ui/Button";
+import Footer from "@/components/layout/Footer";
 
 export default function OrganizationLanding() {
   const navigate = useNavigate();
