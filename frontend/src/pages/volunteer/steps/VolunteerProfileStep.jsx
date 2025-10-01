@@ -38,6 +38,30 @@ export default function ProfileStep({
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // ✅ Only validate the 4 required fields
+  const validateForm = () => {
+    let newErrors = {};
+
+    if (!formData.skills || formData.skills.length === 0) {
+      newErrors.skills = "Please select at least one skill";
+    }
+
+    if (!formData.interests || formData.interests.length === 0) {
+      newErrors.interests = "Please select at least one interest";
+    }
+
+    if (!formData.availability) {
+      newErrors.availability = "Availability is required";
+    }
+
+    if (!formData.bio || formData.bio.trim() === "") {
+      newErrors.bio = "Bio & Motivation is required";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleCheckboxChange = (field, value) => {
     updateField(
       field,
@@ -47,43 +71,47 @@ export default function ProfileStep({
     );
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setIsSubmitting(true);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  try {
-    // Call backend API
-    await signupVolunteer(formData);
-    toast.success(
-      <div>
-        <span className="text-sm text-black">
-          Volunteer profile completed successfully!
-        </span>
-      </div>
-    );
+    if (!validateForm()) {
+      toast.error("Please complete the required fields");
+      return;
+    }
 
-    // Redirect after success
-    setTimeout(() => {
-      navigate("/volunteer/login");
-      if (onSubmit) onSubmit();
-    }, 1500);
+    setIsSubmitting(true);
 
-  } catch (error) {
-    toast.error(
-      <div>
-        <span className="text-sm text-black">
-          {error.response?.data?.message || "Signup failed. Try again."}
-        </span>
-      </div>
-    );
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+    try {
+      await signupVolunteer(formData);
+      toast.success(
+        <div>
+          <span className="text-sm text-black">
+            Volunteer profile completed successfully!
+          </span>
+        </div>
+      );
+
+      setTimeout(() => {
+        navigate("/volunteer/login");
+        if (onSubmit) onSubmit();
+      }, 1500);
+    } catch (error) {
+      toast.error(
+        <div>
+          <span className="text-sm text-black">
+            {error.response?.data?.message || "Signup failed. Try again."}
+          </span>
+        </div>
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="w-full max-w-3xl">
       <div className="text-center mb-6">
+        <span className="text-gray-600"> Step 2 of 2</span>
         <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
           Complete Volunteer Profile
         </h2>
@@ -92,80 +120,65 @@ const handleSubmit = async (e) => {
           opportunities.
         </p>
       </div>
-
       <form
         onSubmit={handleSubmit}
         className="bg-white rounded-xl shadow p-6 w-full max-w-3xl space-y-4"
       >
-        <span className="text-gray-600 text-center"> Step 1 of 2</span>
         <h2 className="text-xl font-bold text-center mb-4">
           Complete Your Profile
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormInput
-            label="Birthdate"
-            type="date"
-            value={formData.birthdate}
-            onChange={(val) => updateField("birthdate", val)}
+        {/* Skills */}
+        <div>
+          <CheckboxGroup
+            label="Skills & Expertise"
+            options={skillsOptions}
+            selected={formData.skills}
+            onChange={(val) => handleCheckboxChange("skills", val)}
           />
-          <FormInput
-            label="Gender"
-            type="select"
-            options={["Male", "Female", "Other"]}
-            value={formData.gender}
-            onChange={(val) => updateField("gender", val)}
-          />
-          <FormInput
-            label="Contact Number"
-            value={formData.contact}
-            type="number"
-            placeholder="e.g., +1234567890"
-            onChange={(val) => updateField("contact", val)}
-          />
-          <FormInput
-            label="City"
-            value={formData.city}
-            placeholder="Your city"
-            onChange={(val) => updateField("city", val)}
-          />
-          <FormInput
-            label="Address"
-            placeholder="Street, Building, etc."
-            value={formData.address}
-            onChange={(val) => updateField("address", val)}
-          />
+          {errors.skills && (
+            <p className="text-red-500 text-sm">{errors.skills}</p>
+          )}
         </div>
 
-        <CheckboxGroup
-          label="Skills & Expertise"
-          options={skillsOptions}
-          selected={formData.skills}
-          onChange={(val) => handleCheckboxChange("skills", val)}
-        />
+        {/* Interests */}
+        <div>
+          <CheckboxGroup
+            label="Interests & Causes"
+            options={interestsOptions}
+            selected={formData.interests}
+            onChange={(val) => handleCheckboxChange("interests", val)}
+          />
+          {errors.interests && (
+            <p className="text-red-500 text-sm">{errors.interests}</p>
+          )}
+        </div>
 
-        <CheckboxGroup
-          label="Interests & Causes"
-          options={interestsOptions}
-          selected={formData.interests}
-          onChange={(val) => handleCheckboxChange("interests", val)}
-        />
+        {/* Availability */}
+        <div>
+          <FormInput
+            label="Availability"
+            type="select"
+            options={["Weekdays", "Weekends", "Evenings"]}
+            value={formData.availability}
+            onChange={(val) => updateField("availability", val)}
+          />
+          {errors.availability && (
+            <p className="text-red-500 text-sm">{errors.availability}</p>
+          )}
+        </div>
 
-        <FormInput
-          label="Availability"
-          type="select"
-          options={["Weekdays", "Weekends", "Evenings"]}
-          value={formData.availability}
-          onChange={(val) => updateField("availability", val)}
-        />
-
-        <FormInput
-          label="Bio & Motivation"
-          type="textarea"
-          placeholder="Tell us about yourself and why you want to volunteer"
-          value={formData.bio}
-          onChange={(val) => updateField("bio", val)}
-        />
+        {/* Bio */}
+        <div>
+          <FormInput
+            label="Bio & Motivation"
+            type="textarea"
+            placeholder="Tell us about yourself and why you want to volunteer"
+            value={formData.bio}
+            onChange={(val) => updateField("bio", val)}
+          />
+          {errors.bio && <p className="text-red-500 text-sm">{errors.bio}</p>}
+        </div>
 
         <div className="flex justify-between">
           <Button type="button" variant="outline" onClick={onPrev}>

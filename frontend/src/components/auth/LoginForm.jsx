@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Mail, Lock } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff } from "lucide-react"; // 👈 added Eye, EyeOff icons
 import Button from "../ui/Button";
 import FormInput from "../ui/FormInput";
 import { Link, useNavigate } from "react-router-dom";
@@ -12,6 +12,7 @@ export default function LoginForm({
 }) {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // 👈 state for toggle
   const navigate = useNavigate();
 
   const handleChange = (field, value) => {
@@ -81,15 +82,31 @@ export default function LoginForm({
           required
         />
 
-        <FormInput
-          label="Password"
-          type="password"
-          placeholder="Enter your password"
-          value={formData.password}
-          onChange={(val) => handleChange("password", val)}
-          icon={<Lock className="w-4 h-4 text-gray-400" />}
-          required
-        />
+        {/* Password with toggle */}
+        <div className="relative">
+          <FormInput
+            label="Password"
+            type={showPassword ? "text" : "password"}
+            placeholder="Enter your password"
+            value={formData.password}
+            onChange={(val) => handleChange("password", val)}
+            icon={<Lock className="w-4 h-4 text-gray-400" />}
+            required
+          />
+
+          {/* Toggle button (eye icon) */}
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-[35px] text-gray-500 hover:text-gray-700"
+          >
+            {showPassword ? (
+              <EyeOff className="w-4 h-4" />
+            ) : (
+              <Eye className="w-4 h-4" />
+            )}
+          </button>
+        </div>
 
         <Button
           type="submit"

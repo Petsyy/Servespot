@@ -16,9 +16,9 @@ export default function RoleSelection() {
       </p>
 
       {/* Cards */}
-      <div className="grid md:grid-cols-2 gap-10 max-w-5xl mx-auto">
+      <div className="grid md:grid-cols-2 gap-10 max-w-5xl mx-auto ">
         {/* Volunteer Card */}
-        <div className="bg-white p-8 rounded-2xl shadow hover:shadow-lg transition flex flex-col items-center">
+        <div className="bg-white p-8 rounded-2xl shadow hover:shadow-lg transition flex flex-col items-center border border-transparent hover:border-orange-500">
           <img
             src="/images/volunteers.jpg"
             alt="Volunteers illustration"
@@ -45,7 +45,7 @@ export default function RoleSelection() {
         </div>
 
         {/* Organization Card */}
-        <div className="bg-white p-8 rounded-2xl shadow hover:shadow-lg transition flex flex-col items-center">
+        <div className="bg-white p-8 rounded-2xl shadow hover:shadow-lg transition flex flex-col items-center border border-transparent hover:border-blue-900">
           <img
             src="/images/organization.png"
             alt="Organization team"

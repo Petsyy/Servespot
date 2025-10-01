@@ -2,11 +2,13 @@ import React, { useState } from "react";
 import { toast } from "react-toastify";
 import Button from "../../../components/ui/Button";
 import FormInput from "../../../components/ui/FormInput";
-import { Users } from "lucide-react";
+import { Users, Eye, EyeOff } from "lucide-react";
 
 export default function AccountStep({ formData, updateField, onNext }) {
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const validate = () => {
     const e = {};
@@ -41,7 +43,7 @@ export default function AccountStep({ formData, updateField, onNext }) {
   return (
     <div className="w-full max-w-lg">
       <div className="text-center mb-6">
-        <span className="text-gray-600"> Step 1 of 2</span>
+        <span className="text-gray-600">Step 1 of 2</span>
         <h2 className="text-2xl font-bold text-gray-900">
           Create Volunteer Account
         </h2>
@@ -65,6 +67,7 @@ export default function AccountStep({ formData, updateField, onNext }) {
           onChange={(val) => updateField("fullName", val)}
           error={errors.fullName}
         />
+
         <FormInput
           label="Email Address"
           type="email"
@@ -73,22 +76,48 @@ export default function AccountStep({ formData, updateField, onNext }) {
           onChange={(val) => updateField("email", val)}
           error={errors.email}
         />
-        <FormInput
-          label="Password"
-          type="password"
-          placeholder="Create a password (min. 8 characters)"
-          value={formData.password}
-          onChange={(val) => updateField("password", val)}
-          error={errors.password}
-        />
-        <FormInput
-          label="Confirm Password"
-          type="password"
-          placeholder="Confirm your password"
-          value={formData.confirmPassword}
-          onChange={(val) => updateField("confirmPassword", val)}
-          error={errors.confirmPassword}
-        />
+
+        {/* Password with toggle */}
+        <div className="relative">
+          <FormInput
+            label="Password"
+            type={showPassword ? "text" : "password"}
+            placeholder="Create a password (min. 8 characters)"
+            value={formData.password}
+            onChange={(val) => updateField("password", val)}
+            error={errors.password}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-[35px] text-gray-500 hover:text-gray-700"
+          >
+            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          </button>
+        </div>
+
+        {/* Confirm password with toggle */}
+        <div className="relative">
+          <FormInput
+            label="Confirm Password"
+            type={showConfirmPassword ? "text" : "password"}
+            placeholder="Confirm your password"
+            value={formData.confirmPassword}
+            onChange={(val) => updateField("confirmPassword", val)}
+            error={errors.confirmPassword}
+          />
+          <button
+            type="button"
+            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            className="absolute right-3 top-[35px] text-gray-500 hover:text-gray-700"
+          >
+            {showConfirmPassword ? (
+              <EyeOff className="w-4 h-4" />
+            ) : (
+              <Eye className="w-4 h-4" />
+            )}
+          </button>
+        </div>
 
         <Button
           type="submit"

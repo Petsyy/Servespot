@@ -1,13 +1,20 @@
 import React, { useState } from "react";
 import Button from "../../../components/ui/Button";
 import FormInput from "../../../components/ui/FormInput";
-import { Building2 } from "lucide-react";
+import { Building2, Eye, EyeOff } from "lucide-react"; // 👈 fixed EyeOff
 import { toast } from "react-toastify";
 
-export default function OrganizationAccountStep({ formData, updateField, onNext }) {
+export default function OrganizationAccountStep({
+  formData,
+  updateField,
+  onNext,
+}) {
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  // ✅ Validation
   const validate = () => {
     const e = {};
     if (!formData.orgName.trim()) e.orgName = "Organization name is required";
@@ -40,8 +47,9 @@ export default function OrganizationAccountStep({ formData, updateField, onNext 
 
   return (
     <div className="w-full max-w-lg">
-      {/* Heading outside the card */}
+      {/* Heading */}
       <div className="text-center mb-6">
+        <span className="text-gray-600">Step 1 of 2</span>
         <h2 className="text-2xl font-bold text-gray-900">
           Create Organization Account
         </h2>
@@ -76,23 +84,43 @@ export default function OrganizationAccountStep({ formData, updateField, onNext 
           error={errors.email}
         />
 
-        <FormInput
-          label="Password"
-          type="password"
-          placeholder="Create a password (min. 8 characters)"
-          value={formData.password}
-          onChange={(v) => updateField("password", v)}
-          error={errors.password}
-        />
+        {/* Password with toggle */}
+        <div className="relative">
+          <FormInput
+            label="Password"
+            type={showPassword ? "text" : "password"}
+            placeholder="Create a password (min. 8 characters)"
+            value={formData.password}
+            onChange={(v) => updateField("password", v)}
+            error={errors.password}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-[35px] text-gray-500 hover:text-gray-700"
+          >
+            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          </button>
+        </div>
 
-        <FormInput
-          label="Confirm Password"
-          type="password"
-          placeholder="Confirm your password"
-          value={formData.confirmPassword}
-          onChange={(v) => updateField("confirmPassword", v)}
-          error={errors.confirmPassword}
-        />
+        {/* Confirm Password with toggle */}
+        <div className="relative">
+          <FormInput
+            label="Confirm Password"
+            type={showConfirmPassword ? "text" : "password"}
+            placeholder="Confirm your password"
+            value={formData.confirmPassword}
+            onChange={(v) => updateField("confirmPassword", v)}
+            error={errors.confirmPassword}
+          />
+          <button
+            type="button"
+            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            className="absolute right-3 top-[35px] text-gray-500 hover:text-gray-700"
+          >
+            {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          </button>
+        </div>
 
         <Button
           type="submit"

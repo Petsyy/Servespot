@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { toast } from "react-toastify";
 import Button from "../../../components/ui/Button";
 import FormInput from "../../../components/ui/FormInput";
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Building2 } from "lucide-react";
 import { signupOrganization } from "../../../services/api";
 
@@ -37,44 +37,45 @@ export default function OrganizationProfileStep({
     return Object.keys(e).length === 0;
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setIsSubmitting(true);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validate()) return;
+    setIsSubmitting(true);
 
-  try {
-    // Call backend API
-    await signupOrganization(formData);
-    toast.success(
-      <div>
-        <span className="text-sm text-black">
-          Organization profile completed successfully!
-        </span>
-      </div>
-    );
+    try {
+      // Call backend API
+      await signupOrganization(formData);
+      toast.success(
+        <div>
+          <span className="text-sm text-black">
+            Organization profile completed successfully!
+          </span>
+        </div>
+      );
 
-    // Redirect after success
-    setTimeout(() => {
-      navigate("/organization/login");
-      if (onSubmit) onSubmit();
-    }, 1500);
-
-  } catch (error) {
-    toast.error(
-      <div>
-        <span className="text-sm text-black">
-          {error.response?.data?.message || "Signup failed. Try again."}
-        </span>
-      </div>
-    );
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+      // Redirect after success
+      setTimeout(() => {
+        navigate("/organization/login");
+        if (onSubmit) onSubmit();
+      }, 1500);
+    } catch (error) {
+      toast.error(
+        <div>
+          <span className="text-sm text-black">
+            {error.response?.data?.message || "Signup failed. Try again."}
+          </span>
+        </div>
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="w-full max-w-3xl">
       {/* Heading */}
       <div className="text-center mb-6">
+        <span className="text-gray-600">Step 2 of 2</span>
         <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
           Complete Organization Profile
         </h2>
