@@ -55,7 +55,7 @@ export default function OrganizationProfileStep({
 
       // Redirect after success
       setTimeout(() => {
-        navigate("/organization/login");
+        navigate("/organization/homepage");
         if (onSubmit) onSubmit();
       }, 1500);
     } catch (error) {

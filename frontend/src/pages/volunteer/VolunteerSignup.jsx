@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import AccountStep from "./steps/VolunteerAccountStep";
-import ProfileStep from "./steps/VolunteerProfileStep";
+import AccountStep from "./steps/VolunteerAccount";
+import ProfileStep from "./steps/VolunteerProfile";
 import StepIndicator from "../../components/ui/StepIndicator";
 
 export default function VolunteerSignup() {

@@ -34,11 +34,11 @@ export default function LoginForm({
 
       console.log("✅ Token received:", response.data.token);
 
-      toast.success(`${role} login successful!`);
+      toast.success(`${role} Login successfully!`);
       navigate(
         role === "Volunteer"
-          ? "/volunteer/dashboard"
-          : "/organization/dashboard"
+          ? "/volunteer/homepage"
+          : "/organization/homepage"
       );
     } catch (err) {
       toast.error(err.response?.data?.message || "Login failed");

@@ -38,7 +38,6 @@ export default function ProfileStep({
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // ✅ Only validate the 4 required fields
   const validateForm = () => {
     let newErrors = {};
 
@@ -92,7 +91,7 @@ export default function ProfileStep({
       );
 
       setTimeout(() => {
-        navigate("/volunteer/login");
+        navigate("/volunteer/homepage");
         if (onSubmit) onSubmit();
       }, 1500);
     } catch (error) {
