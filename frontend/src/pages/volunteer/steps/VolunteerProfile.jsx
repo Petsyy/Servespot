@@ -5,6 +5,7 @@ import CheckboxGroup from "../../../components/ui/CheckboxGroup";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { signupVolunteer } from "../../../services/api";
+import { Users } from "lucide-react";
 
 const skillsOptions = [
   "Tutoring",
@@ -27,12 +28,7 @@ const interestsOptions = [
   "Community Development",
 ];
 
-export default function ProfileStep({
-  formData,
-  updateField,
-  onPrev,
-  onSubmit,
-}) {
+export default function ProfileStep({ formData, updateField, onPrev, onSubmit }) {
   const navigate = useNavigate();
 
   const [errors, setErrors] = useState({});
@@ -40,22 +36,14 @@ export default function ProfileStep({
 
   const validateForm = () => {
     let newErrors = {};
-
-    if (!formData.skills || formData.skills.length === 0) {
-      newErrors.skills = "Please select at least one skill";
-    }
-
-    if (!formData.interests || formData.interests.length === 0) {
-      newErrors.interests = "Please select at least one interest";
-    }
-
-    if (!formData.availability) {
-      newErrors.availability = "Availability is required";
-    }
-
-    if (!formData.bio || formData.bio.trim() === "") {
-      newErrors.bio = "Bio & Motivation is required";
-    }
+    if (!formData.birthdate) newErrors.birthdate = "Birthdate is required";
+    if (!formData.gender) newErrors.gender = "Gender is required";
+    if (!formData.city || formData.city.trim() === "") newErrors.city = "City is required";
+    if (!formData.address || formData.address.trim() === "") newErrors.address = "Address is required";
+    if (!formData.skills || formData.skills.length === 0) newErrors.skills = "Please select at least one skill";
+    if (!formData.interests || formData.interests.length === 0) newErrors.interests = "Please select at least one interest";
+    if (!formData.availability) newErrors.availability = "Availability is required";
+    if (!formData.bio || formData.bio.trim() === "") newErrors.bio = "Bio & Motivation is required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -108,24 +96,76 @@ export default function ProfileStep({
   };
 
   return (
-    <div className="w-full max-w-3xl">
+    <div className="w-2xl max-w-3xl">
+      {/* Header */}
       <div className="text-center mb-6">
         <span className="text-gray-600"> Step 2 of 2</span>
         <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
           Complete Volunteer Profile
         </h2>
         <p className="text-gray-600">
-          Tell us more about yourself so we can match you with the right
-          opportunities.
+          Tell us more about yourself so we can match you with the right opportunities.
         </p>
       </div>
+
+      {/* Form */}
       <form
         onSubmit={handleSubmit}
-        className="bg-white rounded-xl shadow p-6 w-full max-w-3xl space-y-4"
+        className="bg-white rounded-xl shadow p-6 w-full space-y-4"
       >
-        <h2 className="text-xl font-bold text-center mb-4">
-          Complete Your Profile
-        </h2>
+        {/* Icon */}
+        <div className="flex justify-center mb-4">
+          <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+            <Users className="w-6 h-6 text-green-600" />
+          </div>
+        </div>
+
+        {/* Birthdate + Gender */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <FormInput
+              label="Birthdate"
+              type="date"
+              value={formData.birthdate}
+              onChange={(val) => updateField("birthdate", val)}
+            />
+            {errors.birthdate && <p className="text-red-500 text-sm">{errors.birthdate}</p>}
+          </div>
+          <div>
+            <FormInput
+              label="Gender"
+              type="select"
+              options={["Male", "Female", "Other"]}
+              value={formData.gender}
+              onChange={(val) => updateField("gender", val)}
+            />
+            {errors.gender && <p className="text-red-500 text-sm">{errors.gender}</p>}
+          </div>
+        </div>
+
+        {/* City + Address */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <FormInput
+              label="City"
+              type="text"
+              placeholder="Enter your city"
+              value={formData.city}
+              onChange={(val) => updateField("city", val)}
+            />
+            {errors.city && <p className="text-red-500 text-sm">{errors.city}</p>}
+          </div>
+          <div>
+            <FormInput
+              label="Address"
+              type="text"
+              placeholder="Enter your address"
+              value={formData.address}
+              onChange={(val) => updateField("address", val)}
+            />
+            {errors.address && <p className="text-red-500 text-sm">{errors.address}</p>}
+          </div>
+        </div>
 
         {/* Skills */}
         <div>
@@ -135,9 +175,7 @@ export default function ProfileStep({
             selected={formData.skills}
             onChange={(val) => handleCheckboxChange("skills", val)}
           />
-          {errors.skills && (
-            <p className="text-red-500 text-sm">{errors.skills}</p>
-          )}
+          {errors.skills && <p className="text-red-500 text-sm">{errors.skills}</p>}
         </div>
 
         {/* Interests */}
@@ -148,9 +186,7 @@ export default function ProfileStep({
             selected={formData.interests}
             onChange={(val) => handleCheckboxChange("interests", val)}
           />
-          {errors.interests && (
-            <p className="text-red-500 text-sm">{errors.interests}</p>
-          )}
+          {errors.interests && <p className="text-red-500 text-sm">{errors.interests}</p>}
         </div>
 
         {/* Availability */}
@@ -158,13 +194,11 @@ export default function ProfileStep({
           <FormInput
             label="Availability"
             type="select"
-            options={["Weekdays", "Weekends", "Evenings"]}
+            options={["Weekdays", "Weekends"]}
             value={formData.availability}
             onChange={(val) => updateField("availability", val)}
           />
-          {errors.availability && (
-            <p className="text-red-500 text-sm">{errors.availability}</p>
-          )}
+          {errors.availability && <p className="text-red-500 text-sm">{errors.availability}</p>}
         </div>
 
         {/* Bio */}
@@ -179,6 +213,7 @@ export default function ProfileStep({
           {errors.bio && <p className="text-red-500 text-sm">{errors.bio}</p>}
         </div>
 
+        {/* Buttons */}
         <div className="flex justify-between">
           <Button type="button" variant="outline" onClick={onPrev}>
             Back

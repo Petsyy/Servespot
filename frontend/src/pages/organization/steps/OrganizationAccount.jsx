@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Button from "@/components/ui/Button";
 import FormInput from "@/components/ui/FormInput";
-import { Building2, Eye, EyeOff } from "lucide-react"; // 👈 fixed EyeOff
+import { Building2, Eye, EyeOff } from "lucide-react";
 import { toast } from "react-toastify";
 
 export default function OrganizationAccountStep({
@@ -14,7 +14,6 @@ export default function OrganizationAccountStep({
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // ✅ Validation
   const validate = () => {
     const e = {};
     if (!formData.orgName.trim()) e.orgName = "Organization name is required";
@@ -46,7 +45,7 @@ export default function OrganizationAccountStep({
   };
 
   return (
-    <div className="w-full max-w-lg">
+    <div className="w-auto max-w-lg">
       {/* Heading */}
       <div className="text-center mb-6">
         <span className="text-gray-600">Step 1 of 2</span>

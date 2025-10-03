@@ -67,12 +67,20 @@ export default function OrganizationLanding() {
             Post micro-volunteering tasks, recruit passionate volunteers, and
             track your organization’s impact.
           </p>
-          <button
-            onClick={() => navigate("/post-task")}
-            className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-          >
-            Post a Task
-          </button>
+          <div className="flex gap-4">
+            <button
+              onClick={() => navigate("/post-task")}
+              className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 cursor-pointer"
+            >
+              Post a Task
+            </button>
+            <button
+              onClick={() => navigate("/organization/dashboard")}
+              className="px-6 py-3 border border-blue-600 text-black rounded-md hover:bg-blue-100 cursor-pointer"
+            >
+              Go to Dashboard
+            </button>
+          </div>
         </div>
         <img
           src="/images/organization.png"

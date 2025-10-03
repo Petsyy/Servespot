@@ -10,11 +10,12 @@ export default function RoleNavbar({ role }) {
   ];
 
   const organizationLinks = [
+    { name: "Home", path: "/organization/homepage" },
     { name: "Post Task", path: "/organization/post-task" },
     { name: "My Posts", path: "/organization/tasks" },
   ];
 
- const links = role === "volunteer" ? volunteerLinks : organizationLinks;
+  const links = role === "volunteer" ? volunteerLinks : organizationLinks;
 
   return (
     <header className="fixed top-0 left-0 w-full z-50 bg-white shadow-sm">

@@ -41,7 +41,7 @@ export default function AccountStep({ formData, updateField, onNext }) {
   };
 
   return (
-    <div className="w-full max-w-lg">
+    <div className="w-auto max-w-lg">
       <div className="text-center mb-6">
         <span className="text-gray-600">Step 1 of 2</span>
         <h2 className="text-2xl font-bold text-gray-900">

@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { Mail, Lock, Eye, EyeOff } from "lucide-react"; // 👈 added Eye, EyeOff icons
-import Button from "../ui/Button";
-import FormInput from "../ui/FormInput";
+import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import Button from "@/components/ui/Button";
+import FormInput from "@/components/ui/FormInput";
 import { Link, useNavigate } from "react-router-dom";
-import { loginVolunteer, loginOrganization } from "../../services/api";
+import { loginVolunteer, loginOrganization } from "@/services/api";
 import { toast } from "react-toastify";
 
 export default function LoginForm({
@@ -12,40 +12,47 @@ export default function LoginForm({
 }) {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false); // 👈 state for toggle
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setIsLoading(true);
 
-    try {
-      const response =
-        role === "Volunteer"
-          ? await loginVolunteer(formData)
-          : await loginOrganization(formData);
+  try {
+    const response =
+      role.toLowerCase() === "volunteer"
+        ? await loginVolunteer(formData)
+        : await loginOrganization(formData);
 
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
+    // Always store token + user
+    localStorage.setItem("token", response.data.token);
+    localStorage.setItem("user", JSON.stringify(response.data.user));
 
-      console.log("✅ Token received:", response.data.token);
-
-      toast.success(`${role} Login successfully!`);
-      navigate(
-        role === "Volunteer"
-          ? "/volunteer/homepage"
-          : "/organization/homepage"
-      );
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Login failed");
-    } finally {
-      setIsLoading(false);
+    // Store orgId if the role is organization
+    if (role.toLowerCase() === "organization") {
+      localStorage.setItem("orgId", response.data.orgId);
+      console.log("orgId stored:", response.data.orgId);
     }
-  };
+
+    toast.success(`${role} Login successfully!`);
+
+    // Redirect to correct landing page
+    navigate(
+      role.toLowerCase() === "volunteer"
+        ? "/volunteer/homepage"
+        : "/organization/homepage"
+    );
+  } catch (err) {
+    toast.error(err.response?.data?.message || "Login failed");
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return (
     <div className="w-full max-w-md">

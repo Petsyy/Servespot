@@ -72,7 +72,7 @@ export default function OrganizationProfileStep({
   };
 
   return (
-    <div className="w-full max-w-3xl">
+    <div className="w-2xl max-w-3xl">
       {/* Heading */}
       <div className="text-center mb-6">
         <span className="text-gray-600">Step 2 of 2</span>
