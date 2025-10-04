@@ -55,25 +55,25 @@ export default function OrgDashboard() {
     fetchData();
   }, [orgId]);
 
-const handleDelete = async (id) => {
-  try {
-    await deleteOpportunity(id);
-    setOpportunities((prev) => prev.filter((opp) => opp._id !== id));
-    toast.success("Opportunity removed!");
-  } catch (err) {
-    console.error("❌ Failed to delete", err);
-    toast.error("Failed to remove opportunity");
-  }
-};
+  const handleDelete = async (id) => {
+    try {
+      await deleteOpportunity(id);
+      setOpportunities((prev) => prev.filter((opp) => opp._id !== id));
+      toast.success("Opportunity removed!");
+    } catch (err) {
+      console.error("❌ Failed to delete", err);
+      toast.error("Failed to remove opportunity");
+    }
+  };
 
-// Rendering
-{opportunities.slice(0, 3).map((opp) => (
-  <OpportunityCard
-    key={opp._id}
-    {...opp}
-    onDelete={handleDelete}
-  />
-))}
+  // Rendering
+  {
+    opportunities
+      .slice(0, 3)
+      .map((opp) => (
+        <OpportunityCard key={opp._id} {...opp} onDelete={handleDelete} />
+      ));
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -126,9 +126,19 @@ const handleDelete = async (id) => {
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-8">
           {/* Opportunities */}
           <div className="xl:col-span-2 space-y-4">
-            <h2 className="text-xl font-semibold text-gray-900">
-              Active Opportunities
-            </h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-gray-900">
+                Active Opportunities
+              </h2>
+              {opportunities.length > 3 && (
+                <button
+                  onClick={() => navigate("/organization/post")}
+                  className="h-9 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium cursor-pointer"
+                >
+                  View All →
+                </button>
+              )}
+            </div>
             <div className="rounded-xl border border-gray-200 p-4 space-y-4">
               {loading ? (
                 <p className="text-gray-500">Loading opportunities...</p>
@@ -150,15 +160,6 @@ const handleDelete = async (id) => {
                       onDelete={handleDelete}
                     />
                   ))}
-                  {/* View All Button */}
-                  {opportunities.length > 0 && (
-                    <button
-                      onClick={() => navigate("/organization/post")}
-                      className="w-full mt-4 h-10 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium cursor-pointer"
-                    >
-                      View All Posted Opportunities →
-                    </button>
-                  )}
                 </>
               ) : (
                 <p className="text-gray-500">No opportunities posted yet.</p>
@@ -166,8 +167,6 @@ const handleDelete = async (id) => {
             </div>
             <VolunteerActivity items={activity} />
           </div>
-          
-
           {/* Notifications + Impact */}
           <div className="space-y-6">
             <Notifications items={notifications} />

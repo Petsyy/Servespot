@@ -11,6 +11,10 @@ import VolunteerLogin from "@/pages/volunteer/VolunteerLogin";
 import OrganizationLogin from "@/pages/organization/OrganizationLogin";
 import VolunteerLanding from "@/pages/volunteer/VolunteerLanding";
 import OrganizationLanding from "@/pages/organization/OrganizationLanding";
+import OrganizationDashboard from "./pages/organization/OrganizationDashboard";
+import PostTask from "@/pages/organization/PostTask";
+import OpportunitiesPage from "@/pages/organization/OpportunitiesPage";
+import VolunteerDashboard from "@/pages/volunteer/VolunteerDashboard";
 
 export default function App() {
   return (
@@ -28,6 +32,7 @@ export default function App() {
         <Route path="/volunteer/login" element={<VolunteerLogin />} />
         <Route path="/volunteer/signup" element={<VolunteerSignup />} />
         <Route path="/volunteer/homepage" element={<VolunteerLanding />} />
+        <Route path="/volunteer/dashboard" element={<VolunteerDashboard />} />
 
         {/* Organization */}
         <Route path="/organization/login" element={<OrganizationLogin />} />
@@ -36,7 +41,19 @@ export default function App() {
           path="/organization/homepage"
           element={<OrganizationLanding />}
         />
+        <Route
+          path="/organization/dashboard"
+          element={<OrganizationDashboard />}
+        />
+        <Route path="/organization/post" element={<OpportunitiesPage />} />
+        <Route path="/organization/post-task" element={<PostTask />} />
+
+        <Route
+          path="/organization/opportunities"
+          element={<OpportunitiesPage />}
+        />
       </Routes>
+
       <ToastContainer position="top-right" autoClose={2000} />
     </>
   );

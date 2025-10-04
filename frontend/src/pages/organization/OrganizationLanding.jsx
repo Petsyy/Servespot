@@ -69,7 +69,7 @@ export default function OrganizationLanding() {
           </p>
           <div className="flex gap-4">
             <button
-              onClick={() => navigate("/post-task")}
+              onClick={() => navigate("/organization/post-task")}
               className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 cursor-pointer"
             >
               Post a Task

@@ -5,14 +5,14 @@ export default function RoleNavbar({ role }) {
   const navigate = useNavigate();
 
   const volunteerLinks = [
+    { name: "Home", path: "/volunteer/homepage" },
     { name: "Opportunities", path: "/opportunities" },
     { name: "My Tasks", path: "/volunteer/tasks" },
   ];
 
   const organizationLinks = [
     { name: "Home", path: "/organization/homepage" },
-    { name: "Post Task", path: "/organization/post-task" },
-    { name: "My Posts", path: "/organization/tasks" },
+    { name: "My Posts", path: "/organization/opportunities" },
   ];
 
   const links = role === "volunteer" ? volunteerLinks : organizationLinks;

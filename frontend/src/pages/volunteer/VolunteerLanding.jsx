@@ -107,9 +107,17 @@ export default function VolunteerLanding() {
             Browse tasks, sign up, and earn badges while making a difference
             around you.
           </p>
-          <Button variant="primary" onClick={() => navigate("/opportunities")}>
-            Find Opportunities
-          </Button>
+          <div className="flex items-center space-x-4">
+            <Button variant="primary" onClick={() => navigate("/opportunities")}> 
+              Find Opportunities
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => navigate("/volunteer/dashboard")}
+            >
+              Go to Dashboard
+            </Button>
+          </div>
         </div>
         <img
           src="/images/volunteers.jpg"

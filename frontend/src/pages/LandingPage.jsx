@@ -126,10 +126,10 @@ export default function LandingPage() {
             task at a time.
           </p>
           <div className="flex space-x-4">
-            <Button variant="primary" onClick={() => navigate("/opportunities")}>
+            <Button variant="primary" onClick={() => navigate("/volunteer/signup")}>
               Find Opportunities
             </Button>
-            <Button variant="outline" onClick={() => navigate("/post-task")}>
+            <Button variant="outline" onClick={() => navigate("/organization/signup")}>
               Post a Task
             </Button>
           </div>

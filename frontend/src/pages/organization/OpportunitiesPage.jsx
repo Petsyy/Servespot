@@ -16,7 +16,7 @@ export default function OpportunitiesPage() {
         const res = await getOpportunities(orgId);
         setOpportunities(res.data);
       } catch (err) {
-        console.error("❌ Failed to load opportunities", err);
+        console.error("Failed to load opportunities", err);
       } finally {
         setLoading(false);
       }

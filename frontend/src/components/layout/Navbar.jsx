@@ -23,16 +23,16 @@ export default function Navbar({ showAuthButtons = true }) {
         {showAuthButtons && (
           <nav className="flex space-x-8 text-gray-700 font-medium absolute left-1/2 transform -translate-x-1/2">
             <button
+              onClick={() => handleScroll("hero")}
+              className="hover:text-green-600 transition cursor-pointer"
+            >
+              Home
+            </button>
+            <button
               onClick={() => handleScroll("howitworks")}
               className="hover:text-green-600 transition cursor-pointer"
             >
               How It Works
-            </button>
-            <button
-              onClick={() => handleScroll("badges")}
-              className="hover:text-green-600 transition cursor-pointer"
-            >
-              Badges
             </button>
           </nav>
         )}
