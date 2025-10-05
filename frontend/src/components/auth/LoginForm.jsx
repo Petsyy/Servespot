@@ -19,44 +19,45 @@ export default function LoginForm({
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setIsLoading(true);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
 
-  try {
-    const response =
-      role.toLowerCase() === "volunteer"
-        ? await loginVolunteer(formData)
-        : await loginOrganization(formData);
+    try {
+      // Always clear old data first
+      localStorage.clear();
 
-    // Always store token + user
-    localStorage.setItem("token", response.data.token);
-    localStorage.setItem("user", JSON.stringify(response.data.user));
+      const response =
+        role.toLowerCase() === "volunteer"
+          ? await loginVolunteer(formData)
+          : await loginOrganization(formData);
 
-    // Store orgId if the role is organization
-    if (role.toLowerCase() === "organization") {
-      localStorage.setItem("orgId", response.data.orgId);
-      console.log("orgId stored:", response.data.orgId);
+      //  Always set new session data cleanly
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+
+      if (role.toLowerCase() === "organization") {
+        localStorage.setItem("orgId", response.data.orgId);
+        console.log("✅ orgId stored:", response.data.orgId);
+      }
+
+      toast.success(`${role} Login successfully!`);
+
+      // Redirect to correct landing page
+      navigate(
+        role.toLowerCase() === "volunteer"
+          ? "/volunteer/homepage"
+          : "/organization/homepage"
+      );
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Login failed");
+    } finally {
+      setIsLoading(false);
     }
-
-    toast.success(`${role} Login successfully!`);
-
-    // Redirect to correct landing page
-    navigate(
-      role.toLowerCase() === "volunteer"
-        ? "/volunteer/homepage"
-        : "/organization/homepage"
-    );
-  } catch (err) {
-    toast.error(err.response?.data?.message || "Login failed");
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
   return (
     <div className="w-full max-w-md">
-      {/* Outside Form */}
       <div className="text-center mb-6">
         <div className="w-12 h-12 mx-auto flex items-center justify-center rounded-full bg-green-100 mb-3">
           <Icon className="w-6 h-6 text-green-600" />
@@ -67,7 +68,6 @@ const handleSubmit = async (e) => {
         </p>
       </div>
 
-      {/* Inside Form Card */}
       <form
         onSubmit={handleSubmit}
         className="bg-white rounded-xl shadow p-6 space-y-5"
@@ -89,7 +89,6 @@ const handleSubmit = async (e) => {
           required
         />
 
-        {/* Password with toggle */}
         <div className="relative">
           <FormInput
             label="Password"
@@ -101,7 +100,6 @@ const handleSubmit = async (e) => {
             required
           />
 
-          {/* Toggle button (eye icon) */}
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}

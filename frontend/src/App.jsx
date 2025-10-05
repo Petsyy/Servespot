@@ -12,9 +12,11 @@ import OrganizationLogin from "@/pages/organization/OrganizationLogin";
 import VolunteerLanding from "@/pages/volunteer/VolunteerLanding";
 import OrganizationLanding from "@/pages/organization/OrganizationLanding";
 import OrganizationDashboard from "./pages/organization/OrganizationDashboard";
-import PostTask from "@/pages/organization/PostTask";
-import OpportunitiesPage from "@/pages/organization/OpportunitiesPage";
+import PostOpportunity from "@/pages/organization/PostOpportunity";
+import MyOpportunity from "@/pages/organization/opportunity/MyOpportunity";
 import VolunteerDashboard from "@/pages/volunteer/VolunteerDashboard";
+import BrowseOpportunities from "./pages/volunteer/BrowseOpportunities";
+
 
 export default function App() {
   return (
@@ -33,6 +35,7 @@ export default function App() {
         <Route path="/volunteer/signup" element={<VolunteerSignup />} />
         <Route path="/volunteer/homepage" element={<VolunteerLanding />} />
         <Route path="/volunteer/dashboard" element={<VolunteerDashboard />} />
+        <Route path="/opportunities" element={<BrowseOpportunities />} />
 
         {/* Organization */}
         <Route path="/organization/login" element={<OrganizationLogin />} />
@@ -45,12 +48,12 @@ export default function App() {
           path="/organization/dashboard"
           element={<OrganizationDashboard />}
         />
-        <Route path="/organization/post" element={<OpportunitiesPage />} />
-        <Route path="/organization/post-task" element={<PostTask />} />
+        {/* <Route path="/organization/post" element={<OpportunitiesPage />} /> */}
+        <Route path="/organization/post-task" element={<PostOpportunity />} />
 
         <Route
           path="/organization/opportunities"
-          element={<OpportunitiesPage />}
+          element={<MyOpportunity />}
         />
       </Routes>
 

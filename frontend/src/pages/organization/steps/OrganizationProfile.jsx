@@ -37,39 +37,47 @@ export default function OrganizationProfileStep({
     return Object.keys(e).length === 0;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!validate()) return;
-    setIsSubmitting(true);
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!validate()) return;
+  setIsSubmitting(true);
 
-    try {
-      // Call backend API
-      await signupOrganization(formData);
-      toast.success(
-        <div>
-          <span className="text-sm text-black">
-            Organization profile completed successfully!
-          </span>
-        </div>
-      );
+  try {
+    // Call backend signup API
+    const res = await signupOrganization(formData);
 
-      // Redirect after success
-      setTimeout(() => {
-        navigate("/organization/homepage");
-        if (onSubmit) onSubmit();
-      }, 1500);
-    } catch (error) {
-      toast.error(
-        <div>
-          <span className="text-sm text-black">
-            {error.response?.data?.message || "Signup failed. Try again."}
-          </span>
-        </div>
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+    // Store session data for auto-login
+    localStorage.setItem("token", res.data.token);
+    localStorage.setItem("orgId", res.data.orgId);
+    localStorage.setItem("user", JSON.stringify(res.data.user));
+
+    toast.success(
+      <div>
+        <span className="text-sm text-black">
+          Organization profile completed successfully!
+        </span>
+      </div>
+    );
+
+    // Redirect directly to dashboard after signup
+    setTimeout(() => {
+      navigate("/organization/dashboard");
+      if (onSubmit) onSubmit();
+    }, 1200);
+  } catch (error) {
+    console.error("Signup failed:", error);
+    toast.error(
+      <div>
+        <span className="text-sm text-black">
+          {error.response?.data?.message || "Signup failed. Try again."}
+        </span>
+      </div>
+    );
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
 
   return (
     <div className="w-2xl max-w-3xl">

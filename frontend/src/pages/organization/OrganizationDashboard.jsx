@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
+import { CalendarDays, Users, TrendingUp, Award } from "lucide-react";
+import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { deleteOpportunity } from "@/services/api";
 import OrgSidebar from "@/components/layout/OrgSidebar";
 import StatCard from "@/components/orgDashboard/StatCard";
 import OpportunityCard from "@/components/orgDashboard/OpportunityCard";
 import Notifications from "@/components/orgDashboard/Notifications";
 import ImpactSummary from "@/components/orgDashboard/ImpactSummary";
 import VolunteerActivity from "@/components/orgDashboard/VolunteerActivity";
-import { CalendarDays, Users, TrendingUp, Award } from "lucide-react";
-import { deleteOpportunity } from "@/services/api";
-import { toast } from "react-toastify";
 
 import {
   getOpportunities,
@@ -28,20 +28,19 @@ export default function OrgDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!orgId) {
+      console.warn("No orgId found in localStorage yet — skipping fetch");
+      return;
+    }
+
     async function fetchData() {
       try {
-        if (!orgId) {
-          console.error("No orgId found in localStorage");
-          return;
-        }
-
         const [oppRes, statsRes, notifRes, activityRes] = await Promise.all([
           getOpportunities(orgId),
           getOrgStats(orgId),
           getOrgNotifications(orgId),
           getOrgActivity(orgId),
         ]);
-
         setOpportunities(oppRes.data);
         setStats(statsRes.data);
         setNotifications(notifRes.data);
@@ -130,12 +129,12 @@ export default function OrgDashboard() {
               <h2 className="text-xl font-semibold text-gray-900">
                 Active Opportunities
               </h2>
-              {opportunities.length > 3 && (
+              {opportunities.length > 0 && (
                 <button
-                  onClick={() => navigate("/organization/post")}
+                  onClick={() => navigate("/organization/opportunities")}
                   className="h-9 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium cursor-pointer"
                 >
-                  View All →
+                  View All
                 </button>
               )}
             </div>
@@ -149,6 +148,7 @@ export default function OrgDashboard() {
                       key={opp._id}
                       _id={opp._id}
                       title={opp.title}
+                      description={opp.description}
                       date={
                         opp.date ? new Date(opp.date).toLocaleDateString() : ""
                       }
