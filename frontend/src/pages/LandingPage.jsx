@@ -126,7 +126,7 @@ export default function LandingPage() {
             task at a time.
           </p>
           <div className="flex space-x-4">
-            <Button variant="primary" onClick={() => navigate("/opportunities")}>
+            <Button variant="primary" onClick={() => navigate("/organization/browse-opportunities")}>
               Find Opportunities
             </Button>
             <Button variant="outline" onClick={() => navigate("/post-task")}>
@@ -144,14 +144,13 @@ export default function LandingPage() {
       </section>
 
       {/* Role Selection */}
-      <section className="py-16 px-6 md:px-20 bg-gray-100 text-center">
+      <section className="py-16 px-6 md:px-20 bg-gray-100 text-center w-full">
         <h3 className="text-3xl font-bold text-blue-900 mb-3">Choose Your Path</h3>
         <p className="text-gray-600 mb-12">
-          Whether you want to help or need help, ServeSpot connects you with your
-          community
+          Whether you want to help or need help, ServeSpot connects you with your community
         </p>
 
-        <div className="grid md:grid-cols-2 gap-10 max-w-5xl mx-auto">
+        <div className="grid md:grid-cols-2 gap-10 w-full">
           {/* Volunteer Card */}
           <div className="bg-white p-8 rounded-2xl shadow hover:shadow-lg transition flex flex-col items-center border border-transparent hover:border-orange-500">
             <img
@@ -205,7 +204,7 @@ export default function LandingPage() {
       </section>
 
       {/* How It Works */}
-      <section id="howitworks" className="py-16 px-6 md:px-20 bg-gray-50 text-center">
+      <section id="howitworks" className="py-16 px-6 md:px-20 bg-gray-50 text-center w-full">
         <h3 className="text-3xl font-bold text-blue-900 mb-3">How It Works</h3>
         <p className="text-gray-600 mb-8">
           Getting started is simple, whether you're volunteering or organizing
@@ -236,7 +235,7 @@ export default function LandingPage() {
           </div>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-8 w-full">
           {steps[activeTab].map((step, i) => (
             <div
               key={i}
@@ -256,13 +255,13 @@ export default function LandingPage() {
       </section>
 
       {/* Why Choose */}
-      <section id="whychoose" className="py-16 px-6 md:px-20 bg-green-100 text-center">
+      <section id="whychoose" className="py-16 px-6 md:px-20 bg-green-100 text-center w-full">
         <h3 className="text-3xl font-bold text-blue-900 mb-3">Why Choose ServeSpot?</h3>
         <p className="text-gray-600 mb-12">
           We make volunteering accessible, rewarding, and impactful for everyone
         </p>
 
-        <div className="grid md:grid-cols-4 gap-8 max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-4 gap-8 w-full">
           {features.map((f, i) => (
             <div
               key={i}
@@ -279,13 +278,13 @@ export default function LandingPage() {
       </section>
 
       {/* Badges */}
-      <section id="badges" className="py-16 px-6 md:px-20 text-center">
+      <section id="badges" className="py-16 px-6 md:px-20 text-center w-full">
         <h3 className="text-3xl font-bold text-blue-900 mb-3">Earn Badges</h3>
         <p className="text-gray-600 mb-10">
           Earn recognition for your contributions and unlock achievements as you help your community
         </p>
 
-        <div className="grid md:grid-cols-4 gap-6 max-w-6xl mx-auto mb-12">
+        <div className="grid md:grid-cols-4 gap-6 w-full mb-12">
           {badges.map((badge, i) => (
             <div
               key={i}
@@ -315,7 +314,7 @@ export default function LandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 px-6 md:px-20 bg-indigo-50 text-center">
+      <section className="py-16 px-6 md:px-20 bg-indigo-50 text-center w-full">
         <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
           Ready to Make an Impact?
         </h3>

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Heart, Users, Building2 } from "lucide-react";
+import { Heart, Users, Building2, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -28,9 +28,19 @@ export default function RoleSignup() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-green-50">
+    <div className="flex flex-col min-h-screen bg-green-50 relative">
       {/* Navbar */}
       <Navbar showAuthButtons={false} />
+
+      {/* Fixed Back Button */}
+      <button
+        onClick={() => navigate(-1)}
+        className="fixed top-20 left-4 flex items-center gap-2 text-green-700 hover:text-green-900 font-medium bg-white px-3 py-2 rounded-lg shadow-md transition-all"
+      >
+        <ArrowLeft className="w-5 h-5" />
+        Back
+      </button>
+
       {/* Main Content */}
       <main className="flex-grow flex flex-col items-center justify-center px-4">
         <div className="flex flex-col items-center text-center mb-10">
