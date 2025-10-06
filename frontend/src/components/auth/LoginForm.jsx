@@ -26,7 +26,6 @@ export default function LoginForm({
     try {
       // Always clear old data first
       localStorage.clear();
-
       const response =
         role.toLowerCase() === "volunteer"
           ? await loginVolunteer(formData)
@@ -38,7 +37,7 @@ export default function LoginForm({
 
       if (role.toLowerCase() === "organization") {
         localStorage.setItem("orgId", response.data.orgId);
-        console.log("✅ orgId stored:", response.data.orgId);
+        console.log("orgId stored:", response.data.orgId);
       }
 
       toast.success(`${role} Login successfully!`);
@@ -124,7 +123,7 @@ export default function LoginForm({
 
         <div className="flex justify-center text-sm ">
           <Link
-            to="/forgot-password"
+            to={`/${role.toLowerCase()}/forgot-password`}
             className="text-green-600 hover:underline flex"
           >
             Forgot password?

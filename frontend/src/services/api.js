@@ -62,6 +62,15 @@ export const getVolunteerBadges = () => API.get("/volunteer/me/badges?limit=6");
 export const getTopVolunteers = () => API.get("/volunteer/top?limit=3");
 export const getAllOpportunities = () => API.get("/opportunities/all");
 
+// ForgotPassword
+
+// send OTP to email
+export const sendOtp = (data) => API.post("/auth/send-otp", data);
+// verify OTP
+export const verifyOtp = (data) => API.post("/auth/verify-otp", data);
+// reset password
+export const resetPassword = (data) => API.post("/auth/reset-password", data);
+
 // --- Token Middleware ---
 API.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
