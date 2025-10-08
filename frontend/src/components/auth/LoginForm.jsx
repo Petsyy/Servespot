@@ -4,16 +4,13 @@ import Button from "@/components/ui/Button";
 import FormInput from "@/components/ui/FormInput";
 import { Link, useNavigate } from "react-router-dom";
 import { loginVolunteer, loginOrganization } from "@/services/api";
-import { toast } from "react-toastify";
+import useApi from "@/hooks/useApi";
 
-export default function LoginForm({
-  role = "Volunteer", // or "Organization"
-  icon: Icon,
-}) {
+export default function LoginForm({ role = "Volunteer", icon: Icon }) {
   const [formData, setFormData] = useState({ email: "", password: "" });
-  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const { request, loading } = useApi();
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -21,42 +18,59 @@ export default function LoginForm({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
 
     try {
-      // Always clear old data first
+      // 🔹 clear old session (prevents wrong volunteer reuse)
       localStorage.clear();
-      const response =
+
+      const data =
         role.toLowerCase() === "volunteer"
-          ? await loginVolunteer(formData)
-          : await loginOrganization(formData);
+          ? await request(
+              () => loginVolunteer(formData),
+              "Volunteer login successful!"
+            )
+          : await request(
+              () => loginOrganization(formData),
+              "Organization login successful!"
+            );
 
-      //  Always set new session data cleanly
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
+      if (role.toLowerCase() === "volunteer") {
+        localStorage.setItem("volToken", data.token);
 
-      if (role.toLowerCase() === "organization") {
-        localStorage.setItem("orgId", response.data.orgId);
-        console.log("orgId stored:", response.data.orgId);
+        // ✅ backend returns "user", not "volunteer"
+        const userId = data.user?.id || data.user?._id;
+        localStorage.setItem("volunteerId", userId);
+        localStorage.setItem("volUser", JSON.stringify(data.user));
+
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("activeRole", "volunteer");
+
+        navigate("/volunteer/homepage");
+      } else {
+        // ✅ unified token handling
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("activeRole", "organization");
+
+        // ✅ save organization info
+        const orgId = data.organization?._id || data.orgId;
+        localStorage.setItem("orgId", orgId);
+         localStorage.setItem("orgToken", data.token);
+
+        localStorage.setItem(
+          "orgUser",
+          JSON.stringify(data.organization || data.user)
+        );
+
+        navigate("/organization/dashboard");
       }
-
-      toast.success(`${role} Login successfully!`);
-
-      // Redirect to correct landing page
-      navigate(
-        role.toLowerCase() === "volunteer"
-          ? "/volunteer/homepage"
-          : "/organization/homepage"
-      );
     } catch (err) {
-      toast.error(err.response?.data?.message || "Login failed");
-    } finally {
-      setIsLoading(false);
+      console.error("Login error:", err);
     }
   };
 
   return (
     <div className="w-full max-w-md">
+      {/* Header */}
       <div className="text-center mb-6">
         <div className="w-12 h-12 mx-auto flex items-center justify-center rounded-full bg-green-100 mb-3">
           <Icon className="w-6 h-6 text-green-600" />
@@ -67,6 +81,7 @@ export default function LoginForm({
         </p>
       </div>
 
+      {/* Form */}
       <form
         onSubmit={handleSubmit}
         className="bg-white rounded-xl shadow p-6 space-y-5"
@@ -78,6 +93,7 @@ export default function LoginForm({
           </p>
         </div>
 
+        {/* Email */}
         <FormInput
           label="Email Address"
           type="email"
@@ -88,6 +104,7 @@ export default function LoginForm({
           required
         />
 
+        {/* Password */}
         <div className="relative">
           <FormInput
             label="Password"
@@ -98,7 +115,6 @@ export default function LoginForm({
             icon={<Lock className="w-4 h-4 text-gray-400" />}
             required
           />
-
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
@@ -112,16 +128,18 @@ export default function LoginForm({
           </button>
         </div>
 
+        {/* Submit */}
         <Button
           type="submit"
           variant="primary"
           className="w-full"
-          disabled={isLoading}
+          disabled={loading}
         >
-          {isLoading ? "Signing in..." : "Sign In"}
+          {loading ? "Signing in..." : "Sign In"}
         </Button>
 
-        <div className="flex justify-center text-sm ">
+        {/* Links */}
+        <div className="flex justify-center text-sm">
           <Link
             to={`/${role.toLowerCase()}/forgot-password`}
             className="text-green-600 hover:underline flex"

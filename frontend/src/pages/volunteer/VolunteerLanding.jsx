@@ -9,8 +9,8 @@ import {
   Trophy,
   Medal,
 } from "lucide-react";
-import RoleNavbar from "@/components/layout/RoleNavbar";
-import Footer from "@/components/layout/Footer";
+import RoleNavbar from "@/components/layout/navbars/RoleNavbar";
+import Footer from "@/components/layout/footer/Footer";
 import Button from "@/components/ui/Button";
 
 export default function VolunteerLanding() {
