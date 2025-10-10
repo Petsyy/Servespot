@@ -11,7 +11,6 @@ export default function PreviewCard({
   skills = [],
   imageUrl,
 }) {
-  // ✅ Format date properly
   const formattedDate = date
     ? new Date(date).toLocaleString("en-US", {
         weekday: "long",
@@ -24,26 +23,29 @@ export default function PreviewCard({
     : null;
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden w-full max-w-md">
+    <div
+      className="sticky top-6 bg-white rounded-xl border border-gray-200 shadow-sm 
+             overflow-hidden w-full max-w-sm"
+    >
       {/* Poster Image */}
       {imageUrl && (
         <img
           src={imageUrl}
           alt="Poster"
-          className="w-full h-40 object-cover"
+          className="w-full h-44 object-cover rounded-t-xl"
         />
       )}
 
       {/* Content */}
-      <div className="p-4 break-words">
+      <div className="p-5 break-words">
         <h3 className="text-lg font-semibold text-gray-900">
           {title || "Opportunity Title"}
         </h3>
-        <p className="text-sm text-gray-600 mb-3">
+        <p className="text-sm text-gray-600 mb-3 leading-relaxed">
           {description || "Opportunity description will appear here..."}
         </p>
 
-        {/* Info */}
+        {/* Info Section */}
         <div className="space-y-2 text-sm text-gray-700">
           {formattedDate && (
             <div className="flex items-center gap-2">
@@ -75,7 +77,7 @@ export default function PreviewCard({
           )}
         </div>
 
-        {/* Skills */}
+        {/* Skills Section */}
         {skills?.length > 0 && (
           <div className="mt-4">
             <p className="font-medium text-sm text-gray-800 mb-2">
@@ -85,7 +87,7 @@ export default function PreviewCard({
               {skills.map((s) => (
                 <span
                   key={s}
-                  className="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-700"
+                  className="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-700 border border-gray-200"
                 >
                   {s}
                 </span>

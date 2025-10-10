@@ -164,24 +164,26 @@ export default function OrganizationDashboard() {
               {loading ? (
                 <p className="text-gray-500">Loading opportunities...</p>
               ) : opportunities.length > 0 ? (
-                opportunities.slice(0, 3).map((opp) => (
-                  <OpportunityCard
-                    key={opp._id}
-                    _id={opp._id}
-                    title={opp.title}
-                    description={opp.description}
-                    date={
-                      opp.date ? new Date(opp.date).toLocaleDateString() : ""
-                    }
-                    duration={opp.duration}
-                    location={opp.location}
-                    currentVolunteers={opp.volunteers?.length || 0}
-                    volunteersNeeded={opp.volunteersNeeded || 0}
-                    status={opp.status}
-                    fileUrl={opp.fileUrl}
-                    onDelete={handleDelete}
-                  />
-                ))
+                opportunities
+                  .slice(0, 3)
+                  .map((opp) => (
+                    <OpportunityCard
+                      key={opp._id}
+                      _id={opp._id}
+                      title={opp.title}
+                      description={opp.description}
+                      date={
+                        opp.date ? new Date(opp.date).toLocaleDateString() : ""
+                      }
+                      duration={opp.duration}
+                      location={opp.location}
+                      currentVolunteers={opp.volunteers?.length || 0}
+                      volunteersNeeded={opp.volunteersNeeded || 0}
+                      status={opp.status}
+                      fileUrl={opp.fileUrl}
+                      onDelete={handleDelete}
+                    />
+                  ))
               ) : (
                 <p className="text-gray-500">No opportunities posted yet.</p>
               )}
@@ -200,9 +202,14 @@ export default function OrganizationDashboard() {
       {showModal && (
         <PostOpportunityModal
           onClose={() => setShowModal(false)}
-          onSuccess={() => {
+          onSuccess={(newOpportunity) => {
             setShowModal(false);
             toast.success("Opportunity posted!");
+
+            if (newOpportunity) {
+              // Instantly show new opportunity at top
+              setOpportunities((prev) => [newOpportunity, ...prev]);
+            }
           }}
         />
       )}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { confirmJoin, successAlert, errorAlert } from "@/utils/swalAlerts";
 import {
   Calendar,
   Clock,
@@ -74,7 +75,6 @@ export default function OpportunityBoard({
       setIsFull(true);
     }
 
-    // Verify join status with backend to ensure accuracy
     async function verifyJoinStatus() {
       try {
         const res = await getOpportunityById(_id);
@@ -84,25 +84,12 @@ export default function OpportunityBoard({
           );
           setIsJoined(isActuallyJoined);
 
-          // Check volunteer's proof status
           if (isActuallyJoined && res.data.completionProofs) {
-            console.log("Debug - Checking proof status:", {
-              volunteerId,
-              completionProofs: res.data.completionProofs,
-              volunteerProofs: res.data.completionProofs.filter(
-                (p) =>
-                  p.volunteer._id === volunteerId ||
-                  p.volunteer.toString() === volunteerId
-              ),
-            });
-
             const volunteerProof = res.data.completionProofs.find(
               (proof) =>
                 proof.volunteer._id === volunteerId ||
                 proof.volunteer.toString() === volunteerId
             );
-
-            console.log("Debug - Found volunteer proof:", volunteerProof);
             setProofStatus(volunteerProof ? volunteerProof.status : null);
           }
         }
@@ -112,7 +99,6 @@ export default function OpportunityBoard({
     }
     verifyJoinStatus();
 
-    // Fetch latest status from backend
     async function refreshStatus() {
       try {
         const res = await getOpportunityById(_id);
@@ -120,7 +106,6 @@ export default function OpportunityBoard({
           setCurrentStatus(res.data.status);
         }
 
-        // Update proof status
         if (res.data?.completionProofs && volunteerId) {
           const volunteerProof = res.data.completionProofs.find(
             (proof) =>
@@ -133,106 +118,115 @@ export default function OpportunityBoard({
         console.warn("Status refresh failed", err);
       }
     }
+
     refreshStatus();
-    const interval = setInterval(refreshStatus, 10000); // poll every 10s
+    const interval = setInterval(refreshStatus, 10000);
     return () => clearInterval(interval);
   }, [_id, currentVolunteers, volunteersNeeded, currentStatus]);
 
-  const handleSignup = async () => {
-    if (isFull || currentStatus === "Closed") {
-      toast.warning("This opportunity is already full or closed.");
+const handleSignup = async () => {
+  try {
+    // Step 1: Confirm user action
+    const confirmed = await confirmJoin();
+    if (!confirmed) {
+      await cancelledAlert();
       return;
     }
 
+    // Step 2: Check if full or closed
+    if (isFull || currentStatus === "Closed") {
+      await warningAlert(
+        "Unable to Join",
+        "This opportunity is already full or closed."
+      );
+      return;
+    }
+
+    // Step 3: Proceed joining
     const volunteerId = localStorage.getItem("volunteerId");
-    const joinedKey = volunteerId
-      ? `joinedTasks_${volunteerId}`
-      : "joinedTasks";
+    const joinedKey = volunteerId ? `joinedTasks_${volunteerId}` : "joinedTasks";
 
     setLoading(true);
-    try {
-      const res = await signupForOpportunity(_id);
+    const res = await signupForOpportunity(_id);
 
-      // 🧠 Update local joined state
-      const joinedTasks = JSON.parse(localStorage.getItem(joinedKey) || "[]");
-      if (!joinedTasks.includes(_id)) {
-        joinedTasks.push(_id);
-        localStorage.setItem(joinedKey, JSON.stringify(joinedTasks));
-      }
-
-      setIsJoined(true);
-
-      const { currentVolunteers, volunteersNeeded } = res.data;
-      if (currentVolunteers >= volunteersNeeded) {
-        setIsFull(true);
-        toast.info("Volunteer slots filled! Opportunity now in progress.");
-      }
-
-      if (res.data.opportunityStatus === "In Progress") {
-        setIsFull(true);
-      }
-      toast.success(res.data.message || "Signed up successfully!");
-    } catch (err) {
-      const msg = err.response?.data?.message || "Failed to sign up.";
-      toast.error(msg);
-      console.error("Sign-up error:", err);
-    } finally {
-      setLoading(false);
+    // Update joined list locally
+    const joinedTasks = JSON.parse(localStorage.getItem(joinedKey) || "[]");
+    if (!joinedTasks.includes(_id)) {
+      joinedTasks.push(_id);
+      localStorage.setItem(joinedKey, JSON.stringify(joinedTasks));
     }
-  };
+
+    setIsJoined(true);
+
+    const { currentVolunteers, volunteersNeeded, opportunityStatus } = res.data;
+    if (currentVolunteers >= volunteersNeeded || opportunityStatus === "In Progress") {
+      setIsFull(true);
+    }
+    // Step 4: Success alert
+    await successAlert(
+      "Joined Successfully!",
+      res.data.message || "You’re now part of this opportunity."
+    );
+  } catch (err) {
+    console.error("Sign-up error:", err);
+    const msg = err.response?.data?.message || "Failed to sign up.";
+    await errorAlert("Sign-Up Failed", msg);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden flex flex-col w-72 min-h-[420px]">
+    <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden flex flex-col w-72 transition hover:shadow-lg">
       {/* Poster Image */}
       {fileUrl && (
         <img
           src={`http://localhost:5000${fileUrl}`}
           alt={title}
-          className="w-full h-[130px] object-cover rounded-t-xl"
+          className="w-full h-[140px] object-cover"
         />
       )}
 
       <div className="p-4 flex flex-col flex-1 justify-between">
-        <div className="flex items-start justify-between">
-          <h3 className="font-semibold text-gray-900">{title}</h3>
+        {/* Header */}
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="font-semibold text-gray-900 text-base leading-tight truncate max-w-[65%]">
+            {title}
+          </h3>
           <span
-            className={`text-xs px-2 py-1 rounded-full whitespace-nowrap ${
-              volunteerDisplayStatus === "Rejected"
-                ? "bg-red-100 text-red-700"
-                : badgeColor
-            }`}
+            className={`text-xs px-3 py-1 rounded-full ${badgeColor} font-medium whitespace-nowrap`}
           >
             {volunteerDisplayStatus}
           </span>
         </div>
 
+        {/* Description */}
         {description && (
           <p className="mt-2 text-sm text-gray-600 line-clamp-3">
             {description}
           </p>
         )}
 
+        {/* Org Info */}
         <p className="mt-3 text-sm text-gray-700">
           <strong>Organization:</strong> {orgName}
         </p>
 
+        {/* Details */}
         <div className="mt-3 space-y-2 text-sm text-gray-600">
           {date && (
             <div className="flex items-center gap-2">
-              <Calendar size={16} className="text-blue-600" />
-              {date}
+              <Calendar size={16} className="text-blue-600" /> {date}
             </div>
           )}
           {duration && (
             <div className="flex items-center gap-2">
-              <Clock size={16} className="text-blue-600" />
-              {duration}
+              <Clock size={16} className="text-blue-600" /> {duration}
             </div>
           )}
           {location && (
             <div className="flex items-center gap-2">
-              <MapPin size={16} className="text-blue-600" />
-              {location}
+              <MapPin size={16} className="text-blue-600" /> {location}
             </div>
           )}
           {volunteersNeeded !== undefined && (
@@ -251,54 +245,42 @@ export default function OpportunityBoard({
           )}
         </div>
 
-        {/* ---------- Skills Section ---------- */}
+        {/* Skills */}
         {Array.isArray(skills) && skills.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className="mt-4">
             <p className="text-sm font-semibold text-gray-800 mb-2">Skills:</p>
-            {skills.map((skill, index) => (
-              <span
-                key={index}
-                className="px-2 py-1 text-xs font-medium rounded-full bg-blue-50 text-blue-700 border border-blue-100"
-              >
-                {skill}
-              </span>
-            ))}
+            <div className="flex flex-wrap gap-2">
+              {skills.map((skill, index) => (
+                <span
+                  key={index}
+                  className="px-2 py-1 text-xs font-medium rounded-full bg-blue-50 text-blue-700 border border-blue-100"
+                >
+                  {skill}
+                </span>
+              ))}
+            </div>
           </div>
         )}
 
-        {/* ---------- Actions ---------- */}
-        <div
-          className={`mt-4 flex gap-3 ${isJoined && currentStatus !== "Completed" && currentStatus !== "Closed" ? "flex-col" : ""}`}
-        >
-          {/* View Details Button */}
+        {/* Buttons Section */}
+        <div className="mt-5 flex flex-col items-stretch gap-2">
+          {/* View Details */}
           <button
             onClick={() => onViewDetails && onViewDetails(_id)}
-            className="flex-1 h-10 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition cursor-pointer"
+            className="w-full h-10 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold flex items-center justify-center gap-2 transition"
           >
             View Details
           </button>
 
-          {/* Proof Status and Actions */}
+          {/* Proof Buttons */}
           {isJoined &&
             currentStatus !== "Completed" &&
             currentStatus !== "Closed" && (
               <>
-                {(() => {
-                  console.log("Debug - Button display check:", {
-                    isJoined,
-                    currentStatus,
-                    proofStatus,
-                    showProofSection:
-                      isJoined &&
-                      currentStatus !== "Completed" &&
-                      currentStatus !== "Closed",
-                  });
-                  return null;
-                })()}
                 {proofStatus === "Pending" && (
                   <button
                     disabled
-                    className="flex-1 h-10 rounded-lg bg-yellow-100 text-yellow-700 text-sm font-medium flex items-center justify-center gap-2 cursor-not-allowed"
+                    className="w-full h-10 rounded-lg bg-yellow-100 text-yellow-700 font-medium flex items-center justify-center gap-2 cursor-not-allowed"
                   >
                     <Clock size={16} />
                     Proof Under Review
@@ -308,7 +290,7 @@ export default function OpportunityBoard({
                 {proofStatus === "Approved" && (
                   <button
                     disabled
-                    className="flex-1 h-10 rounded-lg bg-green-100 text-green-700 text-sm font-medium flex items-center justify-center gap-2 cursor-not-allowed"
+                    className="w-full h-10 rounded-lg bg-green-100 text-green-700 font-medium flex items-center justify-center gap-2 cursor-not-allowed"
                   >
                     <CheckCircle size={16} />
                     Proof Approved
@@ -318,7 +300,7 @@ export default function OpportunityBoard({
                 {proofStatus === "Rejected" && (
                   <button
                     onClick={() => setShowProofModal(true)}
-                    className="flex-1 h-10 rounded-lg bg-red-500 hover:bg-red-600 text-white text-sm font-medium flex items-center justify-center gap-2 transition cursor-pointer"
+                    className="w-full h-10 rounded-lg bg-red-500 hover:bg-red-600 text-white font-medium flex items-center justify-center gap-2 transition"
                   >
                     <UploadCloud size={16} />
                     Resubmit Proof
@@ -328,7 +310,7 @@ export default function OpportunityBoard({
                 {!proofStatus && (
                   <button
                     onClick={() => setShowProofModal(true)}
-                    className="flex-1 h-10 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium flex items-center justify-center gap-2 transition cursor-pointer"
+                    className="w-full h-10 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-medium flex items-center justify-center gap-2 transition"
                   >
                     <UploadCloud size={16} />
                     Submit Proof
@@ -337,11 +319,11 @@ export default function OpportunityBoard({
               </>
             )}
 
-          {/* Dynamic Sign-Up Button */}
-          {currentStatus === "Completed" ? ( // new condition
+          {/* Join/Status Buttons */}
+          {currentStatus === "Completed" ? (
             <button
               disabled
-              className="flex-1 h-10 rounded-lg bg-gray-300 text-gray-700 text-sm font-semibold cursor-not-allowed flex items-center justify-center gap-1"
+              className="w-full h-10 rounded-lg bg-gray-300 text-gray-700 font-semibold flex items-center justify-center gap-2 cursor-not-allowed"
             >
               <CheckCircle size={16} />
               Completed
@@ -349,7 +331,7 @@ export default function OpportunityBoard({
           ) : currentStatus === "Closed" ? (
             <button
               disabled
-              className="flex-1 h-10 rounded-lg bg-gray-300 text-gray-700 text-sm font-semibold cursor-not-allowed flex items-center justify-center gap-1"
+              className="w-full h-10 rounded-lg bg-gray-300 text-gray-700 font-semibold flex items-center justify-center gap-2 cursor-not-allowed"
             >
               <X size={16} />
               Closed
@@ -357,7 +339,7 @@ export default function OpportunityBoard({
           ) : isJoined ? (
             <button
               disabled
-              className="flex-1 h-10 rounded-lg bg-green-100 text-green-700 text-sm font-semibold cursor-not-allowed flex items-center justify-center gap-1"
+              className="w-full h-10 rounded-lg bg-green-100 text-green-700 font-semibold flex items-center justify-center gap-2 cursor-not-allowed"
             >
               <CheckCircle size={16} />
               Joined
@@ -365,7 +347,7 @@ export default function OpportunityBoard({
           ) : isFull ? (
             <button
               disabled
-              className="flex-1 h-10 rounded-lg bg-gray-200 text-gray-600 text-sm font-medium cursor-not-allowed flex items-center justify-center gap-1"
+              className="w-full h-10 rounded-lg bg-gray-200 text-gray-600 font-medium flex items-center justify-center gap-2 cursor-not-allowed"
             >
               <UsersIcon size={16} />
               Full
@@ -374,7 +356,7 @@ export default function OpportunityBoard({
             <button
               onClick={handleSignup}
               disabled={loading}
-              className="flex-1 h-10 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-medium flex items-center justify-center gap-1 transition cursor-pointer"
+              className="w-full h-10 rounded-lg bg-green-600 hover:bg-green-700 text-white font-medium flex items-center justify-center gap-2 transition"
             >
               {loading ? (
                 <>
@@ -417,7 +399,6 @@ export default function OpportunityBoard({
           opportunityId={_id}
           onClose={() => setShowProofModal(false)}
           onProofSubmitted={() => {
-            // Refresh proof status after submission
             const volunteerId = localStorage.getItem("volunteerId");
             if (volunteerId) {
               getOpportunityById(_id)

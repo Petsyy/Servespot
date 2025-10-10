@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from "react";
 import {
+  confirmCompletion,
+  successAlert,
+  errorAlert,
+} from "@/utils/swalAlerts";
+import {
   Calendar,
   MapPin,
   Users as UsersIcon,
@@ -11,6 +16,7 @@ import {
   Clock,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import ProofReviewModal from "@/components/organization-dashboard/opportunities/ProofPreviewModal";
 import {
   getOpportunityVolunteers,
   markOpportunityCompleted,
@@ -35,30 +41,57 @@ export default function OpportunityCard({
   const [volList, setVolList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [completing, setCompleting] = useState(false);
+  const [showProofModal, setShowProofModal] = useState(false);
 
-  // 🟢 Auto-update status when slots fill
+  //  Auto-update status when slots fill
   useEffect(() => {
-    if (
-      status === "Open" &&
-      currentVolunteers >= volunteersNeeded &&
-      volunteersNeeded > 0
-    ) {
-      setStatus("In Progress");
-    }
-  }, [currentVolunteers, volunteersNeeded, status]);
+    const fetchLatestData = async () => {
+      try {
+        const res = await getOpportunityVolunteers(_id);
 
-  // 🎨 Badge color mapping
+        // Update volunteers list
+        if (Array.isArray(res.data.volunteers)) {
+          setVolList(res.data.volunteers);
+        }
+
+        // Auto-update status if backend changed it
+        if (res.data.status && res.data.status !== status) {
+          setStatus(res.data.status);
+        }
+
+        // Auto-set "In Progress" when slots are filled
+        if (
+          (status === "Open" || res.data.status === "Open") &&
+          res.data.currentVolunteers >= res.data.volunteersNeeded &&
+          res.data.volunteersNeeded > 0
+        ) {
+          setStatus("In Progress");
+        }
+      } catch (err) {
+        console.warn("Auto-refresh failed:", err.message);
+      }
+    };
+
+    fetchLatestData();
+    
+    const interval = setInterval(fetchLatestData, 10000);
+    // Cleanup
+    return () => clearInterval(interval);
+  }, [_id, status]);
+
+  // Badge color mapping
   const badgeColor =
     status === "Open"
       ? "bg-green-100 text-green-700"
       : status === "In Progress"
-      ? "bg-orange-100 text-orange-700"
-      : status === "Completed"
-      ? "bg-blue-100 text-blue-700"
-      : status === "Closed"
-      ? "bg-gray-200 text-gray-700"
-      : "bg-gray-100 text-gray-600";
+        ? "bg-orange-100 text-orange-700"
+        : status === "Completed"
+          ? "bg-blue-100 text-blue-700"
+          : status === "Closed"
+            ? "bg-gray-200 text-gray-700"
+            : "bg-gray-100 text-gray-600";
 
+  // View volunteers
   const handleViewVolunteers = async () => {
     try {
       setShowModal(true);
@@ -73,22 +106,28 @@ export default function OpportunityCard({
     }
   };
 
+  // Mark as Completed (with SweetAlert2 confirmation)
   const handleMarkCompleted = async () => {
-    setShowConfirmModal(true);
-  };
-
-  const confirmCompletion = async () => {
-    setCompleting(true);
     try {
+      const confirmed = await confirmCompletion(
+        `Mark "${title}" as Completed?`
+      );
+      if (!confirmed) return; // cancelled
+
+      setCompleting(true);
       const res = await markOpportunityCompleted(_id);
+
       setStatus("Completed");
-      toast.success(res.data.message || "Opportunity marked as completed!");
+      await successAlert(
+        "Opportunity Completed!",
+        res.data.message || "This opportunity is now marked as completed."
+      );
     } catch (err) {
       console.error("Mark completed error:", err);
-      toast.error("Failed to mark opportunity as completed");
+      const msg = err.response?.data?.message || "Failed to mark as completed.";
+      await errorAlert("Error", msg);
     } finally {
       setCompleting(false);
-      setShowConfirmModal(false);
     }
   };
 
@@ -202,6 +241,14 @@ export default function OpportunityCard({
             </button>
           )}
 
+          <button
+            onClick={() => setShowProofModal(true)}
+            className="flex items-center gap-2 bg-orange-100 hover:bg-orange-200 text-orange-700 px-4 py-2 rounded-lg text-sm font-medium transition"
+          >
+            <CheckCircle size={16} />
+            Review Proofs
+          </button>
+
           {status === "Closed" && (
             <button
               onClick={handleViewVolunteers}
@@ -213,66 +260,6 @@ export default function OpportunityCard({
           )}
         </div>
       </div>
-
-      {/* ---------- CONFIRM COMPLETION MODAL (bigger) ---------- */}
-      {showConfirmModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]">
-          <div className="bg-white rounded-2xl shadow-2xl p-8 w-[520px] max-w-[90%] text-center">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-3">
-              Confirm Completion
-            </h2>
-            <p className="text-gray-600 text-base mb-6">
-              Are you sure you want to mark <br />
-              <strong className="text-gray-900">{title}</strong> as{" "}
-              <span className="text-green-700 font-semibold">Completed</span>?
-            </p>
-            <div className="flex justify-center gap-4">
-              <button
-                onClick={() => setShowConfirmModal(false)}
-                className="px-5 py-2.5 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium transition"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmCompletion}
-                disabled={completing}
-                className="px-5 py-2.5 rounded-lg bg-green-600 hover:bg-green-700 text-white font-medium transition flex items-center gap-2"
-              >
-                {completing ? (
-                  <>
-                    <svg
-                      className="animate-spin h-4 w-4 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                      ></path>
-                    </svg>
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle size={16} />
-                    Confirm
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ---------- VOLUNTEERS MODAL ---------- */}
       {showModal && (
@@ -360,6 +347,12 @@ export default function OpportunityCard({
             )}
           </div>
         </div>
+      )}
+      {showProofModal && (
+        <ProofReviewModal
+          opportunityId={_id}
+          onClose={() => setShowProofModal(false)}
+        />
       )}
     </>
   );
