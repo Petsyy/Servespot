@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Heart, Users, Building2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
+import Navbar from "@/components/layout/navbars/Navbar";
+import Footer from "@/components/layout/footer/Footer";
 import Button from "@/components/ui/Button";
 
 export default function RoleSignup() {

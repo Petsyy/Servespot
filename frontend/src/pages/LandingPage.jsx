@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserPlus, Clock, Award, ShieldCheck, Star, Trophy, Medal } from "lucide-react";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
+import Navbar from "@/components/layout/navbars/Navbar";
+import Footer from "@/components/layout/footer/Footer";
 import Button from "@/components/ui/Button";
 
 export default function LandingPage() {
@@ -126,10 +126,10 @@ export default function LandingPage() {
             task at a time.
           </p>
           <div className="flex space-x-4">
-            <Button variant="primary" onClick={() => navigate("/volunteer/signup")}>
+            <Button variant="primary" onClick={() => navigate("/volunteer/login")}>
               Find Opportunities
             </Button>
-            <Button variant="outline" onClick={() => navigate("/organization/signup")}>
+            <Button variant="outline" onClick={() => navigate("/organization/login")}>
               Post a Task
             </Button>
           </div>

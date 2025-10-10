@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { getOpportunities } from "@/services/api";
-import OpportunityCard from "@/components/orgDashboard/OpportunityCard";
-import OrgSidebar from "@/components/layout/OrgSidebar";
+import OpportunityCard from "@/components/organization-dashboard/opportunities/OpportunityCard";
+import OrgSidebar from "@/components/layout/sidebars/OrgSidebar";
 import { toast } from "react-toastify";
 import { deleteOpportunity } from "@/services/api";
 
@@ -61,6 +61,7 @@ export default function OpportunitiesPage() {
               <OpportunityCard
                 key={opp._id}
                 title={opp.title}
+                description={opp.description}
                 date={opp.date ? new Date(opp.date).toLocaleDateString() : ""}
                 duration={opp.duration}
                 location={opp.location}
@@ -68,7 +69,7 @@ export default function OpportunitiesPage() {
                 status={opp.status}
                 fileUrl={opp.fileUrl}
                 onDelete={() => handleDelete(opp._id)}
-              />
+              /> 
             ))}
           </div>
         ) : (
