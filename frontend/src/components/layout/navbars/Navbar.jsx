@@ -29,6 +29,12 @@ export default function Navbar({ showAuthButtons = true }) {
               Home
             </button>
             <button
+              onClick={() => handleScroll("chooseyourpath")}
+              className="hover:text-green-600 transition cursor-pointer"
+            >
+              Choose Your Path
+            </button>
+            <button
               onClick={() => handleScroll("howitworks")}
               className="hover:text-green-600 transition cursor-pointer"
             >
@@ -42,7 +48,7 @@ export default function Navbar({ showAuthButtons = true }) {
           <div className="space-x-4">
             <button
               onClick={() => (window.location.href = "/role/login")}
-              className="  text-green-600 px-4 py-2 hover:bg-green-50 transition cursor-pointer"
+              className="px-4 py-2 rounded-full border-2 border-green-600 text-green-600 hover:bg-green-600 hover:text-white transition cursor-pointer"
             >
               Login
             </button>

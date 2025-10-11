@@ -11,6 +11,8 @@ const organizationSchema = new mongoose.Schema(
     address: { type: String },
     orgType: { type: String },
     description: { type: String },
+    otpCode: String,
+    otpExpire: Date,
   },
   { timestamps: true }
 );

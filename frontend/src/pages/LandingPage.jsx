@@ -144,7 +144,7 @@ export default function LandingPage() {
       </section>
 
       {/* Role Selection */}
-      <section className="py-16 px-6 md:px-20 bg-gray-100 text-center">
+      <section id="chooseyourpath" className="py-16 px-6 md:px-20 bg-gray-100 text-center">
         <h3 className="text-3xl font-bold text-blue-900 mb-3">Choose Your Path</h3>
         <p className="text-gray-600 mb-12">
           Whether you want to help or need help, ServeSpot connects you with your
@@ -170,7 +170,7 @@ export default function LandingPage() {
               <li>✔ Track your impact</li>
             </ul>
             <button
-              onClick={() => navigate("/role/signup")}
+              onClick={() => navigate("/volunteer/signup")}
               className="w-full py-3 bg-orange-500 text-white font-semibold rounded-md hover:bg-orange-600 transition"
             >
               Start Volunteering
@@ -195,7 +195,7 @@ export default function LandingPage() {
               <li>✔ Track project impact</li>
             </ul>
             <button
-              onClick={() => navigate("/role/signup")}
+              onClick={() => navigate("/organization/signup")}
               className="w-full py-3 bg-blue-900 text-white font-semibold rounded-md hover:bg-blue-800 transition"
             >
               Post Opportunities

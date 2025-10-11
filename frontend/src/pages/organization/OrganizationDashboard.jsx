@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { CalendarDays, Users, TrendingUp, Award } from "lucide-react";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { confirmDelete, successAlert, errorAlert } from "@/utils/swalAlerts";
 import {
   getOpportunities,
   getOrgStats,
@@ -87,12 +88,19 @@ export default function OrganizationDashboard() {
 
   const handleDelete = async (id) => {
     try {
+      const confirmed = await confirmDelete("Delete this opportunity?");
+      if (!confirmed) return;
+
       await deleteOpportunity(id);
       setOpportunities((prev) => prev.filter((opp) => opp._id !== id));
-      toast.success("Opportunity removed!");
+
+      await successAlert(
+        "Deleted!",
+        "The opportunity has been removed successfully."
+      );
     } catch (err) {
       console.error("❌ Failed to delete", err);
-      toast.error("Failed to remove opportunity");
+      await errorAlert("Delete Failed", "Unable to remove this opportunity.");
     }
   };
 

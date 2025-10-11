@@ -97,6 +97,11 @@ export const markOpportunityCompleted = async (oppId) => {
   );
 };
 
+export const updateOpportunity = (id, formData) =>
+  API.put(`/opportunities/${id}`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+
 /* -------------------------------------------
    VOLUNTEER DASHBOARD DATA
 -------------------------------------------- */

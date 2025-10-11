@@ -1,22 +1,23 @@
 import React, { useEffect, useState } from "react";
-import { getOpportunities } from "@/services/api";
+import { getOpportunities, deleteOpportunity } from "@/services/api";
 import OpportunityCard from "@/components/organization-dashboard/opportunities/OpportunityCard";
 import OrgSidebar from "@/components/layout/sidebars/OrgSidebar";
 import { toast } from "react-toastify";
-import { deleteOpportunity } from "@/services/api";
 
-export default function OpportunitiesPage() {
+export default function PostedOpportunities() {
   const orgId = localStorage.getItem("orgId");
   const [opportunities, setOpportunities] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Fetch all posted opportunities for this organization
   useEffect(() => {
     async function fetchData() {
       try {
         const res = await getOpportunities(orgId);
-        setOpportunities(res.data);
+        setOpportunities(res.data || []);
       } catch (err) {
         console.error("Failed to load opportunities", err);
+        toast.error("Failed to fetch opportunities");
       } finally {
         setLoading(false);
       }
@@ -24,6 +25,7 @@ export default function OpportunitiesPage() {
     if (orgId) fetchData();
   }, [orgId]);
 
+  // Handle Delete
   const handleDelete = async (id) => {
     try {
       await deleteOpportunity(id);
@@ -35,14 +37,14 @@ export default function OpportunitiesPage() {
     }
   };
 
-  // Rendering
-  {
-    opportunities
-      .slice(0, 3)
-      .map((opp) => (
-        <OpportunityCard key={opp._id} {...opp} onDelete={handleDelete} />
-      ));
-  }
+  // Handle update from Edit modal
+  const handleUpdate = (updatedOpp) => {
+    setOpportunities((prev) =>
+      prev.map((opp) =>
+        opp._id === updatedOpp._id ? { ...opp, ...updatedOpp } : opp
+      )
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -60,16 +62,18 @@ export default function OpportunitiesPage() {
             {opportunities.map((opp) => (
               <OpportunityCard
                 key={opp._id}
+                _id={opp._id}
                 title={opp.title}
-                description={opp.description}
-                date={opp.date ? new Date(opp.date).toLocaleDateString() : ""}
+                date={opp.date}
                 duration={opp.duration}
                 location={opp.location}
-                volunteers={opp.volunteersNeeded}
+                currentVolunteers={opp.currentVolunteers || 0}
+                volunteersNeeded={opp.volunteersNeeded || 0}
                 status={opp.status}
                 fileUrl={opp.fileUrl}
                 onDelete={() => handleDelete(opp._id)}
-              /> 
+                onUpdate={handleUpdate}
+              />
             ))}
           </div>
         ) : (

@@ -14,6 +14,8 @@ const volunteerSchema = new mongoose.Schema(
     interests: [String],
     availability: { type: String },
     bio: { type: String },
+    otpCode: String,
+    otpExpire: Date,
   },
   { timestamps: true }
 );

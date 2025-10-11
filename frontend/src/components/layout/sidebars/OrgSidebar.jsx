@@ -1,4 +1,5 @@
 import React from "react";
+import { logout } from "@/utils/logout";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   LayoutGrid,
@@ -19,9 +20,8 @@ export default function OrgSidebar() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.clear();
-    toast.info("Logged out successfully!");
-    navigate("/");
+    logout("volunteer"); // or "organization"
+    window.location.href = "/organization/login"; // redirect to homepage/login
   };
 
   return (

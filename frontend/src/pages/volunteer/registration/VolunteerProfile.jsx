@@ -69,55 +69,57 @@ export default function ProfileStep({
     );
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+ const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    if (!validateForm()) {
-      toast.error("Please complete the required fields");
-      return;
-    }
+  if (!validateForm()) {
+    toast.error("Please complete the required fields");
+    return;
+  }
 
-    setIsSubmitting(true);
+  setIsSubmitting(true);
 
-    try {
-      // 1️⃣  Sign up first
-      await signupVolunteer(formData);
+  try {
+    // 1️Sign up first
+    await signupVolunteer(formData);
 
-      // 2️⃣  Automatically log in using same credentials
-      const loginRes = await loginVolunteer({
-        email: formData.email,
-        password: formData.password,
-      });
+    // 2️Automatically log in using same credentials
+    const loginRes = await loginVolunteer({
+      email: formData.email,
+      password: formData.password,
+    });
 
-      // 3️⃣  Save token and volunteer ID to localStorage
-      localStorage.setItem("token", loginRes.data.token);
-      localStorage.setItem("volunteerId", loginRes.data.volunteer._id);
+    // Save token and volunteer ID to localStorage
+    localStorage.setItem("token", loginRes.data.token);
+    localStorage.setItem("volunteerId", loginRes.data.user.id);
 
-      toast.success(
-        <div>
-          <span className="text-sm text-black">
-            Welcome, {loginRes.data.volunteer.firstName || "Volunteer"}! 
-          </span>
-        </div>
-      );
+    // fixed: reference correct field from backend
+    toast.success(
+      <div>
+        <span className="text-sm text-black">
+          Welcome, {loginRes.data.user.fullName || "Volunteer"}!
+        </span>
+      </div>
+    );
 
-      // 4️⃣  Redirect to volunteer homepage (or dashboard)
-      setTimeout(() => {
-        navigate("/volunteer/homepage");
-        if (onSubmit) onSubmit();
-      }, 1500);
-    } catch (error) {
-      toast.error(
-        <div>
-          <span className="text-sm text-black">
-            {error.response?.data?.message || "Signup failed. Try again."}
-          </span>
-        </div>
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+    // 4️Redirect to volunteer homepage
+    setTimeout(() => {
+      navigate("/volunteer/homepage");
+      if (onSubmit) onSubmit();
+    }, 1500);
+  } catch (error) {
+    console.error("Signup/Login error:", error);
+    toast.error(
+      <div>
+        <span className="text-sm text-black">
+          {error.response?.data?.message || "Signup failed. Try again."}
+        </span>
+      </div>
+    );
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   return (
     <div className="w-2xl max-w-3xl">

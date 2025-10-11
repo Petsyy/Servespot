@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import ProofReviewModal from "@/components/organization-dashboard/opportunities/ProofPreviewModal";
+import EditOpportunityModal from "@/components/organization-dashboard/opportunities/EditOpportunityModal";
 import {
   getOpportunityVolunteers,
   markOpportunityCompleted,
@@ -33,8 +34,19 @@ export default function OpportunityCard({
   duration,
   status: initialStatus,
   onDelete,
+  onUpdate,
 }) {
   const navigate = useNavigate();
+
+  const [cardData, setCardData] = useState({
+    title,
+    date,
+    location,
+    duration,
+    currentVolunteers,
+    volunteersNeeded,
+  });
+
   const [status, setStatus] = useState(initialStatus || "Open");
   const [showModal, setShowModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -42,6 +54,7 @@ export default function OpportunityCard({
   const [loading, setLoading] = useState(false);
   const [completing, setCompleting] = useState(false);
   const [showProofModal, setShowProofModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   //  Auto-update status when slots fill
   useEffect(() => {
@@ -73,7 +86,7 @@ export default function OpportunityCard({
     };
 
     fetchLatestData();
-    
+
     const interval = setInterval(fetchLatestData, 10000);
     // Cleanup
     return () => clearInterval(interval);
@@ -110,7 +123,7 @@ export default function OpportunityCard({
   const handleMarkCompleted = async () => {
     try {
       const confirmed = await confirmCompletion(
-        `Mark "${title}" as Completed?`
+        `Mark "${cardData.title}" as Completed?`
       );
       if (!confirmed) return; // cancelled
 
@@ -137,7 +150,7 @@ export default function OpportunityCard({
         {/* ---------- HEADER ---------- */}
         <div className="flex items-center justify-between">
           <h3 className="font-semibold text-lg text-gray-900 tracking-tight truncate">
-            {title}
+            {cardData.title}
           </h3>
 
           <span
@@ -156,25 +169,30 @@ export default function OpportunityCard({
           {date && (
             <div className="flex items-center gap-1">
               <Calendar size={16} className="text-blue-600" />
-              <span>{date}</span>
+              <span>
+                {cardData.date
+                  ? new Date(cardData.date).toLocaleDateString("en-US")
+                  : "—"}
+              </span>
             </div>
           )}
-          {duration && (
+          {cardData.duration && (
             <div className="flex items-center gap-1">
               <Clock size={16} className="text-blue-600" />
-              <span>{duration}</span>
+              <span>{cardData.duration}</span>
             </div>
           )}
-          {location && (
+          {cardData.location && (
             <div className="flex items-center gap-1">
               <MapPin size={16} className="text-blue-600" />
-              <span>{location}</span>
+              <span>{cardData.location}</span>
             </div>
           )}
           <div className="flex items-center gap-1">
             <UsersIcon size={16} className="text-blue-600" />
             <span className="font-semibold">
-              {currentVolunteers}/{volunteersNeeded} volunteers
+              {cardData.currentVolunteers}/{cardData.volunteersNeeded}{" "}
+              volunteers
             </span>
           </div>
         </div>
@@ -184,9 +202,7 @@ export default function OpportunityCard({
           {status === "Open" && (
             <>
               <button
-                onClick={() =>
-                  navigate(`/organization/opportunity/${_id}/edit`)
-                }
+                onClick={() => setShowEditModal(true)}
                 className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-blue-700 px-4 py-2 rounded-lg text-sm font-medium transition"
               >
                 <Pencil size={16} />
@@ -352,6 +368,27 @@ export default function OpportunityCard({
         <ProofReviewModal
           opportunityId={_id}
           onClose={() => setShowProofModal(false)}
+        />
+      )}
+      {showEditModal && (
+        <EditOpportunityModal
+          opportunityId={_id}
+          onClose={() => setShowEditModal(false)}
+          onUpdated={(updated) => {
+            // update this card instantly
+            setCardData((prev) => ({
+              ...prev,
+              title: updated.title ?? prev.title,
+              date: updated.date
+                ? new Date(updated.date).toISOString().split("T")[0]
+                : prev.date,
+              location: updated.location ?? prev.location,
+              duration: updated.duration ?? prev.duration,
+            }));
+
+            if (updated.status) setStatus(updated.status);
+            onUpdate?.(updated);
+          }}
         />
       )}
     </>

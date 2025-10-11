@@ -5,6 +5,7 @@ import multer from "multer";
 import { upload } from "../middlewares/upload.middleware.js";
 import {
   createOpportunity,
+  updateOpportunity,
   getOpportunities,
   getStats,
   getNotifications,
@@ -100,6 +101,7 @@ router.patch("/:oppId/confirm/:volunteerId", confirmVolunteerCompletion);
  * @route POST /api/opportunities
  */
 router.post("/", upload.single("file"), createOpportunity);
+router.put("/:id", upload.single("file"), updateOpportunity);
 
 /**
  * @desc Dashboard routes (organization-specific)

@@ -20,7 +20,7 @@ export default function LoginForm({ role = "Volunteer", icon: Icon }) {
     e.preventDefault();
 
     try {
-      // 🔹 clear old session (prevents wrong volunteer reuse)
+      // clear old session (prevents wrong volunteer reuse)
       localStorage.clear();
 
       const data =
@@ -37,7 +37,7 @@ export default function LoginForm({ role = "Volunteer", icon: Icon }) {
       if (role.toLowerCase() === "volunteer") {
         localStorage.setItem("volToken", data.token);
 
-        // ✅ backend returns "user", not "volunteer"
+        //  backend returns "user", not "volunteer"
         const userId = data.user?.id || data.user?._id;
         localStorage.setItem("volunteerId", userId);
         localStorage.setItem("volUser", JSON.stringify(data.user));
@@ -47,11 +47,11 @@ export default function LoginForm({ role = "Volunteer", icon: Icon }) {
 
         navigate("/volunteer/homepage");
       } else {
-        // ✅ unified token handling
+        // unified token handling
         localStorage.setItem("token", data.token);
         localStorage.setItem("activeRole", "organization");
 
-        // ✅ save organization info
+        // save organization info
         const orgId = data.organization?._id || data.orgId;
         localStorage.setItem("orgId", orgId);
          localStorage.setItem("orgToken", data.token);
@@ -61,7 +61,7 @@ export default function LoginForm({ role = "Volunteer", icon: Icon }) {
           JSON.stringify(data.organization || data.user)
         );
 
-        navigate("/organization/dashboard");
+        navigate("/organization/homepage");
       }
     } catch (err) {
       console.error("Login error:", err);

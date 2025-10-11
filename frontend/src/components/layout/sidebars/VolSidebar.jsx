@@ -1,6 +1,14 @@
 import React from "react";
+import { logout } from "@/utils/logout";
 import { NavLink, useNavigate } from "react-router-dom";
-import { Home, Compass, Award, User, LogOut } from "lucide-react";
+import {
+  Home,
+  Compass,
+  Award,
+  User,
+  LogOut,
+  ClipboardList,
+} from "lucide-react";
 import { toast } from "react-toastify";
 
 const linkCls = ({ isActive }) =>
@@ -11,11 +19,9 @@ export default function VolSidebar() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.clear();
-    toast.info("Logged out successfully!");
-    navigate("/");
+    logout("volunteer");
+    window.location.href = "/volunteer/login";
   };
-
   return (
     <aside className="w-64 bg-[#111827] text-gray-100 min-h-screen p-4 flex flex-col justify-between">
       <div>
@@ -34,12 +40,20 @@ export default function VolSidebar() {
           <NavLink to="/volunteer/dashboard" className={linkCls}>
             <Home size={18} /> <span>Dashboard</span>
           </NavLink>
+
           <NavLink to="/opportunities" className={linkCls}>
             <Compass size={18} /> <span>Browse Opportunities</span>
           </NavLink>
+
+          {/* 🆕 New Link for My Activities */}
+          <NavLink to="/volunteer/tasks" className={linkCls}>
+            <ClipboardList size={18} /> <span>My Activities</span>
+          </NavLink>
+
           <NavLink to="/volunteer/badges" className={linkCls}>
             <Award size={18} /> <span>Badges</span>
           </NavLink>
+
           <NavLink to="/volunteer/profile" className={linkCls}>
             <User size={18} /> <span>Profile</span>
           </NavLink>

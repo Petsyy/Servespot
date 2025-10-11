@@ -43,23 +43,26 @@ const handleSubmit = async (e) => {
   setIsSubmitting(true);
 
   try {
-    // Call backend signup API
+    // 1️Call backend signup API
     const res = await signupOrganization(formData);
+    const { token, orgId, user } = res.data;
 
-    // Store session data for auto-login
-    localStorage.setItem("token", res.data.token);
-    localStorage.setItem("orgId", res.data.orgId);
-    localStorage.setItem("user", JSON.stringify(res.data.user));
+    // 2Save session data for organization dashboard
+    localStorage.setItem("orgId", orgId);
+    localStorage.setItem("orgToken", token);
+    localStorage.setItem("token", token);
+    localStorage.setItem("activeRole", "organization");
+    localStorage.setItem("user", JSON.stringify(user));
 
+    // Notify and redirect
     toast.success(
       <div>
         <span className="text-sm text-black">
-          Organization profile completed successfully!
+          Welcome, {user.orgName || "Organization"}! Profile completed successfully.
         </span>
       </div>
     );
 
-    // Redirect directly to dashboard after signup
     setTimeout(() => {
       navigate("/organization/dashboard");
       if (onSubmit) onSubmit();
@@ -77,6 +80,7 @@ const handleSubmit = async (e) => {
     setIsSubmitting(false);
   }
 };
+
 
 
   return (
