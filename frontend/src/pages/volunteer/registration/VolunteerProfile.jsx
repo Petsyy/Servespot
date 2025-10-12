@@ -83,7 +83,7 @@ export default function ProfileStep({
     // 1️Sign up first
     await signupVolunteer(formData);
 
-    // 2️Automatically log in using same credentials
+    // Automatically log in using same credentials
     const loginRes = await loginVolunteer({
       email: formData.email,
       password: formData.password,

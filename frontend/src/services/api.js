@@ -114,9 +114,24 @@ export const getVolunteerBadges = () => API.get("/volunteer/me/badges?limit=6");
 export const getTopVolunteers = () => API.get("/volunteer/top?limit=3");
 
 // Volunteer sign-up for an opportunity
-// Volunteer sign-up for an opportunity
 export const signupForOpportunity = (id) =>
   API.post(`/opportunities/${id}/signup`);
+
+/* -------------------------------------------
+    ORGANIZATION PROFILE (NEW)
+-------------------------------------------- */
+// Get organization by ID
+export const getOrganizationById = (id) => API.get(`/organization/${id}`);
+// Update organization profile
+export const updateOrganization = (id, data) =>
+  API.put(`/organization/${id}`, data, {
+    headers: { "Content-Type": "application/json" },
+  });
+
+  // VOLUNTEER PROFILE
+export const getVolunteerProfile = () => API.get("/volunteer/me");
+export const updateVolunteerProfile = (data) =>
+  API.put("/volunteer/me", data, { headers: { "Content-Type": "application/json" } });
 
 /* -------------------------------------------
    EXPORT

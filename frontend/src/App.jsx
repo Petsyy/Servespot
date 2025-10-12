@@ -16,6 +16,7 @@ import VolunteerSignup from "@/pages/volunteer/auth/VolunteerSignup";
 import VolunteerLanding from "@/pages/volunteer/VolunteerLanding";
 import VolunteerDashboard from "@/pages/volunteer/VolunteerDashboard";
 import BrowseOpportunities from "@/pages/volunteer/browse-page/BrowseOpportunities";
+import VolunteerEditProfile from "@/pages/volunteer/VolunteerEditProfile";
 
 // Organization Pages
 import OrganizationLogin from "@/pages/organization/auth/OrganizationLogin";
@@ -23,10 +24,11 @@ import OrganizationSignup from "@/pages/organization/auth/OrganizationSignup";
 import OrganizationLanding from "@/pages/organization/OrganizationLanding";
 import OrganizationDashboard from "@/pages/organization/OrganizationDashboard";
 import MyOpportunity from "@/pages/organization/posted-page/PostedOpportunity";
+import OrganizationEditProfile from "@/pages/organization/OrganizationEditProfile";
 
 // Auth (Shared)
 import ForgotPassword from "@/pages/auth/ForgotPassword";
-import MyTasks from "./pages/volunteer/tasks/MyTasks";
+import MyTasks from "@/pages/volunteer/tasks/MyTasks";
 
 export default function App() {
   return (
@@ -48,6 +50,7 @@ export default function App() {
         <Route path="/opportunities" element={<BrowseOpportunities />} />
         <Route path="/volunteer/forgot-password" element={<ForgotPassword />} />
         <Route path="/volunteer/tasks" element={<MyTasks />} />
+        <Route path="/volunteer/profile" element={<VolunteerEditProfile />} />
          
         {/* Organization */}
         <Route path="/organization/login" element={<OrganizationLogin />} />
@@ -56,6 +59,7 @@ export default function App() {
         <Route path="/organization/dashboard" element={<OrganizationDashboard />} />
         <Route path="/organization/opportunities" element={<MyOpportunity />} />
         <Route path="/organization/forgot-password" element={<ForgotPassword />} />
+        <Route path="/organization/profile" element={<OrganizationEditProfile/>} />
       </Routes>
 
       <ToastContainer position="top-right" autoClose={2000} hideProgressBar />
