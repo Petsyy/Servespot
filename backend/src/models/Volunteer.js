@@ -16,6 +16,18 @@ const volunteerSchema = new mongoose.Schema(
     bio: { type: String },
     otpCode: String,
     otpExpire: Date,
+
+    // Badge & Points System
+    points: { type: Number, default: 0 }, // Total points earned by volunteer
+    completedTasks: { type: Number, default: 0 }, // Total completed opportunities
+    badges: [
+      {
+        name: { type: String },
+        description: { type: String },
+        icon: { type: String }, // could store emoji or image path
+        earnedAt: { type: Date, default: Date.now },
+      },
+    ],
   },
   { timestamps: true }
 );

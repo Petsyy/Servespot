@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { X } from "lucide-react";
 import { toast } from "react-toastify";
-import { createOpportunity } from "@/services/api";
+import { createOpportunity } from "@/services/organization.api";
 import PreviewCard from "@/components/organization-dashboard/post/PreviewCard";
 import SkillCheckbox from "@/components/organization-dashboard/post/SkillCheckbox";
 import ImageDropzone from "@/components/organization-dashboard/post/ImageDropzone";

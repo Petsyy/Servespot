@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getOpportunities, deleteOpportunity } from "@/services/api";
+import { getOpportunities, deleteOpportunity } from "@/services/organization.api";
 import OpportunityCard from "@/components/organization-dashboard/opportunities/OpportunityCard";
 import OrgSidebar from "@/components/layout/sidebars/OrgSidebar";
 import { toast } from "react-toastify";

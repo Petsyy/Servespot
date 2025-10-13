@@ -1,6 +1,11 @@
 import express from "express";
 import { verifyToken, protect } from "../middlewares/auth.middleware.js";
-import { getMyTasks, getMyProfile, updateMyProfile } from "../controllers/volunteer.controller.js";
+import {
+  getMyTasks,
+  getMyProfile,
+  updateMyProfile,
+  getMyBadges,
+} from "../controllers/volunteer.controller.js";
 
 const router = express.Router();
 
@@ -12,6 +17,9 @@ router.put("/me", verifyToken, updateMyProfile);
 
 // Get volunteer’s tasks
 router.get("/me/tasks", verifyToken, getMyTasks);
+
+//  NEW: Get volunteer badges & points
+router.get("/me/badges", verifyToken, getMyBadges);
 
 // Simple dashboard check route
 router.get("/dashboard", protect, (req, res) => {

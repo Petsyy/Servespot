@@ -1,8 +1,6 @@
 import axios from "axios";
 
-/* -------------------------------------------
-   Axios Instance Configuration
--------------------------------------------- */
+// Axio Configuration
 const API = axios.create({
   baseURL: "http://localhost:5000/api",
 });
@@ -14,9 +12,8 @@ API.interceptors.request.use((config) => {
   return config;
 });
 
-/* -------------------------------------------
-   AUTHENTICATION
--------------------------------------------- */
+// AUTHENTICATION
+
 // Volunteer Auth
 export const signupVolunteer = (formData) =>
   API.post("/auth/volunteer/signup", formData);
@@ -29,111 +26,20 @@ export const signupOrganization = (formData) =>
 export const loginOrganization = (formData) =>
   API.post("/auth/organization/login", formData);
 
-/* -------------------------------------------
-   PASSWORD RECOVERY (Forgot Password)
--------------------------------------------- */
+// Forgot Password
 export const sendOtp = (data) => API.post("/auth/send-otp", data);
 export const verifyOtp = (data) => API.post("/auth/verify-otp", data);
 export const resetPassword = (data) => API.post("/auth/reset-password", data);
 
-/* -------------------------------------------
-   OPPORTUNITIES
--------------------------------------------- */
-// Create new opportunity (Organization only)
-export const createOpportunity = (data) => {
-  const formData =
-    data instanceof FormData
-      ? data
-      : (() => {
-          const fd = new FormData();
-          fd.append("title", data.title);
-          fd.append("description", data.description);
-          fd.append("date", data.date);
-          fd.append("duration", data.duration);
-          fd.append("location", data.location);
-          fd.append("volunteersNeeded", data.volunteersNeeded);
-          fd.append("organization", localStorage.getItem("orgId") || "");
-          (data.skills || []).forEach((skill) => fd.append("skills[]", skill));
-          if (data.file) fd.append("file", data.file);
-          return fd;
-        })();
-
-  return API.post("/opportunities", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
-};
-
-// Get all public opportunities (for volunteers to browse)
-export const getAllOpportunities = () => API.get("/opportunities/all");
-
-// Get opportunities posted by a specific organization
-export const getOpportunities = (orgId) =>
-  API.get(`/opportunities/organization/${orgId}`);
-
-// Delete a specific opportunity
-export const deleteOpportunity = (id) => API.delete(`/opportunities/${id}`);
-
-/* -------------------------------------------
-   ORGANIZATION DASHBOARD DATA
--------------------------------------------- */
-export const getOrgStats = (orgId) =>
-  API.get(`/opportunities/organization/${orgId}/stats`);
-export const getOrgNotifications = (orgId) =>
-  API.get(`/opportunities/organization/${orgId}/notifications`);
-export const getOrgActivity = (orgId) =>
-  API.get(`/opportunities/organization/${orgId}/activity`);
-export const getOpportunityById = (id) => API.get(`/opportunities/view/${id}`);
-export const getOpportunityVolunteers = (id) =>
-  API.get(`/opportunities/${id}/volunteers`);
+// Organization Confirmation
 export const confirmVolunteerCompletion = async (oppId, volunteerId) => {
   return axios.patch(
     `http://localhost:5000/api/opportunities/${oppId}/confirm/${volunteerId}`
   );
 };
-// Mark entire opportunity completed (organization)
-export const markOpportunityCompleted = async (oppId) => {
-  return axios.patch(
-    `http://localhost:5000/api/opportunities/${oppId}/complete`
-  );
-};
 
-export const updateOpportunity = (id, formData) =>
-  API.put(`/opportunities/${id}`, formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+// Shared by organization and volunteer
+export const getOpportunityById = (id) => API.get(`/opportunities/view/${id}`);
 
-/* -------------------------------------------
-   VOLUNTEER DASHBOARD DATA
--------------------------------------------- */
-export const getVolunteerOverview = () => API.get("/volunteer/me/overview");
-export const getVolunteerTasks = () => API.get("/volunteer/me/tasks");
-export const getVolunteerNotifications = () =>
-  API.get("/volunteer/me/notifications");
-export const getVolunteerProgress = () => API.get("/volunteer/me/progress");
-export const getVolunteerBadges = () => API.get("/volunteer/me/badges?limit=6");
-export const getTopVolunteers = () => API.get("/volunteer/top?limit=3");
 
-// Volunteer sign-up for an opportunity
-export const signupForOpportunity = (id) =>
-  API.post(`/opportunities/${id}/signup`);
-
-/* -------------------------------------------
-    ORGANIZATION PROFILE (NEW)
--------------------------------------------- */
-// Get organization by ID
-export const getOrganizationById = (id) => API.get(`/organization/${id}`);
-// Update organization profile
-export const updateOrganization = (id, data) =>
-  API.put(`/organization/${id}`, data, {
-    headers: { "Content-Type": "application/json" },
-  });
-
-  // VOLUNTEER PROFILE
-export const getVolunteerProfile = () => API.get("/volunteer/me");
-export const updateVolunteerProfile = (data) =>
-  API.put("/volunteer/me", data, { headers: { "Content-Type": "application/json" } });
-
-/* -------------------------------------------
-   EXPORT
--------------------------------------------- */
 export default API;

@@ -61,6 +61,8 @@ export default function OrgSidebar() {
         </nav>
       </div>
 
+      {/* Log}
+
       {/* Logout Button */}
       <button
         onClick={handleLogout}

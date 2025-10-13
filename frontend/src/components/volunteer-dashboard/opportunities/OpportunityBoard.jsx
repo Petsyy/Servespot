@@ -10,7 +10,8 @@ import {
   X,
   UploadCloud,
 } from "lucide-react";
-import { signupForOpportunity, getOpportunityById } from "@/services/api";
+import { getOpportunityById } from "@/services/api";
+import { signupForOpportunity } from "@/services/volunteer.api"
 import { toast } from "react-toastify";
 import ProofUploadModal from "@/components/volunteer-dashboard/opportunities/ProofUploadModal";
 

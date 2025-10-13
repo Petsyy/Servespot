@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Search, MapPin, Filter, Calendar, RotateCcw } from "lucide-react";
 import VolSidebar from "@/components/layout/sidebars/VolSidebar";
 import OpportunityBoard from "@/components/volunteer-dashboard/opportunities/OpportunityBoard";
-import { getAllOpportunities } from "@/services/api";
+import { getAllOpportunities } from "@/services/volunteer.api";
 
 export default function BrowseOpportunities() {
   const [opportunities, setOpportunities] = useState([]);

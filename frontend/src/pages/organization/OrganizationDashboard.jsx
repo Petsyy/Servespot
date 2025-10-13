@@ -9,7 +9,7 @@ import {
   getOrgNotifications,
   getOrgActivity,
   deleteOpportunity,
-} from "@/services/api";
+} from "@/services/organization.api";
 import OrgSidebar from "@/components/layout/sidebars/OrgSidebar";
 import StatCard from "@/components/organization-dashboard/metrics/StatCard";
 import OpportunityCard from "@/components/organization-dashboard/opportunities/OpportunityCard";

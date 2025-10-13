@@ -21,7 +21,7 @@ import EditOpportunityModal from "@/components/organization-dashboard/opportunit
 import {
   getOpportunityVolunteers,
   markOpportunityCompleted,
-} from "@/services/api";
+} from "@/services/organization.api";
 import { toast } from "react-toastify";
 
 export default function OpportunityCard({
@@ -62,17 +62,14 @@ export default function OpportunityCard({
       try {
         const res = await getOpportunityVolunteers(_id);
 
-        // Update volunteers list
         if (Array.isArray(res.data.volunteers)) {
           setVolList(res.data.volunteers);
         }
 
-        // Auto-update status if backend changed it
         if (res.data.status && res.data.status !== status) {
           setStatus(res.data.status);
         }
 
-        // Auto-set "In Progress" when slots are filled
         if (
           (status === "Open" || res.data.status === "Open") &&
           res.data.currentVolunteers >= res.data.volunteersNeeded &&
@@ -88,11 +85,9 @@ export default function OpportunityCard({
     fetchLatestData();
 
     const interval = setInterval(fetchLatestData, 10000);
-    // Cleanup
     return () => clearInterval(interval);
   }, [_id, status]);
 
-  // Badge color mapping
   const badgeColor =
     status === "Open"
       ? "bg-green-100 text-green-700"
@@ -104,7 +99,6 @@ export default function OpportunityCard({
             ? "bg-gray-200 text-gray-700"
             : "bg-gray-100 text-gray-600";
 
-  // View volunteers
   const handleViewVolunteers = async () => {
     try {
       setShowModal(true);
@@ -119,25 +113,30 @@ export default function OpportunityCard({
     }
   };
 
-  // Mark as Completed (with SweetAlert2 confirmation)
   const handleMarkCompleted = async () => {
     try {
       const confirmed = await confirmCompletion(
-        `Mark "${cardData.title}" as Completed?`
+        `Are you sure you want to mark "${cardData.title}" as Completed?`
       );
-      if (!confirmed) return; // cancelled
+      if (!confirmed) return;
 
       setCompleting(true);
       const res = await markOpportunityCompleted(_id);
-
       setStatus("Completed");
+
       await successAlert(
         "Opportunity Completed!",
-        res.data.message || "This opportunity is now marked as completed."
+        res.data?.message ||
+          "This opportunity is now marked as completed, and approved volunteers have been rewarded with points and badges."
       );
+
+      // 🔄 Optional: refresh parent list if callback exists
+      if (onUpdate) onUpdate({ _id, status: "Completed" });
     } catch (err) {
       console.error("Mark completed error:", err);
-      const msg = err.response?.data?.message || "Failed to mark as completed.";
+      const msg =
+        err.response?.data?.message ||
+        "Something went wrong while marking this opportunity as completed.";
       await errorAlert("Error", msg);
     } finally {
       setCompleting(false);
@@ -147,7 +146,6 @@ export default function OpportunityCard({
   return (
     <>
       <div className="w-full bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition flex flex-col justify-between font-sans">
-        {/* ---------- HEADER ---------- */}
         <div className="flex items-center justify-between">
           <h3 className="font-semibold text-lg text-gray-900 tracking-tight truncate">
             {cardData.title}
@@ -164,7 +162,6 @@ export default function OpportunityCard({
           </span>
         </div>
 
-        {/* ---------- DETAILS ---------- */}
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-700 mt-3 font-bold">
           {date && (
             <div className="flex items-center gap-1">
@@ -197,7 +194,6 @@ export default function OpportunityCard({
           </div>
         </div>
 
-        {/* ---------- ACTION BUTTONS (below details) ---------- */}
         <div className="flex gap-2 mt-4 flex-wrap">
           {status === "Open" && (
             <>
@@ -277,11 +273,9 @@ export default function OpportunityCard({
         </div>
       </div>
 
-      {/* ---------- VOLUNTEERS MODAL ---------- */}
       {showModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl shadow-xl w-[550px] max-h-[85vh] overflow-y-auto relative p-6">
-            {/* Close */}
             <button
               onClick={() => {
                 setShowModal(false);
@@ -375,7 +369,6 @@ export default function OpportunityCard({
           opportunityId={_id}
           onClose={() => setShowEditModal(false)}
           onUpdated={(updated) => {
-            // update this card instantly
             setCardData((prev) => ({
               ...prev,
               title: updated.title ?? prev.title,

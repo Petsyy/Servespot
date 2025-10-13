@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import { getVolunteerProfile, updateVolunteerProfile } from "@/services/api.js";
+import { getVolunteerProfile, updateVolunteerProfile } from "@/services/volunteer.api";
 
 export default function VolunteerProfile() {
   const navigate = useNavigate();

@@ -1,4 +1,5 @@
 import Opportunity from "../models/Opportunity.js";
+import Volunteer from "../models/Volunteer.js"; // ✅ REQUIRED
 
 // Fetch all opportunities for an organization
 export const getOpportunities = async (req, res) => {
@@ -70,14 +71,8 @@ export const createOpportunity = async (req, res) => {
 export const updateOpportunity = async (req, res) => {
   try {
     const { id } = req.params;
-    const {
-      title,
-      description,
-      date,
-      duration,
-      location,
-      volunteersNeeded,
-    } = req.body;
+    const { title, description, date, duration, location, volunteersNeeded } =
+      req.body;
 
     const opportunity = await Opportunity.findById(id);
     if (!opportunity) {
@@ -195,37 +190,101 @@ export const getAllOpportunities = async (req, res) => {
 export const markOpportunityCompleted = async (req, res) => {
   try {
     const { id } = req.params;
-    const opportunity = await Opportunity.findById(id);
+    const opportunity = await Opportunity.findById(id)
+      .populate("completionProofs.volunteer")
+      .populate("volunteers");
+
     if (!opportunity) {
       return res.status(404).json({ message: "Opportunity not found" });
     }
 
-    opportunity.status = "Completed";
+    // Ensure there are approved proofs
+    const approvedProofs = opportunity.completionProofs.filter(
+      (p) => p.status === "Approved"
+    );
 
-    // Optionally, ensure all volunteers are marked completed
-    opportunity.completedVolunteers = [
-      ...new Set([
-        ...(opportunity.completedVolunteers || []),
-        ...(opportunity.volunteers || []),
-      ]),
-    ];
+    if (approvedProofs.length === 0) {
+      return res.status(400).json({
+        message: "No approved proofs. Cannot complete opportunity.",
+      });
+    }
+
+    // Mark opportunity as completed
+    opportunity.status = "Completed";
+    opportunity.completedVolunteers = approvedProofs.map(
+      (p) => p.volunteer._id || p.volunteer.toString()
+    );
+
+    let allNewBadges = [];
+
+    // Award points & badges to each approved volunteer
+    for (const proof of approvedProofs) {
+      const volunteerId = proof.volunteer._id || proof.volunteer;
+      const volunteer = await Volunteer.findById(volunteerId);
+      if (!volunteer) continue;
+
+      // Add points and task count
+      volunteer.points = (volunteer.points || 0) + 20;
+      volunteer.completedTasks = (volunteer.completedTasks || 0) + 1;
+
+      const taskCount = volunteer.completedTasks;
+      const existingBadges = volunteer.badges?.map((b) => b.name) || [];
+      const newBadges = [];
+
+      // 🎖 Simplified Milestones
+      if (taskCount === 1 && !existingBadges.includes("First Step")) {
+        newBadges.push({
+          name: "First Step",
+          description: "Completed your first volunteering task!",
+          icon: "✨",
+        });
+      } else if (taskCount === 2 && !existingBadges.includes("Active Helper")) {
+        newBadges.push({
+          name: "Active Helper",
+          description: "Completed 3 volunteering tasks!",
+          icon: "💪",
+        });
+      } else if (taskCount === 3 && !existingBadges.includes("Helping Hand")) {
+        newBadges.push({
+          name: "Helping Hand",
+          description: "Completed 5 volunteering tasks!",
+          icon: "🖐️",
+        });
+      } else if (
+        taskCount === 4 &&
+        !existingBadges.includes("Community Hero")
+      ) {
+        newBadges.push({
+          name: "Community Hero",
+          description: "Completed 10 volunteering tasks!",
+          icon: "🏅",
+        });
+      }
+
+      if (newBadges.length > 0) {
+        volunteer.badges.push(...newBadges);
+        allNewBadges.push(...newBadges);
+      }
+
+      await volunteer.save();
+    }
 
     await opportunity.save();
 
     res.status(200).json({
-      message: "Opportunity marked as completed",
-      status: opportunity.status,
-      completedCount: opportunity.completedVolunteers.length,
+      message: `Opportunity marked as completed. ${approvedProofs.length} volunteer(s) rewarded.`,
+      completedCount: approvedProofs.length,
+      status: "Completed",
+      newBadges: allNewBadges,
     });
   } catch (err) {
-    console.error("Error marking opportunity completed:", err);
+    console.error("❌ Error marking opportunity completed:", err);
     res.status(500).json({
       message: "Failed to mark opportunity completed",
       error: err.message,
     });
   }
 };
-
 
 export const getStats = async (req, res) => {
   try {
@@ -263,7 +322,7 @@ export const getOpportunityVolunteers = async (req, res) => {
   try {
     const { id } = req.params;
     const opportunity = await Opportunity.findById(id)
-    .populate(
+      .populate(
         "volunteers",
         "firstName lastName email city skills interests availability"
       )
@@ -364,7 +423,6 @@ export const confirmVolunteerCompletion = async (req, res) => {
   }
 };
 
-
 export const submitCompletionProof = async (req, res) => {
   try {
     const { id } = req.params;
@@ -387,13 +445,13 @@ export const submitCompletionProof = async (req, res) => {
     const existingProof = opportunity.completionProofs.find(
       (p) => p.volunteer.toString() === volunteerId
     );
-    
+
     if (existingProof && existingProof.status !== "Rejected") {
       return res
         .status(400)
         .json({ message: "You already submitted a proof for this task." });
     }
-    
+
     // If there's a rejected proof, remove it before adding the new one
     if (existingProof && existingProof.status === "Rejected") {
       opportunity.completionProofs = opportunity.completionProofs.filter(
@@ -412,13 +470,14 @@ export const submitCompletionProof = async (req, res) => {
     await opportunity.save();
 
     res.status(201).json({
-      message:
-        "Proof submitted successfully. Awaiting organization review.",
+      message: "Proof submitted successfully. Awaiting organization review.",
       proof: { volunteerId, fileUrl, message },
     });
   } catch (err) {
     console.error("❌ Error submitting proof:", err);
-    res.status(500).json({ message: "Failed to submit proof", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Failed to submit proof", error: err.message });
   }
 };
 
@@ -437,7 +496,9 @@ export const reviewCompletionProof = async (req, res) => {
     );
 
     if (!proof)
-      return res.status(404).json({ message: "Proof not found for this volunteer" });
+      return res
+        .status(404)
+        .json({ message: "Proof not found for this volunteer" });
 
     if (action === "approve") {
       proof.status = "Approved";
@@ -455,18 +516,15 @@ export const reviewCompletionProof = async (req, res) => {
       );
     }
 
-    // Check if all volunteers have approved proofs
+    // Check total & approved proofs
     const total = opportunity.volunteers.length;
     const approvedCount = opportunity.completionProofs.filter(
       (p) => p.status === "Approved"
     ).length;
 
-    // Update status
-    if (approvedCount >= total && total > 0) {
-      opportunity.status = "Completed";
-    } else {
-      opportunity.status = "In Progress";
-    }
+    // Do not auto-mark opportunity as completed
+    // Always remain "In Progress" until org clicks Complete button
+    opportunity.status = "In Progress";
 
     await opportunity.save();
 
@@ -481,7 +539,9 @@ export const reviewCompletionProof = async (req, res) => {
     });
   } catch (err) {
     console.error("❌ Error reviewing proof:", err);
-    res.status(500).json({ message: "Failed to review proof", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Failed to review proof", error: err.message });
   }
 };
 
@@ -489,8 +549,7 @@ export const forceCompleteOpportunity = async (req, res) => {
   try {
     const { id } = req.params;
     const opp = await Opportunity.findById(id);
-    if (!opp)
-      return res.status(404).json({ message: "Opportunity not found" });
+    if (!opp) return res.status(404).json({ message: "Opportunity not found" });
 
     opp.status = "Completed";
     opp.forcedComplete = true;
@@ -502,7 +561,6 @@ export const forceCompleteOpportunity = async (req, res) => {
     res.status(500).json({ message: "Failed to force complete opportunity" });
   }
 };
-
 
 // Delete specific opportunity
 export const deleteOpportunity = async (req, res) => {
@@ -549,4 +607,3 @@ export const getActivity = (req, res) => {
     },
   ]);
 };
-

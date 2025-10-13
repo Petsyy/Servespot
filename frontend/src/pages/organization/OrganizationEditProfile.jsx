@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import { getOrganizationById, updateOrganization } from "@/services/api";
+import { getOrganizationById, updateOrganization } from "@/services/organization.api";
 
 const ORG_TYPES = [
   "Non-profit",

@@ -1,6 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Eye, UploadCloud, Calendar, Clock, MapPin } from "lucide-react";
+import { toast } from "react-toastify";
+import { showNewBadgeAlert } from "@/utils/badgeAlerts";
+import {
+  Eye,
+  UploadCloud,
+  Calendar,
+  Clock,
+  MapPin,
+  Medal,
+  Award,
+} from "lucide-react";
 import VolSidebar from "@/components/layout/sidebars/VolSidebar";
 import MetricCard from "@/components/volunteer-dashboard/metrics/MetricCard";
 import Notifications from "@/components/volunteer-dashboard/notifications/Notifications";
@@ -8,6 +18,7 @@ import ProgressCard from "@/components/volunteer-dashboard/metrics/ProgressCard"
 import RecentBadges from "@/components/volunteer-dashboard/community/RecentBadges";
 import TopVolunteers from "@/components/volunteer-dashboard/community/TopVolunteers";
 import ProofUploadModal from "@/components/volunteer-dashboard/opportunities/ProofUploadModal";
+import getOpportunityById from "@/services/api";
 import {
   getVolunteerOverview,
   getVolunteerTasks,
@@ -15,8 +26,7 @@ import {
   getVolunteerProgress,
   getVolunteerBadges,
   getTopVolunteers,
-  getOpportunityById,
-} from "@/services/api";
+} from "@/services/volunteer.api";
 
 export default function VolunteerDashboard() {
   const navigate = useNavigate();
@@ -54,6 +64,7 @@ export default function VolunteerDashboard() {
 
   useEffect(() => {
     let mounted = true;
+
     (async () => {
       try {
         // Fetch all volunteer dashboard data
@@ -73,8 +84,33 @@ export default function VolunteerDashboard() {
         if (notifRes.status === "fulfilled")
           setNotifications(notifRes.value.data || []);
         if (progRes.status === "fulfilled") setProgress(progRes.value.data);
-        if (badgesRes.status === "fulfilled")
-          setBadges(badgesRes.value.data || []);
+
+        // 🏅 Badge Handling + New Badge Popup
+        if (badgesRes.status === "fulfilled") {
+          const data = badgesRes.value.data;
+          let normalized = [];
+
+          // Normalize backend badge format
+          if (Array.isArray(data?.badges)) normalized = data.badges;
+          else if (Array.isArray(data)) normalized = data;
+          else normalized = [];
+
+          // Compare with local badges to show new ones
+          const storedBadges = JSON.parse(
+            localStorage.getItem("earnedBadges") || "[]"
+          );
+          const newBadges = normalized.filter(
+            (b) => !storedBadges.some((old) => old.name === b.name)
+          );
+
+          if (newBadges.length > 0) {
+            newBadges.forEach((badge) => showNewBadgeAlert(badge));
+            localStorage.setItem("earnedBadges", JSON.stringify(normalized));
+          }
+
+          setBadges(normalized);
+        }
+
         if (topRes.status === "fulfilled") setTop(topRes.value.data || []);
 
         // Filter tasks by backend status
@@ -92,12 +128,34 @@ export default function VolunteerDashboard() {
         if (mounted) setLoading(false);
       }
     })();
+
+    // 🔁 Auto-check for new badges every 10 seconds
+    const badgeInterval = setInterval(async () => {
+      try {
+        const res = await getVolunteerBadges();
+        const latest = res.data?.badges || res.data || [];
+        const stored = JSON.parse(localStorage.getItem("earnedBadges") || "[]");
+
+        const newOnes = latest.filter(
+          (b) => !stored.some((old) => old.name === b.name)
+        );
+
+        if (newOnes.length > 0) {
+          newOnes.forEach((b) => showNewBadgeAlert(b));
+          localStorage.setItem("earnedBadges", JSON.stringify(latest));
+        }
+      } catch (err) {
+        console.warn("Badge auto-check failed:", err);
+      }
+    }, 10000);
+
     return () => {
       mounted = false;
+      clearInterval(badgeInterval);
     };
   }, [navigate]);
 
-  // ✅ Handle Submit Proof
+  // Handle Submit Proof
   const handleSubmitProof = async (taskId) => {
     setSelectedTaskId(taskId);
     setShowProofModal(true);
@@ -265,7 +323,6 @@ export default function VolunteerDashboard() {
                   ))}
                 </>
               )}
-
               {/* ✅ Completed Tasks */}
               {activeTab === "completed" && (
                 <>
@@ -331,35 +388,79 @@ export default function VolunteerDashboard() {
                 </>
               )}
 
-              {/* Badges */}
+              {/* 🏅 Badges & Points Tab */}
               {activeTab === "badges" && (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    Your Badges & Points
-                  </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {badges.map((b) => (
-                      <div
-                        key={b._id}
-                        className="flex flex-col items-center justify-center border border-gray-200 rounded-lg p-3"
-                      >
-                        <img
-                          src={b.iconUrl}
-                          alt={b.name}
-                          className="w-12 h-12 object-contain mb-2"
-                        />
-                        <p className="text-sm font-medium text-gray-700">
-                          {b.name}
+                <div className="space-y-8">
+                  {/* Header */}
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                      <Medal size={22} className="text-blue-600" />
+                      Your Achievements
+                    </h3>
+                  </div>
+
+                  {/* Summary Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-gradient-to-r from-indigo-500 to-blue-500 text-white rounded-2xl p-5 shadow-md text-center">
+                      <p className="text-sm opacity-90">Total Points</p>
+                      <p className="text-4xl font-extrabold mt-1">
+                        {overview?.points || 0}
+                      </p>
+                    </div>
+
+                    <div className="bg-gradient-to-r from-orange-400 to-amber-500 text-white rounded-2xl p-5 shadow-md text-center">
+                      <p className="text-sm opacity-90">Completed Tasks</p>
+                      <p className="text-4xl font-extrabold mt-1">
+                        {overview?.completedTasks || 0}
+                      </p>
+                    </div>
+
+                    <div className="bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-2xl p-5 shadow-md text-center">
+                      <p className="text-sm opacity-90">Badges Earned</p>
+                      <p className="text-4xl font-extrabold mt-1">
+                        {overview?.badgesCount || badges?.length || 0}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Earned Badges Section */}
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                      <Award size={22} className="text-amber-500" />
+                      Earned Badges
+                    </h4>
+
+                    {badges.length === 0 ? (
+                      <div className="bg-gray-50 border border-dashed border-gray-300 rounded-xl p-8 text-center">
+                        <p className="text-gray-600 italic">
+                          You haven’t earned any badges yet.
+                        </p>
+                        <p className="text-sm text-gray-500 mt-1">
+                          Complete more volunteering opportunities to earn your
+                          first one!
                         </p>
                       </div>
-                    ))}
+                    ) : (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+                        {badges.map((b) => (
+                          <div
+                            key={b._id || b.name}
+                            className="flex flex-col items-center justify-center p-5 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md transition"
+                          >
+                            <div className="text-4xl mb-2">
+                              {b.icon || "🏅"}
+                            </div>
+                            <p className="font-semibold text-gray-900 text-center">
+                              {b.name}
+                            </p>
+                            <p className="text-xs text-gray-600 text-center mt-1">
+                              {b.description}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  <p className="text-sm text-gray-600 mt-2">
-                    Total Points:{" "}
-                    <span className="font-semibold text-blue-600">
-                      {overview?.points || 0}
-                    </span>
-                  </p>
                 </div>
               )}
             </div>

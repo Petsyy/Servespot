@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import VolSidebar from "@/components/layout/sidebars/VolSidebar";
-import { getVolunteerTasks } from "@/services/api";
+import { getVolunteerTasks } from "@/services/volunteer.api";
 
 export default function VolunteerTasks() {
   const [tasks, setTasks] = useState([]);
