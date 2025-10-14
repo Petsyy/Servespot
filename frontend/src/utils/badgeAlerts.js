@@ -35,7 +35,7 @@ export const showNewBadgeAlert = (badge) => {
     });
   }, 180);
 
-  // 🏅 SweetAlert2 popup
+  // SweetAlert2 popup
   const popupHTML = `
     <div style="display:flex;flex-direction:column;align-items:center;text-align:center;">
       <div style="font-size:34px;font-weight:800;color:#0f172a;letter-spacing:-0.5px;margin-bottom:18px;text-shadow:0 2px 6px rgba(0,0,0,0.08);">
@@ -91,10 +91,10 @@ export const showNewBadgeAlert = (badge) => {
     allowOutsideClick: true,
     allowEscapeKey: true,
     focusConfirm: true,
-    timer: 0, // ⛔ no auto-close this time, manual only
+    timer: 0, // no auto-close this time, manual only
     returnFocus: false,
 
-    // ✅ preConfirm ensures the modal closes on confirm click
+    // preConfirm ensures the modal closes on confirm click
     preConfirm: () => {
       Swal.close();
     },
