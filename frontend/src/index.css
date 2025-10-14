@@ -9,3 +9,23 @@
 .custom-date-input::-webkit-inner-spin-button {
   display: none;
 } */
+
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeInUp {
+  animation: fadeInUp 0.4s ease-out both;
+}
+
+/* Optional stagger delay for badge cards */
+.animate-fadeInDelay {
+  animation: fadeInUp 0.6s ease-out both;
+}

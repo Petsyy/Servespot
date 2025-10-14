@@ -1,5 +1,5 @@
 import Opportunity from "../models/Opportunity.js";
-import Volunteer from "../models/Volunteer.js"; // ✅ REQUIRED
+import { awardVolunteerRewards } from "../utils/volunteer.badges.js";
 
 // Fetch all opportunities for an organization
 export const getOpportunities = async (req, res) => {
@@ -198,75 +198,32 @@ export const markOpportunityCompleted = async (req, res) => {
       return res.status(404).json({ message: "Opportunity not found" });
     }
 
-    // Ensure there are approved proofs
+    // Must have approved proofs
     const approvedProofs = opportunity.completionProofs.filter(
       (p) => p.status === "Approved"
     );
-
     if (approvedProofs.length === 0) {
       return res.status(400).json({
         message: "No approved proofs. Cannot complete opportunity.",
       });
     }
 
-    // Mark opportunity as completed
+    // Mark opportunity completed
     opportunity.status = "Completed";
     opportunity.completedVolunteers = approvedProofs.map(
       (p) => p.volunteer._id || p.volunteer.toString()
     );
 
-    let allNewBadges = [];
+    const allNewBadges = [];
 
-    // Award points & badges to each approved volunteer
+    // Award each volunteer (points + badge milestones)
     for (const proof of approvedProofs) {
       const volunteerId = proof.volunteer._id || proof.volunteer;
-      const volunteer = await Volunteer.findById(volunteerId);
-      if (!volunteer) continue;
-
-      // Add points and task count
-      volunteer.points = (volunteer.points || 0) + 20;
-      volunteer.completedTasks = (volunteer.completedTasks || 0) + 1;
-
-      const taskCount = volunteer.completedTasks;
-      const existingBadges = volunteer.badges?.map((b) => b.name) || [];
-      const newBadges = [];
-
-      // 🎖 Simplified Milestones
-      if (taskCount === 1 && !existingBadges.includes("First Step")) {
-        newBadges.push({
-          name: "First Step",
-          description: "Completed your first volunteering task!",
-          icon: "✨",
-        });
-      } else if (taskCount === 2 && !existingBadges.includes("Active Helper")) {
-        newBadges.push({
-          name: "Active Helper",
-          description: "Completed 3 volunteering tasks!",
-          icon: "💪",
-        });
-      } else if (taskCount === 3 && !existingBadges.includes("Helping Hand")) {
-        newBadges.push({
-          name: "Helping Hand",
-          description: "Completed 5 volunteering tasks!",
-          icon: "🖐️",
-        });
-      } else if (
-        taskCount === 4 &&
-        !existingBadges.includes("Community Hero")
-      ) {
-        newBadges.push({
-          name: "Community Hero",
-          description: "Completed 10 volunteering tasks!",
-          icon: "🏅",
-        });
-      }
+      const newBadges = await awardVolunteerRewards(volunteerId);
 
       if (newBadges.length > 0) {
-        volunteer.badges.push(...newBadges);
-        allNewBadges.push(...newBadges);
+        allNewBadges.push({ volunteerId, badges: newBadges });
       }
-
-      await volunteer.save();
     }
 
     await opportunity.save();

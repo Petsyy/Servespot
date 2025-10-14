@@ -8,64 +8,127 @@ import {
   User,
   LogOut,
   ClipboardList,
+  X,
 } from "lucide-react";
-import { toast } from "react-toastify";
 
 const linkCls = ({ isActive }) =>
-  `flex items-center gap-3 px-3 py-2 rounded-md text-sm transition
-   ${isActive ? "bg-gray-800 text-white" : "text-gray-200 hover:bg-gray-800/70"}`;
+  `flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200
+   ${
+     isActive
+       ? "bg-blue-600 text-white shadow-sm"
+       : "text-gray-200 hover:bg-gray-800/70 hover:text-white"
+   }`;
 
-export default function VolSidebar() {
+export default function VolSidebar({ isOpen, onClose }) {
   const navigate = useNavigate();
 
   const handleLogout = () => {
     logout("volunteer");
-    window.location.href = "/volunteer/login";
+    navigate("/volunteer/login");
   };
+
   return (
-    <aside className="w-64 bg-[#111827] text-gray-100 min-h-screen p-4 flex flex-col justify-between">
-      <div>
-        <div className="flex items-center gap-3 px-2 py-3">
-          <div className="h-9 w-9 flex items-center justify-center rounded-md bg-blue-600 font-bold">
-            SS
+    <>
+      {/* Mobile Overlay */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/30 z-40 md:hidden"
+          onClick={onClose}
+        />
+      )}
+      
+      {/* Sidebar - Alternative height approach */}
+      <aside className={`
+        fixed md:relative z-50
+        w-64 bg-[#111827] text-gray-100 flex flex-col
+        transition-transform duration-300 ease-in-out
+        ${isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
+        top-0 bottom-0 left-0 md:top-auto md:bottom-auto /* Full height on mobile */
+      `}>
+        <div className="p-4 flex flex-col h-full">
+          {/* Top Logo Section */}
+          <div className="flex-shrink-0">
+            <div className="flex items-center justify-between px-2 py-3">
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-9 flex items-center justify-center rounded-md bg-blue-600 font-bold">
+                  SS
+                </div>
+                <div>
+                  <p className="font-semibold text-white">ServeSpot</p>
+                  <p className="text-xs text-gray-400">Volunteer Portal</p>
+                </div>
+              </div>
+              
+              {/* Close button for mobile */}
+              <button 
+                onClick={onClose}
+                className="md:hidden p-1 rounded-md hover:bg-gray-800 text-gray-400"
+              >
+                <X size={20} />
+              </button>
+            </div>
           </div>
-          <div>
-            <p className="font-semibold">ServeSpot</p>
-            <p className="text-xs text-gray-400">Volunteer Portal</p>
+
+          {/* Navigation Links - Scrollable area */}
+          <nav className="mt-6 space-y-1 flex-1 overflow-y-auto">
+            <NavLink 
+              to="/volunteer/dashboard" 
+              className={linkCls}
+              onClick={onClose}
+            >
+              <Home size={18} />
+              <span>Dashboard</span>
+            </NavLink>
+
+            <NavLink 
+              to="/volunteer/opportunities" 
+              className={linkCls}
+              onClick={onClose}
+            >
+              <Compass size={18} />
+              <span>Browse Opportunities</span>
+            </NavLink>
+
+            <NavLink 
+              to="/volunteer/tasks" 
+              className={linkCls}
+              onClick={onClose}
+            >
+              <ClipboardList size={18} />
+              <span>My Activities</span>
+            </NavLink>
+
+            <NavLink 
+              to="/volunteer/badges" 
+              className={linkCls}
+              onClick={onClose}
+            >
+              <Award size={18} />
+              <span>Badges</span>
+            </NavLink>
+
+            <NavLink 
+              to="/volunteer/profile" 
+              className={linkCls}
+              onClick={onClose}
+            >
+              <User size={18} />
+              <span>Profile</span>
+            </NavLink>
+          </nav>
+
+          {/* Logout Button - Fixed at bottom */}
+          <div className="flex-shrink-0 pt-4 mt-4 border-t border-gray-700">
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center gap-2 text-gray-400 hover:text-white px-2 py-3 transition rounded-md hover:bg-gray-800/70"
+            >
+              <LogOut size={18} />
+              <span>Logout</span>
+            </button>
           </div>
         </div>
-
-        {/* Nav Links */}
-        <nav className="mt-6 space-y-1">
-          <NavLink to="/volunteer/dashboard" className={linkCls}>
-            <Home size={18} /> <span>Dashboard</span>
-          </NavLink>
-
-          <NavLink to="/opportunities" className={linkCls}>
-            <Compass size={18} /> <span>Browse Opportunities</span>
-          </NavLink>
-
-          {/* 🆕 New Link for My Activities */}
-          <NavLink to="/volunteer/tasks" className={linkCls}>
-            <ClipboardList size={18} /> <span>My Activities</span>
-          </NavLink>
-
-          <NavLink to="/volunteer/badges" className={linkCls}>
-            <Award size={18} /> <span>Badges</span>
-          </NavLink>
-
-          <NavLink to="/volunteer/profile" className={linkCls}>
-            <User size={18} /> <span>Profile</span>
-          </NavLink>
-        </nav>
-      </div>
-
-      <button
-        onClick={handleLogout}
-        className="mt-10 flex items-center gap-2 text-gray-300 hover:text-white px-2"
-      >
-        <LogOut size={18} /> Logout
-      </button>
-    </aside>
+      </aside>
+    </>
   );
 }

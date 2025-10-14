@@ -10,7 +10,8 @@ import {
   getOrgActivity,
   deleteOpportunity,
 } from "@/services/organization.api";
-import OrgSidebar from "@/components/layout/sidebars/OrgSidebar";
+import OrganizationSidebar from "@/components/layout/sidebars/OrgSidebar";
+import OrganizationNavbar from "@/components/layout/navbars/OrganizationNavbar";
 import StatCard from "@/components/organization-dashboard/metrics/StatCard";
 import OpportunityCard from "@/components/organization-dashboard/opportunities/OpportunityCard";
 import Notifications from "@/components/organization-dashboard/notifications/Notifications";
@@ -20,6 +21,7 @@ import PostOpportunityModal from "@/components/organization-dashboard/modal/Post
 
 export default function OrganizationDashboard() {
   const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [opportunities, setOpportunities] = useState([]);
   const [stats, setStats] = useState({});
@@ -27,6 +29,16 @@ export default function OrganizationDashboard() {
   const [activity, setActivity] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+
+  // Toggle sidebar function
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
+  // Close sidebar function
+  const closeSidebar = () => {
+    setSidebarOpen(false);
+  };
 
   // SESSION & TOKEN VALIDATION
   useEffect(() => {
@@ -41,7 +53,7 @@ export default function OrganizationDashboard() {
       return;
     }
 
-    //  If volunteer was last active, fix context
+    // If volunteer was last active, fix context
     if (activeRole !== "organization") {
       console.warn("Restoring organization session context...");
       localStorage.setItem("token", orgToken);
@@ -106,107 +118,140 @@ export default function OrganizationDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      <OrgSidebar />
+      {/* Organization Sidebar */}
+      <OrganizationSidebar 
+        isOpen={sidebarOpen} 
+        onClose={closeSidebar} 
+      />
 
-      <main className="flex-1 p-4">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">
-              Welcome back, Organization
-            </h1>
-            <p className="text-gray-600">
-              Here&apos;s what&apos;s happening with your opportunities today
-            </p>
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Organization Navbar */}
+        <OrganizationNavbar 
+          onToggleSidebar={toggleSidebar}
+        />
+
+        <main className="flex-1 p-6">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Welcome back, Organization
+              </h1>
+              <p className="text-gray-600">
+                Here&apos;s what&apos;s happening with your opportunities today
+              </p>
+            </div>
+            <button
+              onClick={() => setShowModal(true)}
+              className="inline-flex items-center gap-2 px-4 h-10 rounded-md bg-green-600 hover:bg-green-700 text-white font-medium cursor-pointer transition-colors"
+            >
+              <span>+ Post New Opportunity</span>
+            </button>
           </div>
-          <button
-            onClick={() => setShowModal(true)}
-            className="inline-flex items-center gap-2 px-4 h-10 rounded-md bg-blue-600 text-white font-medium hover:bg-blue-700 cursor-pointer"
-          >
-            <span>+ Post New Opportunity</span>
-          </button>
-        </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
-          <StatCard
-            icon={<CalendarDays size={20} />}
-            title="Active Opportunities"
-            value={stats.active || 0}
-          />
-          <StatCard
-            icon={<Users size={20} />}
-            title="Volunteers Engaged"
-            value={stats.engagedVolunteers || 0}
-          />
-          <StatCard
-            icon={<TrendingUp size={20} />}
-            title="Total Hours"
-            value={stats.totalHours || 0}
-          />
-          <StatCard
-            icon={<Award size={20} />}
-            title="Completed Tasks"
-            value={stats.completedTasks || 0}
-          />
-        </div>
+          {/* Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <StatCard
+              icon={<CalendarDays size={20} />}
+              title="Active Opportunities"
+              value={stats.active || 0}
+              color="green"
+            />
+            <StatCard
+              icon={<Users size={20} />}
+              title="Volunteers Engaged"
+              value={stats.engagedVolunteers || 0}
+              color="blue"
+            />
+            <StatCard
+              icon={<TrendingUp size={20} />}
+              title="Total Hours"
+              value={stats.totalHours || 0}
+              color="purple"
+            />
+            <StatCard
+              icon={<Award size={20} />}
+              title="Completed Tasks"
+              value={stats.completedTasks || 0}
+              color="orange"
+            />
+          </div>
 
-        {/* Opportunities & Sidebar */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-8">
-          <div className="xl:col-span-2 space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-gray-900">
-                Posted Opportunities
-              </h2>
-              {opportunities.length > 0 && (
-                <button
-                  onClick={() => navigate("/organization/opportunities")}
-                  className="h-9 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium cursor-pointer"
-                >
-                  View All
-                </button>
-              )}
+          {/* Opportunities & Sidebar */}
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div className="xl:col-span-2 space-y-6">
+              {/* Posted Opportunities */}
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-6 border-b border-gray-200">
+                  <h2 className="text-xl font-semibold text-gray-900 mb-2 sm:mb-0">
+                    Posted Opportunities
+                  </h2>
+                  {opportunities.length > 0 && (
+                    <button
+                      onClick={() => navigate("/organization/opportunities")}
+                      className="h-9 px-4 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-medium cursor-pointer transition-colors"
+                    >
+                      View All
+                    </button>
+                  )}
+                </div>
+
+                <div className="p-6 space-y-4">
+                  {loading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+                    </div>
+                  ) : opportunities.length > 0 ? (
+                    opportunities
+                      .slice(0, 3)
+                      .map((opp) => (
+                        <OpportunityCard
+                          key={opp._id}
+                          _id={opp._id}
+                          title={opp.title}
+                          description={opp.description}
+                          date={
+                            opp.date ? new Date(opp.date).toLocaleDateString() : ""
+                          }
+                          duration={opp.duration}
+                          location={opp.location}
+                          currentVolunteers={opp.volunteers?.length || 0}
+                          volunteersNeeded={opp.volunteersNeeded || 0}
+                          status={opp.status}
+                          fileUrl={opp.fileUrl}
+                          onDelete={handleDelete}
+                        />
+                      ))
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-gray-500 mb-4">
+                        No opportunities posted yet.
+                      </p>
+                      <button
+                        onClick={() => setShowModal(true)}
+                        className="text-green-600 hover:text-green-700 font-medium"
+                      >
+                        Post your first opportunity
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Volunteer Activity */}
+              <VolunteerActivity items={activity} />
             </div>
 
-            <div className="rounded-xl border border-gray-200 p-4 space-y-4">
-              {loading ? (
-                <p className="text-gray-500">Loading opportunities...</p>
-              ) : opportunities.length > 0 ? (
-                opportunities
-                  .slice(0, 3)
-                  .map((opp) => (
-                    <OpportunityCard
-                      key={opp._id}
-                      _id={opp._id}
-                      title={opp.title}
-                      description={opp.description}
-                      date={
-                        opp.date ? new Date(opp.date).toLocaleDateString() : ""
-                      }
-                      duration={opp.duration}
-                      location={opp.location}
-                      currentVolunteers={opp.volunteers?.length || 0}
-                      volunteersNeeded={opp.volunteersNeeded || 0}
-                      status={opp.status}
-                      fileUrl={opp.fileUrl}
-                      onDelete={handleDelete}
-                    />
-                  ))
-              ) : (
-                <p className="text-gray-500">No opportunities posted yet.</p>
-              )}
+            {/* Sidebar Widgets */}
+            <div className="space-y-6">
+              <Notifications items={notifications} />
+              <ImpactSummary stats={stats} />
             </div>
-
-            <VolunteerActivity items={activity} />
           </div>
+        </main>
+      </div>
 
-          <div className="space-y-6">
-            <Notifications items={notifications} />
-            <ImpactSummary stats={stats} />
-          </div>
-        </div>
-      </main>
-
+      {/* Post Opportunity Modal */}
       {showModal && (
         <PostOpportunityModal
           onClose={() => setShowModal(false)}

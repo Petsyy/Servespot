@@ -16,7 +16,9 @@ import VolunteerSignup from "@/pages/volunteer/auth/VolunteerSignup";
 import VolunteerLanding from "@/pages/volunteer/VolunteerLanding";
 import VolunteerDashboard from "@/pages/volunteer/VolunteerDashboard";
 import BrowseOpportunities from "@/pages/volunteer/browse-page/BrowseOpportunities";
-import VolunteerEditProfile from "@/pages/volunteer/VolunteerEditProfile";
+import VolunteerProfile from "@/pages/volunteer/VolunteerProfile";
+import VolunteerBadges from "@/pages/volunteer/VolunteerBadges";
+
 
 // Organization Pages
 import OrganizationLogin from "@/pages/organization/auth/OrganizationLogin";
@@ -24,7 +26,7 @@ import OrganizationSignup from "@/pages/organization/auth/OrganizationSignup";
 import OrganizationLanding from "@/pages/organization/OrganizationLanding";
 import OrganizationDashboard from "@/pages/organization/OrganizationDashboard";
 import MyOpportunity from "@/pages/organization/posted-page/PostedOpportunity";
-import OrganizationEditProfile from "@/pages/organization/OrganizationEditProfile";
+import OrganizationProfile from "@/pages/organization/OrganizationProfile";
 
 // Auth (Shared)
 import ForgotPassword from "@/pages/auth/ForgotPassword";
@@ -47,10 +49,11 @@ export default function App() {
         <Route path="/volunteer/signup" element={<VolunteerSignup />} />
         <Route path="/volunteer/homepage" element={<VolunteerLanding />} />
         <Route path="/volunteer/dashboard" element={<VolunteerDashboard />} />
-        <Route path="/opportunities" element={<BrowseOpportunities />} />
+        <Route path="/volunteer/opportunities" element={<BrowseOpportunities />} />
         <Route path="/volunteer/forgot-password" element={<ForgotPassword />} />
         <Route path="/volunteer/tasks" element={<MyTasks />} />
-        <Route path="/volunteer/profile" element={<VolunteerEditProfile />} />
+        <Route path="/volunteer/profile" element={<VolunteerProfile />} />
+        <Route path="/volunteer/badges" element={<VolunteerBadges />} />
          
         {/* Organization */}
         <Route path="/organization/login" element={<OrganizationLogin />} />
@@ -59,7 +62,7 @@ export default function App() {
         <Route path="/organization/dashboard" element={<OrganizationDashboard />} />
         <Route path="/organization/opportunities" element={<MyOpportunity />} />
         <Route path="/organization/forgot-password" element={<ForgotPassword />} />
-        <Route path="/organization/profile" element={<OrganizationEditProfile/>} />
+        <Route path="/organization/profile" element={<OrganizationProfile/>} />
       </Routes>
 
       <ToastContainer position="top-right" autoClose={2000} hideProgressBar />

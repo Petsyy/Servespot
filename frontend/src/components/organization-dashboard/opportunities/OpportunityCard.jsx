@@ -8,12 +8,17 @@ import {
   Calendar,
   MapPin,
   Users as UsersIcon,
-  Trash,
+  Trash2,
   Eye,
-  Pencil,
-  CheckCircle,
+  Edit3,
+  CheckCircle2,
   X,
   Clock,
+  MoreVertical,
+  UserCheck,
+  FileText,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import ProofReviewModal from "@/components/organization-dashboard/opportunities/ProofPreviewModal";
@@ -49,14 +54,15 @@ export default function OpportunityCard({
 
   const [status, setStatus] = useState(initialStatus || "Open");
   const [showModal, setShowModal] = useState(false);
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [volList, setVolList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [completing, setCompleting] = useState(false);
   const [showProofModal, setShowProofModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showActions, setShowActions] = useState(false);
+  const [expanded, setExpanded] = useState(false);
 
-  //  Auto-update status when slots fill
+  // Auto-update status when slots fill
   useEffect(() => {
     const fetchLatestData = async () => {
       try {
@@ -88,16 +94,31 @@ export default function OpportunityCard({
     return () => clearInterval(interval);
   }, [_id, status]);
 
-  const badgeColor =
-    status === "Open"
-      ? "bg-green-100 text-green-700"
-      : status === "In Progress"
-        ? "bg-orange-100 text-orange-700"
-        : status === "Completed"
-          ? "bg-blue-100 text-blue-700"
-          : status === "Closed"
-            ? "bg-gray-200 text-gray-700"
-            : "bg-gray-100 text-gray-600";
+  // Status badge configuration
+  const statusConfig = {
+    Open: {
+      color: "bg-emerald-50 border-emerald-200 text-emerald-700",
+      icon: <CheckCircle2 size={14} />,
+      label: "Open"
+    },
+    "In Progress": {
+      color: "bg-amber-50 border-amber-200 text-amber-700",
+      icon: <Clock size={14} />,
+      label: "In Progress"
+    },
+    Completed: {
+      color: "bg-blue-50 border-blue-200 text-blue-700",
+      icon: <CheckCircle2 size={14} />,
+      label: "Completed"
+    },
+    Closed: {
+      color: "bg-gray-100 border-gray-300 text-gray-600",
+      icon: <X size={14} />,
+      label: "Closed"
+    }
+  };
+
+  const currentStatus = statusConfig[status] || statusConfig.Open;
 
   const handleViewVolunteers = async () => {
     try {
@@ -130,7 +151,6 @@ export default function OpportunityCard({
           "This opportunity is now marked as completed, and approved volunteers have been rewarded with points and badges."
       );
 
-      // 🔄 Optional: refresh parent list if callback exists
       if (onUpdate) onUpdate({ _id, status: "Completed" });
     } catch (err) {
       console.error("Mark completed error:", err);
@@ -143,227 +163,269 @@ export default function OpportunityCard({
     }
   };
 
+  const progressPercentage = Math.min(
+    (cardData.currentVolunteers / cardData.volunteersNeeded) * 100,
+    100
+  );
+
   return (
     <>
-      <div className="w-full bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition flex flex-col justify-between font-sans">
-        <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-lg text-gray-900 tracking-tight truncate">
-            {cardData.title}
-          </h3>
-
-          <span
-            className={`flex items-center gap-1 text-xs px-3 py-1 rounded-full font-medium capitalize ${badgeColor}`}
-          >
-            {status === "Open" && <CheckCircle size={14} />}
-            {status === "In Progress" && <Clock size={14} />}
-            {status === "Completed" && <CheckCircle size={14} />}
-            {status === "Closed" && <X size={14} />}
-            {status}
-          </span>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-700 mt-3 font-bold">
-          {date && (
-            <div className="flex items-center gap-1">
-              <Calendar size={16} className="text-blue-600" />
-              <span>
-                {cardData.date
-                  ? new Date(cardData.date).toLocaleDateString("en-US")
-                  : "—"}
+      <div className="group bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-lg hover:border-blue-200 transition-all duration-300 p-6 font-sans">
+        {/* Header Section */}
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-3 mb-4">
+              <h3 className="font-bold text-xl text-gray-900 tracking-tight truncate">
+                {cardData.title}
+              </h3>
+              <span className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full font-semibold border ${currentStatus.color}`}>
+                {currentStatus.icon}
+                {currentStatus.label}
               </span>
             </div>
-          )}
-          {cardData.duration && (
-            <div className="flex items-center gap-1">
-              <Clock size={16} className="text-blue-600" />
-              <span>{cardData.duration}</span>
-            </div>
-          )}
-          {cardData.location && (
-            <div className="flex items-center gap-1">
-              <MapPin size={16} className="text-blue-600" />
-              <span>{cardData.location}</span>
-            </div>
-          )}
-          <div className="flex items-center gap-1">
-            <UsersIcon size={16} className="text-blue-600" />
-            <span className="font-semibold">
-              {cardData.currentVolunteers}/{cardData.volunteersNeeded}{" "}
-              volunteers
-            </span>
-          </div>
-        </div>
-
-        <div className="flex gap-2 mt-4 flex-wrap">
-          {status === "Open" && (
-            <>
-              <button
-                onClick={() => setShowEditModal(true)}
-                className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-blue-700 px-4 py-2 rounded-lg text-sm font-medium transition"
-              >
-                <Pencil size={16} />
-                Edit
-              </button>
-
-              <button
-                onClick={handleViewVolunteers}
-                className="flex items-center gap-2 bg-blue-100 hover:bg-blue-200 text-blue-700 px-4 py-2 rounded-lg text-sm font-medium transition"
-              >
-                <Eye size={16} />
-                View
-              </button>
-
-              <button
-                onClick={() => onDelete(_id)}
-                className="flex items-center gap-2 bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-lg text-sm font-medium transition"
-              >
-                <Trash size={16} />
-                Delete
-              </button>
-            </>
-          )}
-
-          {status === "In Progress" && (
-            <>
-              <button
-                onClick={handleViewVolunteers}
-                className="flex items-center gap-2 bg-blue-100 hover:bg-blue-200 text-blue-700 px-4 py-2 rounded-lg text-sm font-medium transition"
-              >
-                <Eye size={16} />
-                View Details
-              </button>
-
-              <button
-                onClick={handleMarkCompleted}
-                className="flex items-center gap-2 bg-green-100 hover:bg-green-200 text-green-700 px-4 py-2 rounded-lg text-sm font-medium transition"
-              >
-                <CheckCircle size={16} />
-                Complete
-              </button>
-            </>
-          )}
-
-          {status === "Completed" && (
-            <button
-              onClick={handleViewVolunteers}
-              className="flex items-center gap-2 bg-blue-100 hover:bg-blue-200 text-blue-700 px-4 py-2 rounded-lg text-sm font-medium transition"
-            >
-              <Eye size={16} />
-              View Details
-            </button>
-          )}
-
-          <button
-            onClick={() => setShowProofModal(true)}
-            className="flex items-center gap-2 bg-orange-100 hover:bg-orange-200 text-orange-700 px-4 py-2 rounded-lg text-sm font-medium transition"
-          >
-            <CheckCircle size={16} />
-            Review Proofs
-          </button>
-
-          {status === "Closed" && (
-            <button
-              onClick={handleViewVolunteers}
-              className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition"
-            >
-              <Eye size={16} />
-              View
-            </button>
-          )}
-        </div>
-      </div>
-
-      {showModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl shadow-xl w-[550px] max-h-[85vh] overflow-y-auto relative p-6">
-            <button
-              onClick={() => {
-                setShowModal(false);
-                setVolList([]);
-              }}
-              className="absolute right-4 top-4 text-gray-400 hover:text-gray-700"
-            >
-              <X size={22} />
-            </button>
-
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <UsersIcon className="text-blue-600" size={22} />
-              Volunteers Signed Up
-              {volList.length > 0 && (
-                <span className="ml-2 text-sm bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
-                  {volList.length} total
+            
+            {/* Progress Bar */}
+            <div className="mb-4">
+              <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
+                <span className="font-medium">Volunteer Progress</span>
+                <span className="font-semibold text-gray-900">
+                  {cardData.currentVolunteers}/{cardData.volunteersNeeded}
                 </span>
-              )}
-            </h2>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div 
+                  className="h-2 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-500"
+                  style={{ width: `${progressPercentage}%` }}
+                ></div>
+              </div>
+            </div>
+          </div>
 
-            {loading ? (
-              <div className="flex justify-center items-center py-8">
-                <svg
-                  className="animate-spin h-6 w-6 text-blue-600"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
+          {/* Actions Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setShowActions(!showActions)}
+              className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <MoreVertical size={18} />
+            </button>
+            
+            {showActions && (
+              <div className="absolute right-0 top-10 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-10 min-w-[160px]">
+                <button
+                  onClick={() => {
+                    setShowEditModal(true);
+                    setShowActions(false);
+                  }}
+                  className="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                 >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                  ></path>
-                </svg>
-              </div>
-            ) : volList.length === 0 ? (
-              <div className="text-center text-gray-500 py-8">
-                <UsersIcon size={32} className="mx-auto text-gray-400 mb-2" />
-                <p>No volunteers have signed up yet.</p>
-              </div>
-            ) : (
-              <div className="space-y-4 divide-y divide-gray-200">
-                {volList.map((v) => (
-                  <div
-                    key={v._id || v.email}
-                    className="pt-4 first:pt-0 flex flex-col gap-1 hover:bg-gray-50 rounded-lg transition p-2"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900">
-                          {v.firstName && v.lastName
-                            ? `${v.firstName} ${v.lastName}`
-                            : v.fullName || "Unnamed Volunteer"}
-                        </h3>
-                        <p className="text-sm text-gray-600">{v.email}</p>
-                      </div>
-
-                      <span
-                        className={`text-xs px-3 py-1 rounded-full font-medium ${
-                          v.status === "Completed"
-                            ? "bg-green-100 text-green-700"
-                            : "bg-yellow-100 text-yellow-700"
-                        }`}
-                      >
-                        {v.status || "Joined"}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                  <Edit3 size={16} />
+                  Edit
+                </button>
+                <button
+                  onClick={() => {
+                    onDelete(_id);
+                    setShowActions(false);
+                  }}
+                  className="flex items-center gap-3 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                >
+                  <Trash2 size={16} />
+                  Delete
+                </button>
               </div>
             )}
           </div>
         </div>
+
+        {/* Details Section - Horizontal Layout */}
+        <div className="flex flex-wrap items-center gap-4 mb-4 p-3 bg-gray-50 rounded-xl">
+          {date && (
+            <div className="flex items-center gap-2 text-gray-700">
+              <Calendar size={16} className="text-blue-500 flex-shrink-0" />
+              <span className="text-sm font-medium">
+                {cardData.date ? new Date(cardData.date).toLocaleDateString("en-US", {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric'
+                }) : "—"}
+              </span>
+            </div>
+          )}
+          
+          {cardData.duration && (
+            <div className="flex items-center gap-2 text-gray-700">
+              <Clock size={16} className="text-blue-500 flex-shrink-0" />
+              <span className="text-sm font-medium">{cardData.duration}</span>
+            </div>
+          )}
+          
+          {cardData.location && (
+            <div className="flex items-center gap-2 text-gray-700">
+              <MapPin size={16} className="text-blue-500 flex-shrink-0" />
+              <span className="text-sm font-medium">{cardData.location}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex flex-wrap gap-2 pt-4 border-t border-gray-100">
+          <button
+            onClick={handleViewVolunteers}
+            className="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-700 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all hover:scale-105"
+          >
+            <UsersIcon size={16} />
+            View Volunteers
+          </button>
+
+          <button
+            onClick={() => setShowProofModal(true)}
+            className="flex items-center gap-2 bg-orange-50 hover:bg-orange-100 text-orange-700 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all hover:scale-105"
+          >
+            <FileText size={16} />
+            Review Proofs
+          </button>
+
+          {status === "In Progress" && (
+            <button
+              onClick={handleMarkCompleted}
+              disabled={completing}
+              className="flex items-center gap-2 bg-green-50 hover:bg-green-100 text-green-700 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <UserCheck size={16} />
+              {completing ? "Completing..." : "Mark Complete"}
+            </button>
+          )}
+
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="flex items-center gap-2 text-gray-500 hover:text-gray-700 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ml-auto"
+          >
+            {expanded ? "Show Less" : "Show More"}
+            {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </button>
+        </div>
+
+        {/* Expanded Details */}
+        {expanded && (
+          <div className="mt-4 pt-4 border-t border-gray-100 animate-fadeIn">
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="text-gray-500">Status:</span>
+                <span className="ml-2 font-medium text-gray-900">{currentStatus.label}</span>
+              </div>
+              <div>
+                <span className="text-gray-500">Volunteers Needed:</span>
+                <span className="ml-2 font-medium text-gray-900">{cardData.volunteersNeeded}</span>
+              </div>
+              <div>
+                <span className="text-gray-500">Current Volunteers:</span>
+                <span className="ml-2 font-medium text-gray-900">{cardData.currentVolunteers}</span>
+              </div>
+              <div>
+                <span className="text-gray-500">Progress:</span>
+                <span className="ml-2 font-medium text-gray-900">{Math.round(progressPercentage)}%</span>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Volunteers Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <UsersIcon className="text-blue-600" size={24} />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">Volunteers</h2>
+                  <p className="text-gray-600">{cardData.title}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setShowModal(false);
+                  setVolList([]);
+                }}
+                className="p-2 rounded-lg hover:bg-white/50 text-gray-400 hover:text-gray-700 transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 max-h-[60vh] overflow-y-auto">
+              {loading ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+                  <p className="text-gray-600 font-medium">Loading volunteers...</p>
+                </div>
+              ) : volList.length === 0 ? (
+                <div className="text-center py-12">
+                  <UsersIcon size={48} className="mx-auto text-gray-300 mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No Volunteers Yet</h3>
+                  <p className="text-gray-500">No volunteers have signed up for this opportunity.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-sm text-gray-500">
+                      {volList.length} volunteer{volList.length !== 1 ? 's' : ''} signed up
+                    </span>
+                    <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                      {cardData.currentVolunteers}/{cardData.volunteersNeeded} slots filled
+                    </span>
+                  </div>
+                  
+                  <div className="grid gap-3">
+                    {volList.map((v, index) => (
+                      <div
+                        key={v._id || v.email}
+                        className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                            {v.firstName?.[0] || v.fullName?.[0] || "V"}
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-gray-900">
+                              {v.firstName && v.lastName
+                                ? `${v.firstName} ${v.lastName}`
+                                : v.fullName || "Unnamed Volunteer"}
+                            </h4>
+                            <p className="text-sm text-gray-600">{v.email}</p>
+                          </div>
+                        </div>
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                            v.status === "Completed"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-amber-100 text-amber-700"
+                          }`}
+                        >
+                          {v.status || "Joined"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       )}
+
+      {/* Modals */}
       {showProofModal && (
         <ProofReviewModal
           opportunityId={_id}
           onClose={() => setShowProofModal(false)}
         />
       )}
+      
       {showEditModal && (
         <EditOpportunityModal
           opportunityId={_id}

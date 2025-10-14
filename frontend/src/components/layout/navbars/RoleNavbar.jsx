@@ -6,7 +6,7 @@ export default function RoleNavbar({ role }) {
 
   const volunteerLinks = [
     { name: "Home", path: "/volunteer/homepage" },
-    { name: "Opportunities", path: "/opportunities" },
+    { name: "Opportunities", path: "/volunteer/opportunities" },
     { name: "My Tasks", path: "/volunteer/tasks" },
   ];
 

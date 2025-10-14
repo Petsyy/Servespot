@@ -108,7 +108,7 @@ export default function VolunteerLanding() {
             around you.
           </p>
           <div className="flex items-center space-x-4">
-            <Button variant="primary" onClick={() => navigate("/opportunities")}> 
+            <Button variant="primary" onClick={() => navigate("/volunteer/opportunities")}> 
               Find Opportunities
             </Button>
             <Button
