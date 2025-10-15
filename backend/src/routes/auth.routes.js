@@ -20,7 +20,7 @@ router.post("/volunteer/login", loginVolunteer);
 router.post("/organization/login", loginOrganization);
 
 // Forgot Password Routes
-router.post("/send-otp", sendOTP);
+router.post("/send-otp", sendOTP);-
 router.post("/verify-otp", verifyOTP);
 router.post("/reset-password", resetPassword);
 

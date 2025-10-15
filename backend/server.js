@@ -24,7 +24,7 @@ import authRoutes from "./src/routes/auth.routes.js";
 import volunteerRoutes from "./src/routes/volunteer.routes.js";
 import organizationRoutes from "./src/routes/organization.routes.js";
 import opportunityRoutes from "./src/routes/opportunity.routes.js";
-import orgVolunteerRoutes from "./src/routes/orgVolunteer.routes.js";
+import orgVolunteerRoutes from "./src/routes/manage.routes.js";
 
 // Mount routes
 app.use("/api/auth", authRoutes);

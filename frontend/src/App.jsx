@@ -27,6 +27,8 @@ import OrganizationLanding from "@/pages/organization/OrganizationLanding";
 import OrganizationDashboard from "@/pages/organization/OrganizationDashboard";
 import MyOpportunity from "@/pages/organization/posted-page/PostedOpportunity";
 import OrganizationProfile from "@/pages/organization/OrganizationProfile";
+import OrganizationReports from "@/pages/organization/OrganizationReports"
+import Notifications from "@/pages/organization/Notifications";
 
 // Auth (Shared)
 import ForgotPassword from "@/pages/auth/ForgotPassword";
@@ -65,6 +67,8 @@ export default function App() {
         <Route path="/organization/forgot-password" element={<ForgotPassword />} />
         <Route path="/organization/profile" element={<OrganizationProfile/>} />
         <Route path="/organization/manage" element={< ManageVolunteers/>} />
+        <Route path="/organization/reports" element={<OrganizationReports/>} />
+        <Route path="/organization/notifications" element={<Notifications />} />
       </Routes>
 
       <ToastContainer position="top-right" autoClose={2000} hideProgressBar />

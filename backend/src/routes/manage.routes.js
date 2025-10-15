@@ -3,14 +3,14 @@ import { verifyToken } from "../middlewares/auth.middleware.js";
 import {
   getOrgVolunteers,
   updateOrgVolunteerStatus,
-} from "../controllers/orgVolunteer.controller.js";
+} from "../controllers/manage.controller.js";
 
 const router = express.Router();
 
-// ✅ GET all volunteers under this organization
+// GET all volunteers under this organization
 router.get("/", verifyToken, getOrgVolunteers);
 
-// ✅ PUT update a volunteer’s status
+// PUT update a volunteer’s status
 router.put("/:id/status", verifyToken, updateOrgVolunteerStatus);
 
 export default router;
