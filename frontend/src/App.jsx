@@ -31,6 +31,7 @@ import OrganizationProfile from "@/pages/organization/OrganizationProfile";
 // Auth (Shared)
 import ForgotPassword from "@/pages/auth/ForgotPassword";
 import MyTasks from "@/pages/volunteer/tasks/MyTasks";
+import ManageVolunteers from "@/pages/organization/ManageVolunteers";
 
 export default function App() {
   return (
@@ -63,6 +64,7 @@ export default function App() {
         <Route path="/organization/opportunities" element={<MyOpportunity />} />
         <Route path="/organization/forgot-password" element={<ForgotPassword />} />
         <Route path="/organization/profile" element={<OrganizationProfile/>} />
+        <Route path="/organization/manage" element={< ManageVolunteers/>} />
       </Routes>
 
       <ToastContainer position="top-right" autoClose={2000} hideProgressBar />

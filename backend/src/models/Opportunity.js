@@ -37,6 +37,12 @@ const opportunitySchema = new mongoose.Schema(
           enum: ["Pending", "Approved", "Rejected"],
           default: "Pending",
         },
+        joinedOpportunities: [
+          {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Opportunity",
+          },
+        ],
         submittedAt: { type: Date, default: Date.now },
         rejectedAt: { type: Date }, // when the proof was rejected
       },
@@ -57,7 +63,7 @@ const opportunitySchema = new mongoose.Schema(
       ref: "Organization",
       required: true,
     },
-    
+
     forcedComplete: { type: Boolean, default: false },
   },
   { timestamps: true }

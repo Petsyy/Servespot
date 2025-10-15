@@ -91,7 +91,7 @@ export default function OrgSidebar({ isOpen, onClose }) {
             </NavLink>
 
             <NavLink 
-              to="/organization/volunteers" 
+              to="/organization/manage" 
               className={linkCls}
               onClick={onClose}
             >

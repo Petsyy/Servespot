@@ -58,6 +58,10 @@ export const getOpportunities = (orgId) =>
 // Delete a specific opportunity
 export const deleteOpportunity = (id) => API.delete(`/opportunities/${id}`);
 
+// ✅ Update volunteer status (approve / reject / complete)
+export const updateVolunteerStatus = (oppId, volunteerId, status) =>
+  API.put(`/organization/volunteers/${oppId}/${volunteerId}/status`, { status });
+
 //   ORGANIZATION PROFILE
 export const getOrganizationById = (id) => API.get(`/organization/${id}`);
 export const updateOrganization = (id, data) =>

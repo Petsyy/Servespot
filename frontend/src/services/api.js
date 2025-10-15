@@ -38,8 +38,29 @@ export const confirmVolunteerCompletion = async (oppId, volunteerId) => {
   );
 };
 
+
 // Shared by organization and volunteer
 export const getOpportunityById = (id) => API.get(`/opportunities/view/${id}`);
 
+/* -------------------------------------------
+   ORGANIZATION → MANAGE VOLUNTEERS
+-------------------------------------------- */
+
+// Get all volunteers under this organization’s opportunities
+export const getOrgVolunteers = () =>
+  API.get("/org/volunteers", {
+    headers: { Authorization: `Bearer ${localStorage.getItem("orgToken")}` },
+  });
+  
+
+// Update volunteer status (Approve / Reject / Completed)
+export const updateVolunteerStatus = (id, opportunityId, status) =>
+  API.put(
+    `/org/volunteers/${id}/status`,
+    { opportunityId, status },
+    {
+      headers: { Authorization: `Bearer ${localStorage.getItem("orgToken")}` },
+    }
+  );
 
 export default API;

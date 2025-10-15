@@ -112,7 +112,7 @@ export default function OrgNavbar({
               Opportunities
             </NavLink>
             <NavLink 
-              to="/organization/volunteers" 
+              to="/organization/manage" 
               className={({ isActive }) => 
                 `flex items-center gap-1 text-sm font-medium transition-all ${
                   isActive
