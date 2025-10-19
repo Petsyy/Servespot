@@ -111,12 +111,13 @@ export const updateOpportunity = async (req, res) => {
 };
 
 // Volunteer signs up for an opportunity
+// Volunteer signs up for an opportunity
 export const volunteerSignup = async (req, res) => {
   try {
     const volunteerId = req.user?.id;
     const opportunityId = req.params.id;
 
-    console.log(" Volunteer Signup:", { volunteerId, opportunityId });
+    console.log("Volunteer Signup:", { volunteerId, opportunityId });
 
     if (!volunteerId) {
       return res.status(400).json({ message: "Invalid volunteer token or ID" });
@@ -127,33 +128,42 @@ export const volunteerSignup = async (req, res) => {
       return res.status(404).json({ message: "Opportunity not found" });
     }
 
-    // Block closed
-    if (opportunity.status === "Closed") {
+    // Block if closed or completed
+    if (["Closed", "Completed"].includes(opportunity.status)) {
       return res
         .status(400)
-        .json({ message: "This opportunity is already closed." });
+        .json({ message: "This opportunity is no longer open for sign-ups." });
     }
 
-    // Prevent duplicates
+    // Block if already full
+    if (
+      opportunity.volunteers.length >= opportunity.volunteersNeeded &&
+      opportunity.volunteersNeeded > 0
+    ) {
+      return res.status(400).json({ message: "This opportunity is already full." });
+    }
+
+    // Prevent duplicate joins
     if (opportunity.volunteers.includes(volunteerId)) {
       return res
         .status(400)
-        .json({ message: "Already signed up for this opportunity" });
+        .json({ message: "You have already joined this opportunity." });
     }
 
     // Add volunteer
     opportunity.volunteers.push(volunteerId);
 
+    // If full after adding → mark as In Progress
     if (opportunity.volunteers.length >= opportunity.volunteersNeeded) {
       opportunity.status = "In Progress";
     }
 
     await opportunity.save();
 
-    console.log("✅ Volunteer added:", volunteerId, "→", opportunity.title);
+    console.log("Volunteer added:", volunteerId, "→", opportunity.title);
 
     res.status(200).json({
-      message: "Successfully signed up!",
+      message: "Successfully joined the opportunity!",
       currentVolunteers: opportunity.volunteers.length,
       volunteersNeeded: opportunity.volunteersNeeded,
       opportunityStatus: opportunity.status,
@@ -167,25 +177,36 @@ export const volunteerSignup = async (req, res) => {
   }
 };
 
-// Fetch all opportunities (public view for volunteers)
+
+// Fetch all uncompleted opportunities (public view for volunteers)
 export const getAllOpportunities = async (req, res) => {
   try {
-    const opportunities = await Opportunity.find()
-      .populate("organization", "orgName") // only return orgName
+    const userId = req.user?.id; // optional if logged in
+
+    // Show only opportunities that are NOT completed or closed
+    const filter = { status: { $nin: ["Completed", "Closed"] } };
+
+    // Optionally exclude those the volunteer already joined
+    if (userId) {
+      filter.volunteers = { $ne: userId };
+    }
+
+    const opportunities = await Opportunity.find(filter)
+      .populate("organization", "orgName") // Only get orgName field
       .select(
-        "title description organization location date duration volunteersNeeded currentVolunteers skills status fileUrl points"
+        "title description organization location date duration volunteersNeeded volunteers skills status fileUrl points"
       )
       .sort({ createdAt: -1 });
 
-    console.log("Returning opportunities", opportunities);
     res.status(200).json(opportunities);
   } catch (err) {
-    console.error("Error fetching all opportunities:", err);
+    console.error("❌ Error fetching uncompleted opportunities:", err);
     res
       .status(500)
       .json({ message: "Failed to load opportunities", error: err.message });
   }
 };
+
 
 export const markOpportunityCompleted = async (req, res) => {
   try {

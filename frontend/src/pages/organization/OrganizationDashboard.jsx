@@ -29,6 +29,9 @@ export default function OrganizationDashboard() {
   const [activity, setActivity] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [orgName, setOrgName] = useState(
+    localStorage.getItem("orgName") || "Organization"
+  );
 
   // Toggle sidebar function
   const toggleSidebar = () => {
@@ -119,23 +122,19 @@ export default function OrganizationDashboard() {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Organization Sidebar */}
-      <OrganizationSidebar 
-        isOpen={sidebarOpen} 
-        onClose={closeSidebar} 
-      />
+      <OrganizationSidebar isOpen={sidebarOpen} onClose={closeSidebar} />
 
       <div className="flex-1 flex flex-col min-w-0">
         {/* Organization Navbar */}
-        <OrganizationNavbar 
-          onToggleSidebar={toggleSidebar}
-        />
+        <OrganizationNavbar onToggleSidebar={toggleSidebar} />
 
         <main className="flex-1 p-6">
           {/* Header */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">
-                Welcome back, Organization
+                Welcome back,{" "}
+                <span className="text-green-700 font-semibold">{orgName}</span>
               </h1>
               <p className="text-gray-600">
                 Here&apos;s what&apos;s happening with your opportunities today
@@ -211,7 +210,9 @@ export default function OrganizationDashboard() {
                           title={opp.title}
                           description={opp.description}
                           date={
-                            opp.date ? new Date(opp.date).toLocaleDateString() : ""
+                            opp.date
+                              ? new Date(opp.date).toLocaleDateString()
+                              : ""
                           }
                           duration={opp.duration}
                           location={opp.location}

@@ -11,7 +11,7 @@ const skillsOptions = [
   "Tutoring",
   "First Aid",
   "Translation",
-  "Marketing",
+  "Gardening",
   "Graphic Design",
   "Cooking",
   "Photography",

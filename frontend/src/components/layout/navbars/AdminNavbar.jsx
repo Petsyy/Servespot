@@ -1,39 +1,33 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Bell,
-  UserCircle,
+  User,
   ChevronDown,
   LogOut,
   Settings,
-  Building,
+  Shield,
   Search,
   Menu,
+  AlertTriangle,
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 
-export default function OrganizationNavbar({
+export default function AdminNavbar({
   onToggleSidebar,
   notifCount,
   notifications: notificationsProp,
 }) {
   const navigate = useNavigate();
 
-  const organizationName =
-    (typeof window !== "undefined" &&
-      localStorage.getItem("orgName")?.trim()) ||
-    "Organization";
+  const adminName = "Admin"; // You can fetch this from localStorage if needed
 
   const fallbackNotifs = [
-    {
-      id: 1,
-      title: "New Volunteer Application",
-      icon: <UserCircle size={16} />,
-    },
-    { id: 2, title: "Opportunity Approved" },
+    { id: 1, title: "New organization registration pending approval", icon: <Shield size={16} /> },
+    { id: 2, title: "System backup completed successfully" },
+    { id: 3, title: "High traffic alert - 500+ active users" },
   ];
   const notifications = notificationsProp ?? fallbackNotifs;
-  const computedCount =
-    typeof notifCount === "number" ? notifCount : notifications.length;
+  const computedCount = typeof notifCount === "number" ? notifCount : notifications.length;
 
   const [openNotif, setOpenNotif] = useState(false);
   const [openProfile, setOpenProfile] = useState(false);
@@ -62,13 +56,20 @@ export default function OrganizationNavbar({
   }, []);
 
   const initials = useMemo(() => {
-    return organizationName
+    return adminName
       .split(" ")
       .slice(0, 2)
       .map((n) => n[0])
       .join("")
       .toUpperCase();
-  }, [organizationName]);
+  }, [adminName]);
+
+  const navLinkCls = ({ isActive }) =>
+    `flex items-center gap-1 text-sm font-medium transition-all ${
+      isActive
+        ? "text-blue-600 border-b-2 border-blue-600"
+        : "text-gray-600 hover:text-blue-600 hover:border-blue-400"
+    } pb-1 border-transparent`;
 
   return (
     <header className="sticky top-0 z-30 backdrop-blur bg-white/70 border-b border-gray-200">
@@ -84,48 +85,36 @@ export default function OrganizationNavbar({
           </button>
 
           <h1 className="text-xl font-extrabold tracking-tight text-gray-700">
-            ServeSpot
+            ServeSpot <span className="text-blue-600">Admin</span>
           </h1>
         </div>
 
         {/* Center: Navigation - Hidden on mobile, visible on desktop */}
         <div className="hidden md:flex items-center gap-8 flex-1 justify-center">
           <nav className="flex items-center gap-6">
-            <NavLink
-              to="/organization/dashboard"
-              className={({ isActive }) =>
-                `flex items-center gap-1 text-sm font-medium transition-all ${
-                  isActive
-                    ? "text-blue-600 border-b-2 border-blue-600"
-                    : "text-gray-600 hover:text-blue-600 hover:border-blue-400"
-                } pb-1 border-transparent`
-              }
+            <NavLink 
+              to="/admin/dashboard" 
+              className={navLinkCls}
             >
               Dashboard
             </NavLink>
-            <NavLink
-              to="/organization/opportunities"
-              className={({ isActive }) =>
-                `flex items-center gap-1 text-sm font-medium transition-all ${
-                  isActive
-                    ? "text-blue-600 border-b-2 border-blue-600"
-                    : "text-gray-600 hover:text-blue-600 hover:border-blue-400"
-                } pb-1 border-transparent`
-              }
+            <NavLink 
+              to="/admin/users" 
+              className={navLinkCls}
+            >
+              Users
+            </NavLink>
+            <NavLink 
+              to="/admin/opportunities" 
+              className={navLinkCls}
             >
               Opportunities
             </NavLink>
-            <NavLink
-              to="/organization/manage"
-              className={({ isActive }) =>
-                `flex items-center gap-1 text-sm font-medium transition-all ${
-                  isActive
-                    ? "text-blue-600 border-b-2 border-blue-600"
-                    : "text-gray-600 hover:text-blue-600 hover:border-blue-400"
-                } pb-1 border-transparent`
-              }
+            <NavLink 
+              to="/admin/reports" 
+              className={navLinkCls}
             >
-              Volunteers
+              Reports
             </NavLink>
           </nav>
 
@@ -137,7 +126,7 @@ export default function OrganizationNavbar({
             />
             <input
               type="search"
-              placeholder="Search volunteers, opportunities..."
+              placeholder="Search users, opportunities..."
               className="w-full h-9 pl-10 pr-3 rounded-lg bg-gray-100 border border-transparent focus:border-blue-300 focus:bg-white outline-none transition text-sm"
             />
           </label>
@@ -149,6 +138,16 @@ export default function OrganizationNavbar({
           <button className="md:hidden p-2 rounded-lg hover:bg-gray-100 text-gray-600">
             <Search size={20} />
           </button>
+
+          {/* System Alert Indicator */}
+          <div className="relative">
+            <button className="relative p-2 rounded-xl hover:bg-yellow-100 text-yellow-600">
+              <AlertTriangle size={20} />
+              <span className="absolute -top-0.5 -right-0.5 bg-yellow-500 text-white text-[10px] rounded-full min-w-[16px] h-4 px-1 grid place-items-center">
+                3
+              </span>
+            </button>
+          </div>
 
           {/* Notifications */}
           <div className="relative" ref={notifRef}>
@@ -165,10 +164,10 @@ export default function OrganizationNavbar({
             </button>
 
             {openNotif && (
-              <div className="absolute right-0 mt-2 w-72 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden animate-in fade-in zoom-in-95">
+              <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden animate-in fade-in zoom-in-95">
                 <div className="px-3 py-2 border-b bg-gray-50">
                   <p className="text-sm font-semibold text-gray-800">
-                    Notifications
+                    System Notifications
                   </p>
                 </div>
                 {notifications.length ? (
@@ -176,7 +175,7 @@ export default function OrganizationNavbar({
                     {notifications.map((n) => (
                       <li
                         key={n.id}
-                        className="px-3 py-3 text-sm text-gray-700 flex items-center gap-2 hover:bg-gray-50"
+                        className="px-3 py-3 text-sm text-gray-700 flex items-center gap-2 hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
                       >
                         <div className="w-6 h-6 rounded-md bg-blue-50 text-blue-600 grid place-items-center">
                           {n.icon || <Bell size={14} />}
@@ -186,8 +185,8 @@ export default function OrganizationNavbar({
                     ))}
                   </ul>
                 ) : (
-                  <div className="px-3 py-6 text-sm text-gray-500">
-                    You're all caught up!
+                  <div className="px-3 py-6 text-sm text-gray-500 text-center">
+                    No new notifications
                   </div>
                 )}
                 <button
@@ -210,7 +209,7 @@ export default function OrganizationNavbar({
                 {initials}
               </div>
               <span className="hidden sm:block text-sm font-medium text-gray-800">
-                {organizationName}
+                {adminName}
               </span>
               <ChevronDown
                 size={16}
@@ -224,22 +223,23 @@ export default function OrganizationNavbar({
               <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden animate-in fade-in zoom-in-95">
                 <div className="px-3 py-2 border-b bg-gray-50">
                   <p className="text-sm font-semibold text-gray-800">
-                    Organization
+                    Administrator
                   </p>
+                  <p className="text-xs text-gray-600">{adminName}</p>
                 </div>
                 <button
                   onClick={() => {
                     setOpenProfile(false);
-                    navigate("/organization/profile");
+                    navigate("/admin/profile");
                   }}
                   className="w-full text-left px-3 py-3 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                 >
-                  <Building size={16} /> Profile
+                  <User size={16} /> Profile
                 </button>
                 <button
                   onClick={() => {
                     setOpenProfile(false);
-                    navigate("/organization/settings");
+                    navigate("/admin/settings");
                   }}
                   className="w-full text-left px-3 py-3 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                 >
@@ -247,13 +247,11 @@ export default function OrganizationNavbar({
                 </button>
                 <button
                   onClick={() => {
-                    localStorage.removeItem("orgToken");
+                    localStorage.removeItem("adminToken");
                     localStorage.removeItem("activeRole");
-                    localStorage.removeItem("organizationId");
-                    localStorage.removeItem("orgId"); // Make sure this matches your login
-                    localStorage.removeItem("orgName"); // Add this to clear orgName too
+                    localStorage.removeItem("adminId");
                     setOpenProfile(false);
-                    navigate("/organization/login");
+                    navigate("/admin/login");
                   }}
                   className="w-full text-left px-3 py-3 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 border-t"
                 >

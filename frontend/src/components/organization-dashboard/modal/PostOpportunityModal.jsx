@@ -13,7 +13,7 @@ const skillsOptions = [
   "Elderly Care",
   "Photography",
   "Event Planning",
-  "Marketing",
+  "Gardening",
   "Fundraising",
   "Communication Skills",
   "Customer Service",

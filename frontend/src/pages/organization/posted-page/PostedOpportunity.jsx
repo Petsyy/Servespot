@@ -142,34 +142,6 @@ export default function PostedOpportunities() {
                 <span>Go to dashboard</span>
               </button>
             </div>
-
-            {/* Stats Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              <StatCard
-                icon={<Calendar className="text-blue-600" size={20} />}
-                label="Total Opportunities"
-                value={stats.total}
-                color="blue"
-              />
-              <StatCard
-                icon={<Users className="text-green-600" size={20} />}
-                label="Active Opportunities"
-                value={stats.active}
-                color="green"
-              />
-              <StatCard
-                icon={<Clock className="text-purple-600" size={20} />}
-                label="Completed"
-                value={stats.completed}
-                color="purple"
-              />
-              <StatCard
-                icon={<MapPin className="text-orange-600" size={20} />}
-                label="Total Volunteers"
-                value={stats.totalVolunteers}
-                color="orange"
-              />
-            </div>
           </div>
 
           {/* Filters and Search Section */}
@@ -296,30 +268,6 @@ export default function PostedOpportunities() {
             </div>
           )}
         </main>
-      </div>
-    </div>
-  );
-}
-
-// Stat Card Component
-function StatCard({ icon, label, value, color }) {
-  const colorClasses = {
-    blue: "bg-blue-50 border-blue-200",
-    green: "bg-green-50 border-green-200",
-    purple: "bg-purple-50 border-purple-200",
-    orange: "bg-orange-50 border-orange-200"
-  };
-
-  return (
-    <div className={`bg-white rounded-xl border-2 p-4 shadow-sm ${colorClasses[color]}`}>
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-gray-600 mb-1">{label}</p>
-          <p className="text-2xl font-bold text-gray-900">{value}</p>
-        </div>
-        <div className="p-2 rounded-lg bg-white shadow-sm">
-          {icon}
-        </div>
       </div>
     </div>
   );

@@ -47,6 +47,11 @@ export default function VolunteerDashboard() {
   const [selectedTaskId, setSelectedTaskId] = useState(null);
   const [proofStatus, setProofStatus] = useState(null);
 
+  // Add volunteer name state
+  const [volunteerName, setVolunteerName] = useState(
+    localStorage.getItem("volunteerName") || "Volunteer"
+  );
+
   // Toggle sidebar function
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
@@ -241,17 +246,18 @@ export default function VolunteerDashboard() {
       <VolSidebar isOpen={sidebarOpen} onClose={closeSidebar} />
 
       <div className="flex-1 flex flex-col">
-        <VolunteerNavbar
-          onToggleSidebar={toggleSidebar}
-        />
+        <VolunteerNavbar onToggleSidebar={toggleSidebar} />
 
         <main className="flex-1 p-6">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">
-                Welcome back
-                {overview?.firstName ? `, ${overview.firstName}` : ""}!
+                Welcome back,{" "}
+                <span className="text-green-700 font-semibold">
+                  {volunteerName}
+                </span>
+                !
               </h1>
               <p className="text-gray-600">Ready to make a difference today?</p>
             </div>

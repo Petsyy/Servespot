@@ -10,21 +10,49 @@ import {
   Search,
   Home,
   Compass,
-  Menu, // Add Menu icon
+  Menu,
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 
 export default function VolunteerNavbar({
-  onToggleSidebar, // Add this prop
+  onToggleSidebar,
   notifCount,
   notifications: notificationsProp,
 }) {
   const navigate = useNavigate();
 
-  const volunteerName =
-    (typeof window !== "undefined" &&
-      localStorage.getItem("volunteerName")?.trim()) ||
-    "Volunteer";
+  // Get volunteer name from localStorage - try multiple possible keys
+  const getVolunteerName = () => {
+    if (typeof window === "undefined") return "Volunteer";
+    
+    // Try different possible localStorage keys
+    const volUser = localStorage.getItem("volUser");
+    if (volUser) {
+      try {
+        const userData = JSON.parse(volUser);
+        if (userData.firstName && userData.lastName) {
+          return `${userData.firstName} ${userData.lastName}`;
+        }
+        if (userData.name) {
+          return userData.name;
+        }
+        if (userData.firstName) {
+          return userData.firstName;
+        }
+      } catch (err) {
+        console.error("Error parsing volUser:", err);
+      }
+    }
+    
+    // Try direct localStorage keys
+    const directName = localStorage.getItem("volunteerName") || 
+                      localStorage.getItem("volunteerFullName") || 
+                      localStorage.getItem("userName");
+    
+    return directName?.trim() || "Volunteer";
+  };
+
+  const volunteerName = getVolunteerName();
 
   const fallbackNotifs = [
     { id: 1, title: "Badge Unlocked: First Step", icon: <Award size={16} /> },
@@ -202,6 +230,7 @@ export default function VolunteerNavbar({
                   <p className="text-sm font-semibold text-gray-800">
                     Account
                   </p>
+                  <p className="text-xs text-gray-600">{volunteerName}</p>
                 </div>
                 <button
                   onClick={() => {
@@ -226,6 +255,8 @@ export default function VolunteerNavbar({
                     localStorage.removeItem("volToken");
                     localStorage.removeItem("activeRole");
                     localStorage.removeItem("volunteerId");
+                    localStorage.removeItem("volUser");
+                    localStorage.removeItem("volunteerName");
                     setOpenProfile(false);
                     navigate("/volunteer/login");
                   }}

@@ -18,8 +18,10 @@ connectDB();
 import "./src/models/Volunteer.js";
 import "./src/models/Opportunity.js";
 import "./src/models/Organization.js";
+import "./src/models/Admin.js";
 
 // Import routes
+import adminRoutes from "./src/routes/admin.routes.js";
 import authRoutes from "./src/routes/auth.routes.js";
 import volunteerRoutes from "./src/routes/volunteer.routes.js";
 import organizationRoutes from "./src/routes/organization.routes.js";
@@ -27,6 +29,7 @@ import opportunityRoutes from "./src/routes/opportunity.routes.js";
 import orgVolunteerRoutes from "./src/routes/manage.routes.js";
 
 // Mount routes
+app.use("/api/admin", adminRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/volunteer", volunteerRoutes);
 app.use("/api/organization", organizationRoutes);

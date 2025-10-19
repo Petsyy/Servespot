@@ -52,7 +52,6 @@ export const getOrgVolunteers = () =>
     headers: { Authorization: `Bearer ${localStorage.getItem("orgToken")}` },
   });
   
-
 // Update volunteer status (Approve / Reject / Completed)
 export const updateVolunteerStatus = (id, opportunityId, status) =>
   API.put(

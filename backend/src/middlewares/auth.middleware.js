@@ -52,3 +52,19 @@ export const verifyToken = (req, res, next) => {
     res.status(403).json({ message: "Invalid token" });
   }
 };
+
+export const protectAdmin = (req, res, next) => {
+  const token = req.header('Authorization')?.replace('Bearer ', '');
+
+  if (!token) {
+    return res.status(401).json({ message: "No token, authorization denied" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET); // Verify the token
+    req.user = decoded; // Attach the decoded user data to the request
+    next(); // Allow the request to proceed
+  } catch (error) {
+    res.status(401).json({ message: "Token is not valid" });
+  }
+};

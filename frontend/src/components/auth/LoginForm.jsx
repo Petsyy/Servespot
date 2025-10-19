@@ -15,7 +15,7 @@ export default function LoginForm({ role = "Volunteer", icon: Icon }) {
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -42,6 +42,12 @@ export default function LoginForm({ role = "Volunteer", icon: Icon }) {
         localStorage.setItem("volunteerId", userId);
         localStorage.setItem("volUser", JSON.stringify(data.user));
 
+        // Store volunteer name for easy access in navbar
+        const volunteerName = data.user?.fullName || "Volunteer";
+
+        localStorage.setItem("volunteerName", volunteerName);
+        console.log("🔍 Stored volunteerName in localStorage:", volunteerName);
+
         localStorage.setItem("token", data.token);
         localStorage.setItem("activeRole", "volunteer");
 
@@ -54,12 +60,22 @@ export default function LoginForm({ role = "Volunteer", icon: Icon }) {
         // save organization info
         const orgId = data.organization?._id || data.orgId;
         localStorage.setItem("orgId", orgId);
-         localStorage.setItem("orgToken", data.token);
+        localStorage.setItem("orgToken", data.token);
 
         localStorage.setItem(
           "orgUser",
           JSON.stringify(data.organization || data.user)
         );
+
+        // Store organization name
+        const orgName =
+          data.organization?.name ||
+          data.user?.orgName ||
+          data.user?.name ||
+          "Organization";
+
+        localStorage.setItem("orgName", orgName);
+        console.log("🔍 Stored orgName in localStorage:", orgName);
 
         navigate("/organization/homepage");
       }

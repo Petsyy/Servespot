@@ -153,10 +153,10 @@ export default function ManageVolunteers() {
           <div className="max-w-7xl mx-auto w-full">
             {/* Header */}
             <div className="mb-6">
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              <h1 className="text-3xl font-bold text-gray-900">
                 Manage Volunteers
               </h1>
-              <p className="text-gray-600 text-sm">
+              <p className="text-gray-600 mt-2">
                 Review and manage volunteer participation across your opportunities
               </p>
             </div>

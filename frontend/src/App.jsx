@@ -10,6 +10,7 @@ import NotFound from "@/pages/NotFound";
 import RoleLogin from "@/pages/user-selection/RoleLogin";
 import RoleSignup from "@/pages/user-selection/RoleSignup";
 
+
 // Volunteer Pages
 import VolunteerLogin from "@/pages/volunteer/auth/VolunteerLogin";
 import VolunteerSignup from "@/pages/volunteer/auth/VolunteerSignup";
@@ -18,7 +19,6 @@ import VolunteerDashboard from "@/pages/volunteer/VolunteerDashboard";
 import BrowseOpportunities from "@/pages/volunteer/browse-page/BrowseOpportunities";
 import VolunteerProfile from "@/pages/volunteer/VolunteerProfile";
 import VolunteerBadges from "@/pages/volunteer/VolunteerBadges";
-
 
 // Organization Pages
 import OrganizationLogin from "@/pages/organization/auth/OrganizationLogin";
@@ -35,6 +35,12 @@ import ForgotPassword from "@/pages/auth/ForgotPassword";
 import MyTasks from "@/pages/volunteer/tasks/MyTasks";
 import ManageVolunteers from "@/pages/organization/ManageVolunteers";
 
+// Admin Pages
+import AdminLogin from '@/components/auth/AdminLogin';
+import AdminDashboard from "@/pages/admin/AdminDashboard";
+import UserManagement from "@/pages/admin/UserManagement";
+import AdminReports from "./pages/admin/AdminReports";
+
 export default function App() {
   return (
     <>
@@ -46,6 +52,12 @@ export default function App() {
         {/* Role Selection */}
         <Route path="/role/login" element={<RoleLogin />} />
         <Route path="/role/signup" element={<RoleSignup />} />
+
+        {/* Admin */}
+        <Route path="/admin/login" element={<AdminLogin />} /> 
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/management" element={<UserManagement /> } />
+        <Route path="/admin/reports" element={<AdminReports />} />
 
         {/* Volunteer */}
         <Route path="/volunteer/login" element={<VolunteerLogin />} />
@@ -69,6 +81,7 @@ export default function App() {
         <Route path="/organization/manage" element={< ManageVolunteers/>} />
         <Route path="/organization/reports" element={<OrganizationReports/>} />
         <Route path="/organization/notifications" element={<Notifications />} />
+
       </Routes>
 
       <ToastContainer position="top-right" autoClose={2000} hideProgressBar />
