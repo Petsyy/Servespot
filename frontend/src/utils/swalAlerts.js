@@ -87,3 +87,51 @@ export const warningAlert = (title = "Warning", text = "") =>
     text,
     confirmButtonColor: "#f59e0b",
   });
+
+/* Confirm verification */
+export const confirmVerification = async (userName) => {
+  const result = await Swal.fire({
+    title: "Verify Organization?",
+    html: `Are you sure you want to verify <strong>${userName}</strong>?<br>This will grant them full access to post opportunities.`,
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonText: "Yes, Verify",
+    cancelButtonText: "Cancel",
+    reverseButtons: true,
+    confirmButtonColor: "#16a34a",
+    cancelButtonColor: "#6b7280",
+  });
+  return result.isConfirmed;
+};
+
+/* Confirm suspension */
+export const confirmSuspension = async (userType, userName) => {
+  const result = await Swal.fire({
+    title: `Suspend ${userType}?`,
+    html: `Are you sure you want to suspend <strong>${userName}</strong>?<br>They will lose access to their account.`,
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Yes, Suspend",
+    cancelButtonText: "Cancel",
+    reverseButtons: true,
+    confirmButtonColor: "#dc2626",
+    cancelButtonColor: "#6b7280",
+  });
+  return result.isConfirmed;
+};
+
+/* Confirm reactivation */
+export const confirmReactivation = async (userType, userName) => {
+  const result = await Swal.fire({
+    title: `Reactivate ${userType}?`,
+    html: `Are you sure you want to reactivate <strong>${userName}</strong>?<br>They will regain full access to their account.`,
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonText: "Yes, Reactivate",
+    cancelButtonText: "Cancel",
+    reverseButtons: true,
+    confirmButtonColor: "#16a34a",
+    cancelButtonColor: "#6b7280",
+  });
+  return result.isConfirmed;
+};

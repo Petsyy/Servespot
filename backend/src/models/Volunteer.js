@@ -17,17 +17,26 @@ const volunteerSchema = new mongoose.Schema(
     otpCode: String,
     otpExpire: Date,
 
+    status: {
+      type: String,
+      enum: ["pending", "active", "suspended"],
+      default: "active",
+    },
+
     // Badge & Points System
-    points: { type: Number, default: 0 }, // Total points earned by volunteer
-    completedTasks: { type: Number, default: 0 }, // Total completed opportunities
+    points: { type: Number, default: 0 },
+    completedTasks: { type: Number, default: 0 },
     badges: [
       {
         name: { type: String },
         description: { type: String },
-        icon: { type: String }, // could store emoji or image path
+        icon: { type: String },
         earnedAt: { type: Date, default: Date.now },
       },
     ],
+
+    suspensionReason: { type: String, default: null },
+    suspensionDate: { type: Date, default: null },
   },
   { timestamps: true }
 );

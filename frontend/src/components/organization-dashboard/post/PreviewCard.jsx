@@ -25,7 +25,11 @@ export default function PreviewCard({
   return (
     <div
       className="sticky top-6 bg-white rounded-xl border border-gray-200 shadow-sm 
-             overflow-hidden w-full max-w-sm"
+                 overflow-hidden w-full max-w-sm self-start"
+      style={{
+        maxHeight: 'calc(100vh - 3rem)', // Prevent overflow
+        overflowY: 'auto', // Enable scrolling if content is too tall
+      }}
     >
       {/* Poster Image */}
       {imageUrl && (

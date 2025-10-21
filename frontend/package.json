@@ -21,6 +21,7 @@
     "react-router-dom": "^7.9.1",
     "react-toastify": "^11.0.5",
     "recharts": "^3.2.1",
+    "socket.io-client": "^4.8.1",
     "styled-components": "^6.1.19",
     "sweetalert2": "^11.25.1",
     "tailwindcss": "^4.1.13"

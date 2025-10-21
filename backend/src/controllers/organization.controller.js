@@ -24,7 +24,7 @@ export const updateOrganization = async (req, res) => {
 
     res.json({ message: "Profile updated successfully", org });
   } catch (err) {
-    console.error("❌ updateOrganization error:", err);
+    console.error("updateOrganization error:", err);
     res.status(500).json({ message: "Update failed", error: err.message });
   }
 };

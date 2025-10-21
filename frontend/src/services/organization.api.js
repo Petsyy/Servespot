@@ -20,9 +20,7 @@ export const createOpportunity = (data) => {
           return fd;
         })();
 
-  return API.post("/opportunities", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+  return API.post("/opportunities", formData,);
 };
 
 // Mark entire opportunity completed (organization)
@@ -34,9 +32,7 @@ export const markOpportunityCompleted = async (oppId) => {
 
 // Update opportunity
 export const updateOpportunity = (id, formData) =>
-  API.put(`/opportunities/${id}`, formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+  API.put(`/opportunities/${id}`, formData);
 
 // Organiation Dashboard
 export const getOrgStats = (orgId) =>
@@ -58,11 +54,16 @@ export const getOpportunities = (orgId) =>
 // Delete a specific opportunity
 export const deleteOpportunity = (id) => API.delete(`/opportunities/${id}`);
 
+export const getOrganizationProfile = (orgId) =>
+  API.get(`/organization/${orgId}`, {
+    headers: { Authorization: `Bearer ${localStorage.getItem("orgToken")}` },
+  });
+
 // Update volunteer status (approve / reject / complete)
 export const updateVolunteerStatus = (oppId, volunteerId, status) =>
   API.put(`/organization/volunteers/${oppId}/${volunteerId}/status`, { status });
 
-//   ORGANIZATION PROFILE
+// ORGANIZATION PROFILE
 export const getOrganizationById = (id) => API.get(`/organization/${id}`);
 export const updateOrganization = (id, data) =>
   API.put(`/organization/${id}`, data, {

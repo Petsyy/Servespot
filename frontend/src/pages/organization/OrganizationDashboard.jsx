@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { CalendarDays, Users, TrendingUp, Award } from "lucide-react";
+import {
+  CalendarDays,
+  Users,
+  TrendingUp,
+  Award,
+  ShieldAlert,
+} from "lucide-react";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { confirmDelete, successAlert, errorAlert } from "@/utils/swalAlerts";
@@ -9,6 +15,7 @@ import {
   getOrgNotifications,
   getOrgActivity,
   deleteOpportunity,
+  getOrganizationProfile,
 } from "@/services/organization.api";
 import OrganizationSidebar from "@/components/layout/sidebars/OrgSidebar";
 import OrganizationNavbar from "@/components/layout/navbars/OrganizationNavbar";
@@ -29,6 +36,9 @@ export default function OrganizationDashboard() {
   const [activity, setActivity] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+
+  const [org, setOrg] = useState(null);
+
   const [orgName, setOrgName] = useState(
     localStorage.getItem("orgName") || "Organization"
   );
@@ -79,6 +89,12 @@ export default function OrganizationDashboard() {
 
     async function fetchData() {
       try {
+        // Fetch org profile first to know status/name
+        const orgRes = await getOrganizationProfile(orgId);
+        setOrg(orgRes.data);
+        setOrgName(orgRes.data?.orgName || "Organization");
+        localStorage.setItem("orgName", orgRes.data?.orgName || "Organization");
+
         const [oppRes, statsRes, notifRes, activityRes] = await Promise.all([
           getOpportunities(orgId),
           getOrgStats(orgId),
@@ -119,6 +135,8 @@ export default function OrganizationDashboard() {
     }
   };
 
+  const canPost = org?.status === "active"; // ✅ only active orgs can post
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Organization Sidebar */}
@@ -129,6 +147,28 @@ export default function OrganizationDashboard() {
         <OrganizationNavbar onToggleSidebar={toggleSidebar} />
 
         <main className="flex-1 p-6">
+          {/* Verification Banners */}
+          {org?.status === "pending" && (
+            <div className="bg-yellow-100 border-l-4 border-yellow-400 text-yellow-800 p-4 mb-6 rounded-lg flex items-center gap-3">
+              <ShieldAlert className="h-5 w-5 text-yellow-600" />
+              <span>
+                Your account is currently <strong>pending verification</strong>.
+                You can browse your dashboard, but posting and volunteer
+                management are disabled until approval.
+              </span>
+            </div>
+          )}
+
+          {org?.status === "suspended" && (
+            <div className="bg-red-100 border-l-4 border-red-400 text-red-800 p-4 mb-6 rounded-lg flex items-center gap-3">
+              <ShieldAlert className="h-5 w-5 text-red-600" />
+              <span>
+                Your account is <strong>suspended</strong>. Please contact
+                support for reactivation.
+              </span>
+            </div>
+          )}
+
           {/* Header */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
             <div>
@@ -141,10 +181,25 @@ export default function OrganizationDashboard() {
               </p>
             </div>
             <button
-              onClick={() => setShowModal(true)}
-              className="inline-flex items-center gap-2 px-4 h-10 rounded-md bg-green-600 hover:bg-green-700 text-white font-medium cursor-pointer transition-colors"
+              disabled={!canPost}
+              onClick={() =>
+                canPost
+                  ? setShowModal(true)
+                  : toast.info(
+                      org?.status === "pending"
+                        ? "Your account is awaiting admin verification."
+                        : "Your account is suspended. Please contact support."
+                    )
+              }
+              className={`inline-flex items-center gap-2 px-4 h-10 rounded-md font-medium transition-colors ${
+                canPost
+                  ? "bg-green-600 hover:bg-green-700 text-white cursor-pointer"
+                  : "bg-gray-300 text-gray-600 cursor-not-allowed"
+              }`}
             >
-              <span>+ Post New Opportunity</span>
+              <span>
+                {canPost ? "+ Post New Opportunity" : "Posting Disabled"}
+              </span>
             </button>
           </div>
 
@@ -201,36 +256,46 @@ export default function OrganizationDashboard() {
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
                     </div>
                   ) : opportunities.length > 0 ? (
-                    opportunities
-                      .slice(0, 3)
-                      .map((opp) => (
-                        <OpportunityCard
-                          key={opp._id}
-                          _id={opp._id}
-                          title={opp.title}
-                          description={opp.description}
-                          date={
-                            opp.date
-                              ? new Date(opp.date).toLocaleDateString()
-                              : ""
-                          }
-                          duration={opp.duration}
-                          location={opp.location}
-                          currentVolunteers={opp.volunteers?.length || 0}
-                          volunteersNeeded={opp.volunteersNeeded || 0}
-                          status={opp.status}
-                          fileUrl={opp.fileUrl}
-                          onDelete={handleDelete}
-                        />
-                      ))
+                    opportunities.slice(0, 3).map((opp) => (
+                      <OpportunityCard
+                        key={opp._id}
+                        _id={opp._id}
+                        title={opp.title}
+                        description={opp.description}
+                        date={
+                          opp.date
+                            ? new Date(opp.date).toLocaleDateString()
+                            : ""
+                        }
+                        duration={opp.duration}
+                        location={opp.location}
+                        currentVolunteers={opp.volunteers?.length || 0}
+                        volunteersNeeded={opp.volunteersNeeded || 0}
+                        status={opp.status}
+                        fileUrl={opp.fileUrl}
+                        onDelete={canPost ? handleDelete : undefined} // prevent delete if not active
+                      />
+                    ))
                   ) : (
                     <div className="text-center py-8">
                       <p className="text-gray-500 mb-4">
                         No opportunities posted yet.
                       </p>
                       <button
-                        onClick={() => setShowModal(true)}
-                        className="text-green-600 hover:text-green-700 font-medium"
+                        onClick={() =>
+                          canPost
+                            ? setShowModal(true)
+                            : toast.info(
+                                org?.status === "pending"
+                                  ? "Your account is awaiting admin verification."
+                                  : "Your account is suspended. Please contact support."
+                              )
+                        }
+                        className={`font-medium ${
+                          canPost
+                            ? "text-green-600 hover:text-green-700"
+                            : "text-gray-400 cursor-not-allowed"
+                        }`}
                       >
                         Post your first opportunity
                       </button>

@@ -1,24 +1,47 @@
 import jwt from "jsonwebtoken";
+import Volunteer from "../models/Volunteer.js";
+import Organization from "../models/Organization.js"; 
 
-export const protect = (req, res, next) => {
+export const protect = async (req, res, next) => {
   let token;
 
-  // Look for token in headers
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer")
   ) {
     try {
       token = req.headers.authorization.split(" ")[1];
-
-      // Verify token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      // Attach user info to request
       req.user = {
         id: decoded.id,
         role: decoded.role, // volunteer or organization
       };
+
+      // ✅ Extra security: check if the user is suspended
+      if (req.user.role === "volunteer") {
+        const volunteer = await Volunteer.findById(req.user.id);
+        if (!volunteer)
+          return res.status(404).json({ message: "Volunteer not found" });
+
+        if (volunteer.status === "suspended") {
+          return res.status(403).json({
+            message: "Your volunteer account has been suspended.",
+            reason: volunteer.suspensionReason,
+          });
+        }
+      }
+
+      // (Optional) also prevent suspended organizations
+      if (req.user.role === "organization") {
+        const org = await Organization.findById(req.user.id);
+        if (org?.status === "suspended") {
+          return res.status(403).json({
+            message: "Your organization account has been suspended.",
+            reason: org.suspensionReason,
+          });
+        }
+      }
 
       next();
     } catch (error) {
@@ -68,3 +91,4 @@ export const protectAdmin = (req, res, next) => {
     res.status(401).json({ message: "Token is not valid" });
   }
 };
+

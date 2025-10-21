@@ -5,6 +5,8 @@ import {
   getMyProfile,
   updateMyProfile,
   getMyBadges,
+  getMyOpportunities,
+
 } from "../controllers/volunteer.controller.js";
 
 const router = express.Router();

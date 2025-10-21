@@ -37,51 +37,55 @@ export default function OrganizationProfileStep({
     return Object.keys(e).length === 0;
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  if (!validate()) return;
-  setIsSubmitting(true);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validate()) return;
+    setIsSubmitting(true);
 
-  try {
-    // 1️Call backend signup API
-    const res = await signupOrganization(formData);
-    const { token, orgId, user } = res.data;
+    try {
+      // 1️Call backend signup API
+      const form = new FormData();
+      for (const key in formData) {
+        form.append(key, formData[key]);
+      }
+      const res = await signupOrganization(form);
 
-    // 2Save session data for organization dashboard
-    localStorage.setItem("orgId", orgId);
-    localStorage.setItem("orgToken", token);
-    localStorage.setItem("token", token);
-    localStorage.setItem("activeRole", "organization");
-    localStorage.setItem("user", JSON.stringify(user));
+      const { token, orgId, user } = res.data;
 
-    // Notify and redirect
-    toast.success(
-      <div>
-        <span className="text-sm text-black">
-          Welcome, {user.orgName || "Organization"}! Profile completed successfully.
-        </span>
-      </div>
-    );
+      // 2Save session data for organization dashboard
+      localStorage.setItem("orgId", orgId);
+      localStorage.setItem("orgToken", token);
+      localStorage.setItem("token", token);
+      localStorage.setItem("activeRole", "organization");
+      localStorage.setItem("user", JSON.stringify(user));
 
-    setTimeout(() => {
-      navigate("/organization/dashboard");
-      if (onSubmit) onSubmit();
-    }, 1200);
-  } catch (error) {
-    console.error("Signup failed:", error);
-    toast.error(
-      <div>
-        <span className="text-sm text-black">
-          {error.response?.data?.message || "Signup failed. Try again."}
-        </span>
-      </div>
-    );
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+      // Notify and redirect
+      toast.success(
+        <div>
+          <span className="text-sm text-black">
+            Welcome, {user.orgName || "Organization"}! Profile completed
+            successfully.
+          </span>
+        </div>
+      );
 
-
+      setTimeout(() => {
+        navigate("/organization/dashboard");
+        if (onSubmit) onSubmit();
+      }, 1200);
+    } catch (error) {
+      console.error("Signup failed:", error);
+      toast.error(
+        <div>
+          <span className="text-sm text-black">
+            {error.response?.data?.message || "Signup failed. Try again."}
+          </span>
+        </div>
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="w-2xl max-w-3xl">
@@ -157,6 +161,13 @@ const handleSubmit = async (e) => {
           placeholder="Describe your organization's mission and activities (optional)"
           value={formData.description}
           onChange={(v) => updateField("description", v)}
+        />
+
+        <FormInput
+          label="Upload Verification Document"
+          type="file"
+          accept=".jpg,.jpeg,.png,.pdf,.docx" // only allowed types
+          onChange={(file) => updateField("document", file)}
         />
 
         <div className="flex justify-between">

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { showNewBadgeAlert } from "@/utils/badgeAlerts";
+import { io } from "socket.io-client";
 import {
   Eye,
   UploadCloud,
@@ -14,7 +15,7 @@ import {
   Trophy,
 } from "lucide-react";
 import VolSidebar from "@/components/layout/sidebars/VolSidebar";
-import VolunteerNavbar from "@/components/layout/navbars/VolunteerNavbar"; // ✅ unified navbar
+import VolunteerNavbar from "@/components/layout/navbars/VolunteerNavbar";
 import MetricCard from "@/components/volunteer-dashboard/metrics/MetricCard";
 import Notifications from "@/components/volunteer-dashboard/notifications/Notifications";
 import ProgressCard from "@/components/volunteer-dashboard/metrics/ProgressCard";
@@ -82,6 +83,39 @@ export default function VolunteerDashboard() {
   }, [navigate]);
 
   useEffect(() => {
+    const volunteerId = localStorage.getItem("volunteerId");
+    if (!volunteerId) return;
+
+    const socket = io("http://localhost:5000");
+
+    // Register volunteer with server
+    socket.emit("registerVolunteer", volunteerId);
+
+    // Listen for suspension event
+    socket.on("suspended", (data) => {
+      const reason = data.reason || "No reason provided";
+      toast.error(`⚠️ Your account has been suspended.\nReason: ${reason}`, {
+        autoClose: 6000,
+      });
+
+      setTimeout(() => {
+        localStorage.clear();
+        window.location.href = "/suspended";
+      }, 3000);
+    });
+
+      socket.io("reactivated", () => {
+        toast.success("Your account has been reactivated!", {
+          autoClose: 5000,
+        });
+      });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
     let mounted = true;
 
     (async () => {
@@ -104,7 +138,7 @@ export default function VolunteerDashboard() {
           setNotifications(notifRes.value.data || []);
         if (progRes.status === "fulfilled") setProgress(progRes.value.data);
 
-        // 🏅 Badge Handling + New Badge Popup (final, persistent version)
+        // Badge Handling + New Badge Popup (final, persistent version)
         if (badgesRes.status === "fulfilled") {
           const data = badgesRes.value.data;
           let normalized = [];

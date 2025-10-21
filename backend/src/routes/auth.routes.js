@@ -6,21 +6,23 @@ import {
   loginOrganization,
   sendOTP,
   verifyOTP,
-  resetPassword
+  resetPassword,
 } from "../controllers/auth.controller.js";
+
+import { uploadDocs } from "../middlewares/upload.middleware.js";
 
 const router = express.Router();
 
-// Signup
+// Volunteer signup/login
 router.post("/volunteer/signup", registerVolunteer);
-router.post("/organization/signup", registerOrganization);
-
-// Login
 router.post("/volunteer/login", loginVolunteer);
+
+// Organization signup/login
+router.post("/organization/signup", uploadDocs.single("document"), registerOrganization);
 router.post("/organization/login", loginOrganization);
 
-// Forgot Password Routes
-router.post("/send-otp", sendOTP);-
+// Forgot password (OTP flow)
+router.post("/send-otp", sendOTP);
 router.post("/verify-otp", verifyOTP);
 router.post("/reset-password", resetPassword);
 

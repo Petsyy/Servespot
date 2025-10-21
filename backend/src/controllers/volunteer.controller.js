@@ -124,4 +124,28 @@ export const getMyBadges = async (req, res) => {
   }
 };
 
+export const getMyOpportunities = async (req, res) => {
+  try {
+    const volunteerId = req.user?.id;
+
+    if (!volunteerId)
+      return res.status(401).json({ message: "Unauthorized: no volunteer ID" });
+
+    // 🧠 Only fetch opportunities where:
+    // - volunteer is still in the 'volunteers' array
+    // - opportunity is not completed or closed
+    const myOpportunities = await Opportunity.find({
+      volunteers: volunteerId,
+      status: { $nin: ["Completed", "Closed"] },
+    })
+      .populate("organization", "orgName")
+      .sort({ date: 1 });
+
+    res.status(200).json(myOpportunities);
+  } catch (err) {
+    console.error("❌ Error fetching volunteer opportunities:", err);
+    res.status(500).json({ message: "Failed to load joined opportunities" });
+  }
+};
+
 

@@ -1,5 +1,6 @@
 import React, { useCallback, useRef, useState } from "react";
 import { UploadCloud, X } from "lucide-react";
+import { toast } from "react-toastify";
 
 export default function ImageDropzone({ onFile }) {
   const [hover, setHover] = useState(false);
@@ -8,12 +9,22 @@ export default function ImageDropzone({ onFile }) {
 
   const handleFile = (file) => {
     if (file) {
-      onFile(file);
-      if (file.type.startsWith("image/")) {
-        setPreview(URL.createObjectURL(file));
-      } else {
-        setPreview(null);
+      // Validate file type
+      const allowedTypes = ["image/jpeg", "image/png"];
+      
+      if (!allowedTypes.includes(file.type)) {
+        toast.error("Please select only JPG, PNG, or JPEG files.");
+        return;
       }
+
+      // Validate file size (5MB max)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("File size must be less than 5MB.");
+        return;
+      }
+
+      onFile(file);
+      setPreview(URL.createObjectURL(file));
     }
   };
 
@@ -73,8 +84,11 @@ export default function ImageDropzone({ onFile }) {
       ) : (
         <div className="flex flex-col items-center text-center text-gray-600">
           <UploadCloud size={32} className="text-blue-500 mb-2" />
-          <p className="text-sm">
-            Click to upload or drag & drop your image here
+          <p className="text-sm font-medium">
+            Click to upload or drag & drop
+          </p>
+          <p className="text-xs text-gray-500 mt-1">
+            JPG, PNG, JPEG files only (Max 5MB)
           </p>
         </div>
       )}
@@ -82,7 +96,7 @@ export default function ImageDropzone({ onFile }) {
       <input
         ref={inputRef}
         type="file"
-        accept="image/*,application/pdf"
+        accept=".jpg,.jpeg,.png,image/jpeg,image/png"
         className="hidden"
         onChange={onPick}
       />

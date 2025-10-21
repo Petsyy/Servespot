@@ -5,6 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 // General Pages
 import LandingPage from "@/pages/LandingPage";
 import NotFound from "@/pages/NotFound";
+import Suspended from "@/pages/Suspend";
 
 // Role Selection
 import RoleLogin from "@/pages/user-selection/RoleLogin";
@@ -48,6 +49,7 @@ export default function App() {
         {/* General */}
         <Route path="/" element={<LandingPage />} />
         <Route path="*" element={<NotFound />} />
+        <Route path="/suspended" element={<Suspended />} />
 
         {/* Role Selection */}
         <Route path="/role/login" element={<RoleLogin />} />

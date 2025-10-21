@@ -1,8 +1,11 @@
 import express from "express";
 import mongoose from "mongoose";
-import multer from "multer";
+import Opportunity from "../models/Opportunity.js";
 
-import { upload } from "../middlewares/upload.middleware.js";
+// ✅ Use the new separated upload logic
+import { uploadImages } from "../middlewares/upload.middleware.js";
+import { verifyToken } from "../middlewares/auth.middleware.js";
+
 import {
   createOpportunity,
   updateOpportunity,
@@ -20,17 +23,12 @@ import {
   reviewCompletionProof,
   forceCompleteOpportunity,
 } from "../controllers/opportunity.controller.js";
-import Opportunity from "../models/Opportunity.js";
-import { verifyToken } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
-// Public (Volunteer)
-router.get("/all", getAllOpportunities);
-/**
- * @desc Get all opportunities (for volunteers to browse)
- * @route GET /api/opportunities/all
- */
+/* ------------------------------------------------
+   Public (Volunteer)
+------------------------------------------------ */
 router.get("/all", async (req, res) => {
   try {
     const opportunities = await Opportunity.find()
@@ -50,10 +48,9 @@ router.get("/all", async (req, res) => {
   }
 });
 
-/**
- * @desc Get opportunities posted by specific organization
- * @route GET /api/opportunities/organization/:orgId
- */
+/* ------------------------------------------------
+    Get opportunities posted by specific organization
+------------------------------------------------ */
 router.get("/organization/:orgId", async (req, res) => {
   try {
     const opportunities = await Opportunity.find({
@@ -74,10 +71,9 @@ router.get("/organization/:orgId", async (req, res) => {
   }
 });
 
-/**
- * @desc Get single opportunity by ID
- * @route GET /api/opportunities/view/:id
- */
+/* ------------------------------------------------
+   Get single opportunity by ID
+------------------------------------------------ */
 router.get("/view/:id", async (req, res) => {
   try {
     const opportunity = await Opportunity.findById(req.params.id);
@@ -90,47 +86,45 @@ router.get("/view/:id", async (req, res) => {
   }
 });
 
-/**
- * @desc Mark a volunteer as completed for a specific opportunity
- * @route PATCH /api/opportunities/:oppId/confirm/:volunteerId
- */
-router.patch("/:oppId/confirm/:volunteerId", confirmVolunteerCompletion);
+/* ------------------------------------------------
+   Create & Update (with Image Upload)
+------------------------------------------------ */
+// Create new opportunity (with poster/image)
+router.post("/", uploadImages.single("file"), createOpportunity);
 
-/**
- * @desc Create new opportunity (with file upload)
- * @route POST /api/opportunities
- */
-router.post("/", upload.single("file"), createOpportunity);
-router.put("/:id", upload.single("file"), updateOpportunity);
+// Update opportunity (with new poster/image)
+router.put("/:id", uploadImages.single("file"), updateOpportunity);
 
-/**
- * @desc Dashboard routes (organization-specific)
- */
+/* ------------------------------------------------
+   Dashboard routes (organization-specific)
+------------------------------------------------ */
 router.get("/organization/:orgId/stats", getStats);
 router.get("/organization/:orgId/notifications", getNotifications);
 router.get("/organization/:orgId/activity", getActivity);
 router.get("/:id/volunteers", getOpportunityVolunteers);
 
-/**
- * @desc Mark entire opportunity as completed (organization action)
- * @route PATCH /api/opportunities/:id/complete
- */
+/* ------------------------------------------------
+   Volunteer & Completion Management
+------------------------------------------------ */
+// Volunteer sign-up
+router.post("/:id/signup", verifyToken, volunteerSignup);
+
+// Mark volunteer as completed
+router.patch("/:oppId/confirm/:volunteerId", confirmVolunteerCompletion);
+
+// Mark entire opportunity completed
 router.patch("/:id/complete", markOpportunityCompleted);
 
-router.post("/:id/proof", verifyToken, upload.single("file"), submitCompletionProof);
+// Submit and review proof
+router.post("/:id/proof", verifyToken, uploadImages.single("file"), submitCompletionProof);
 router.patch("/:id/proof/:volunteerId/review", verifyToken, reviewCompletionProof);
+
+// Force mark opportunity complete
 router.patch("/:id/force-complete", forceCompleteOpportunity);
 
-/**
- * @desc Delete specific opportunity
- * @route DELETE /api/opportunities/:id
- */
+/* ------------------------------------------------
+   Delete specific opportunity
+------------------------------------------------ */
 router.delete("/:id", deleteOpportunity);
-
-/**
- * @desc Volunteer sign-up for opportunity
- * @route POST /api/opportunities/:id/signup
- */
-router.post("/:id/signup", verifyToken, volunteerSignup);
 
 export default router;

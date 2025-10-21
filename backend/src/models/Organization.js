@@ -13,6 +13,21 @@ const organizationSchema = new mongoose.Schema(
     description: { type: String },
     otpCode: String,
     otpExpire: Date,
+
+    // Newly added fields for verification
+    document: {
+      type: String, // File path or URL of the uploaded verification document
+      default: null,
+    },
+    status: {
+      type: String,
+      enum: ["pending", "active", "suspended"],
+      default: "pending", // Automatically set to pending until admin approval
+    },
+
+    suspensionReason: { type: String, default: null },
+    suspensionDate: { type: Date, default: null },
+    suspendedBy: { type: String, default: null }, // admin email/name
   },
   { timestamps: true }
 );

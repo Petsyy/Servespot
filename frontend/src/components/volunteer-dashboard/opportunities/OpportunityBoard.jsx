@@ -11,7 +11,7 @@ import {
   UploadCloud,
 } from "lucide-react";
 import { getOpportunityById } from "@/services/api";
-import { signupForOpportunity } from "@/services/volunteer.api"
+import { signupForOpportunity } from "@/services/volunteer.api";
 import { toast } from "react-toastify";
 import ProofUploadModal from "@/components/volunteer-dashboard/opportunities/ProofUploadModal";
 
@@ -125,57 +125,67 @@ export default function OpportunityBoard({
     return () => clearInterval(interval);
   }, [_id, currentVolunteers, volunteersNeeded, currentStatus]);
 
-const handleSignup = async () => {
-  try {
-    // Step 1: Confirm user action
-    const confirmed = await confirmJoin();
-    if (!confirmed) {
-      await cancelledAlert();
-      return;
-    }
-
-    // Step 2: Check if full or closed
-    if (isFull || currentStatus === "Closed") {
-      await warningAlert(
-        "Unable to Join",
-        "This opportunity is already full or closed."
-      );
-      return;
-    }
-
-    // Step 3: Proceed joining
-    const volunteerId = localStorage.getItem("volunteerId");
-    const joinedKey = volunteerId ? `joinedTasks_${volunteerId}` : "joinedTasks";
-
-    setLoading(true);
-    const res = await signupForOpportunity(_id);
-
-    // Update joined list locally
-    const joinedTasks = JSON.parse(localStorage.getItem(joinedKey) || "[]");
-    if (!joinedTasks.includes(_id)) {
-      joinedTasks.push(_id);
-      localStorage.setItem(joinedKey, JSON.stringify(joinedTasks));
-    }
-
-    setIsJoined(true);
-
-    const { currentVolunteers, volunteersNeeded, opportunityStatus } = res.data;
-    if (currentVolunteers >= volunteersNeeded || opportunityStatus === "In Progress") {
-      setIsFull(true);
-    }
-    // Step 4: Success alert
-    await successAlert(
-      "Joined Successfully!",
-      res.data.message || "You’re now part of this opportunity."
-    );
-  } catch (err) {
-    console.error("Sign-up error:", err);
-    const msg = err.response?.data?.message || "Failed to sign up.";
-    await errorAlert("Sign-Up Failed", msg);
-  } finally {
-    setLoading(false);
+  if (currentStatus === "Completed" || proofStatus === "Approved") {
+    return null;
   }
-};
+
+  const handleSignup = async () => {
+    try {
+      // Step 1: Confirm user action
+      const confirmed = await confirmJoin();
+      if (!confirmed) {
+        await cancelledAlert();
+        return;
+      }
+
+      // Step 2: Check if full or closed
+      if (isFull || currentStatus === "Closed") {
+        await warningAlert(
+          "Unable to Join",
+          "This opportunity is already full or closed."
+        );
+        return;
+      }
+
+      // Step 3: Proceed joining
+      const volunteerId = localStorage.getItem("volunteerId");
+      const joinedKey = volunteerId
+        ? `joinedTasks_${volunteerId}`
+        : "joinedTasks";
+
+      setLoading(true);
+      const res = await signupForOpportunity(_id);
+
+      // Update joined list locally
+      const joinedTasks = JSON.parse(localStorage.getItem(joinedKey) || "[]");
+      if (!joinedTasks.includes(_id)) {
+        joinedTasks.push(_id);
+        localStorage.setItem(joinedKey, JSON.stringify(joinedTasks));
+      }
+
+      setIsJoined(true);
+
+      const { currentVolunteers, volunteersNeeded, opportunityStatus } =
+        res.data;
+      if (
+        currentVolunteers >= volunteersNeeded ||
+        opportunityStatus === "In Progress"
+      ) {
+        setIsFull(true);
+      }
+      // Step 4: Success alert
+      await successAlert(
+        "Joined Successfully!",
+        res.data.message || "You’re now part of this opportunity."
+      );
+    } catch (err) {
+      console.error("Sign-up error:", err);
+      const msg = err.response?.data?.message || "Failed to sign up.";
+      await errorAlert("Sign-Up Failed", msg);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden flex flex-col w-72 transition hover:shadow-lg">
@@ -301,7 +311,7 @@ const handleSignup = async () => {
                 {proofStatus === "Rejected" && (
                   <button
                     onClick={() => setShowProofModal(true)}
-                    className="w-full h-10 rounded-lg bg-red-500 hover:bg-red-600 text-white font-medium flex items-center justify-center gap-2 transition"
+                    className="w-full h-10 rounded-lg bg-red-500 hover:bg-red-600 text-white font-medium flex items-center justify-center gap-2 transition cursor-pointer"
                   >
                     <UploadCloud size={16} />
                     Resubmit Proof
@@ -311,7 +321,7 @@ const handleSignup = async () => {
                 {!proofStatus && (
                   <button
                     onClick={() => setShowProofModal(true)}
-                    className="w-full h-10 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-medium flex items-center justify-center gap-2 transition"
+                    className="w-full h-10 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-medium flex items-center justify-center gap-2 transition cursor-pointer"
                   >
                     <UploadCloud size={16} />
                     Submit Proof
@@ -357,7 +367,7 @@ const handleSignup = async () => {
             <button
               onClick={handleSignup}
               disabled={loading}
-              className="w-full h-10 rounded-lg bg-green-600 hover:bg-green-700 text-white font-medium flex items-center justify-center gap-2 transition"
+              className="w-full h-10 rounded-lg bg-green-600 hover:bg-green-700 text-white font-medium flex items-center justify-center gap-2 transition cursor-pointer"
             >
               {loading ? (
                 <>
@@ -386,7 +396,7 @@ const handleSignup = async () => {
               ) : (
                 <>
                   <CheckCircle size={16} />
-                  Sign Up
+                  Join Task
                 </>
               )}
             </button>

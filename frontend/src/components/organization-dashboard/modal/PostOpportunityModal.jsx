@@ -215,12 +215,24 @@ export default function PostOpportunityModal({ onClose, onSuccess }) {
                 min="1"
                 className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none"
                 value={form.volunteersNeeded}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    volunteersNeeded: parseInt(e.target.value),
-                  })
-                }
+                onChange={(e) => {
+                  const value = e.target.value;
+                  // Handle empty or invalid input
+                  if (value === "" || isNaN(parseInt(value))) {
+                    setForm({ ...form, volunteersNeeded: 1 }); // Default to 1
+                  } else {
+                    setForm({
+                      ...form,
+                      volunteersNeeded: parseInt(value) || 1, // Fallback to 1 if NaN
+                    });
+                  }
+                }}
+                onBlur={(e) => {
+                  // Ensure minimum value on blur
+                  if (!form.volunteersNeeded || form.volunteersNeeded < 1) {
+                    setForm({ ...form, volunteersNeeded: 1 });
+                  }
+                }}
               />
             </div>
 
@@ -244,8 +256,7 @@ export default function PostOpportunityModal({ onClose, onSuccess }) {
             </div>
           </form>
 
-          {/* RIGHT PREVIEW */}
-          <div className="sticky top-0">
+          <div className="sticky top-0 self-start">
             <div className="pl-1">
               <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
                 Live Preview

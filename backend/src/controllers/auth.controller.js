@@ -55,15 +55,22 @@ export const registerOrganization = async (req, res) => {
     if (existing)
       return res.status(400).json({ message: "Email already exists" });
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // Hash provided or dummy password
+    const hashedPassword = await bcrypt.hash(password || "temporary123", 10);
+
+    // handle uploaded document
+    const documentPath = req.file ? `/uploads/${req.file.filename}` : null;
 
     const organization = new Organization({
       ...req.body,
       password: hashedPassword,
+      document: documentPath,
+      status: "pending",
     });
+
     await organization.save();
 
-    // Generate token for auto-login
+    // Generate token
     const token = generateToken(organization._id, "organization");
 
     res.status(201).json({
@@ -78,7 +85,11 @@ export const registerOrganization = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ message: "Error registering organization", error });
+    console.error("❌ Organization registration failed:", error);
+    res.status(500).json({
+      message: "Error registering organization",
+      error: error.message,
+    });
   }
 };
 
@@ -90,6 +101,13 @@ export const loginVolunteer = async (req, res) => {
     const volunteer = await Volunteer.findOne({ email });
     if (!volunteer)
       return res.status(400).json({ message: "Invalid credentials" });
+
+    if (volunteer.status === "suspended") {
+      return res.status(403).json({
+        message: "Your volunteer account has been suspended.",
+        reason: volunteer.suspensionReason,
+      });
+    }
 
     const isMatch = await bcrypt.compare(password, volunteer.password);
     if (!isMatch)
@@ -123,6 +141,13 @@ export const loginOrganization = async (req, res) => {
     const isMatch = await bcrypt.compare(password, organization.password);
     if (!isMatch)
       return res.status(400).json({ message: "Invalid credentials" });
+
+    if (organization.status === "suspended") {
+      return res.status(403).json({
+        message: "Your account has been suspended.",
+        reason: organization.suspensionReason,
+      });
+    }
 
     const token = generateToken(organization._id, "organization");
 

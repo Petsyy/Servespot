@@ -6,6 +6,9 @@ import {
   Activity,
   CheckCircle,
   TrendingUp,
+  Building2,
+  ClipboardList,
+  CheckCircle2,
 } from "lucide-react";
 import AdminSidebar from "@/components/layout/sidebars/AdminSidebar";
 import AdminNavbar from "@/components/layout/navbars/AdminNavbar";
@@ -21,6 +24,8 @@ import {
   YAxis,
   Tooltip,
   Legend,
+  LineChart,
+  Line,
 } from "recharts";
 
 export default function AdminDashboard() {
@@ -29,26 +34,25 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState({});
   const [loading, setLoading] = useState(true);
 
-  // Sample chart data
+  // Updated chart data
   const chartData = {
-    volunteerGrowth: [
-      { month: "Jan", volunteers: 45 },
-      { month: "Feb", volunteers: 52 },
-      { month: "Mar", volunteers: 48 },
-      { month: "Apr", volunteers: 61 },
-      { month: "May", volunteers: 67 },
-      { month: "Jun", volunteers: 72 },
-      { month: "Jul", volunteers: 85 },
-      { month: "Aug", volunteers: 78 },
-      { month: "Sep", volunteers: 92 },
-      { month: "Oct", volunteers: 104 },
-      { month: "Nov", volunteers: 118 },
-      { month: "Dec", volunteers: 128 },
+    weeklyActivity: [
+      { day: "Mon", hours: 45, tasks: 12 },
+      { day: "Tue", hours: 52, tasks: 15 },
+      { day: "Wed", hours: 48, tasks: 11 },
+      { day: "Thu", hours: 61, tasks: 18 },
+      { day: "Fri", hours: 67, tasks: 20 },
+      { day: "Sat", hours: 85, tasks: 25 },
+      { day: "Sun", hours: 72, tasks: 22 },
     ],
-    opportunityStatus: [
-      { name: "Open", value: 156, color: "#10b981" },
-      { name: "In Progress", value: 89, color: "#f59e0b" },
-      { name: "Completed", value: 211, color: "#3b82f6" },
+    weeklyTasks: [
+      { day: "Mon", completed: 8 },
+      { day: "Tue", completed: 12 },
+      { day: "Wed", completed: 9 },
+      { day: "Thu", completed: 15 },
+      { day: "Fri", completed: 18 },
+      { day: "Sat", completed: 22 },
+      { day: "Sun", completed: 16 },
     ],
   };
 
@@ -95,30 +99,6 @@ export default function AdminDashboard() {
     fetchAdminData();
   }, []);
 
-  const StatCard = ({ icon: Icon, title, value, trend, color, bgColor }) => (
-    <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-all">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-gray-600 mb-1">{title}</p>
-          <p className="text-2xl font-bold text-gray-900">
-            {loading ? "..." : value?.toLocaleString()}
-          </p>
-          {trend && (
-            <div className="flex items-center mt-2">
-              <TrendingUp className={`w-4 h-4 ${trend.color} mr-1`} />
-              <span className={`text-xs font-medium ${trend.color}`}>
-                {trend.value}
-              </span>
-            </div>
-          )}
-        </div>
-        <div className={`p-3 rounded-lg ${bgColor}`}>
-          <Icon className={`w-6 h-6 ${color}`} />
-        </div>
-      </div>
-    </div>
-  );
-
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
@@ -135,16 +115,13 @@ export default function AdminDashboard() {
     return null;
   };
 
-  const PieTooltip = ({ active, payload }) => {
+  const WeeklyTasksTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
-          <p className="font-semibold text-gray-900">{payload[0].name}</p>
-          <p className="text-sm" style={{ color: payload[0].color }}>
-            Opportunities: {payload[0].value}
-          </p>
-          <p className="text-sm text-gray-600">
-            {((payload[0].value / 456) * 100).toFixed(1)}% of total
+          <p className="font-semibold text-gray-900">{label}</p>
+          <p className="text-sm text-green-600">
+            Tasks Completed: {payload[0].value}
           </p>
         </div>
       );
@@ -172,123 +149,147 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <StatCard
-              icon={Users}
-              title="Total Volunteers"
-              value={stats.totalVolunteers}
-              trend={{ value: "↑ 12% from last month", color: "text-green-600" }}
-              color="text-blue-600"
-              bgColor="bg-blue-100"
-            />
-            <StatCard
-              icon={Building}
-              title="Total Organizations"
-              value={stats.totalOrganizations}
-              trend={{ value: "↑ 8% from last month", color: "text-green-600" }}
-              color="text-indigo-600"
-              bgColor="bg-indigo-100"
-            />
-            <StatCard
-              icon={Activity}
-              title="Active Opportunities"
-              value={stats.activeOpportunities}
-              trend={{ value: "↑ 15% from last month", color: "text-green-600" }}
-              color="text-yellow-600"
-              bgColor="bg-yellow-100"
-            />
-            <StatCard
-              icon={CheckCircle}
-              title="Completed Opportunities"
-              value={stats.completedOpportunities}
-              trend={{ value: "↑ 18% from last month", color: "text-green-600" }}
-              color="text-green-600"
-              bgColor="bg-green-100"
-            />
+          {/* Summary Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="bg-white shadow-sm rounded-xl p-5 flex items-center justify-between border-l-4 border-blue-500 hover:shadow-md transition-all duration-200">
+              <div>
+                <p className="text-sm text-gray-500 font-medium">
+                  Total Volunteers
+                </p>
+                <h3 className="text-2xl font-bold text-gray-800">
+                  {loading ? "..." : stats.totalVolunteers?.toLocaleString()}
+                </h3>
+                <p className="text-xs text-green-600 mt-1">
+                  ↑ 12% from last month
+                </p>
+              </div>
+              <Users className="h-10 w-10 text-blue-600" />
+            </div>
+
+            <div className="bg-white shadow-sm rounded-xl p-5 flex items-center justify-between border-l-4 border-indigo-500 hover:shadow-md transition-all duration-200">
+              <div>
+                <p className="text-sm text-gray-500 font-medium">
+                  Total Organizations
+                </p>
+                <h3 className="text-2xl font-bold text-gray-800">
+                  {loading ? "..." : stats.totalOrganizations?.toLocaleString()}
+                </h3>
+                <p className="text-xs text-green-600 mt-1">
+                  ↑ 8% from last month
+                </p>
+              </div>
+              <Building2 className="h-10 w-10 text-indigo-600" />
+            </div>
+
+            <div className="bg-white shadow-sm rounded-xl p-5 flex items-center justify-between border-l-4 border-yellow-500 hover:shadow-md transition-all duration-200">
+              <div>
+                <p className="text-sm text-gray-500 font-medium">
+                  Active Opportunities
+                </p>
+                <h3 className="text-2xl font-bold text-gray-800">
+                  {loading ? "..." : stats.activeOpportunities?.toLocaleString()}
+                </h3>
+                <p className="text-xs text-green-600 mt-1">
+                  ↑ 15% from last month
+                </p>
+              </div>
+              <ClipboardList className="h-10 w-10 text-yellow-600" />
+            </div>
+
+            <div className="bg-white shadow-sm rounded-xl p-5 flex items-center justify-between border-l-4 border-green-500 hover:shadow-md transition-all duration-200">
+              <div>
+                <p className="text-sm text-gray-500 font-medium">
+                  Completed Opportunities
+                </p>
+                <h3 className="text-2xl font-bold text-gray-800">
+                  {loading ? "..." : stats.completedOpportunities?.toLocaleString()}
+                </h3>
+                <p className="text-xs text-green-600 mt-1">
+                  ↑ 18% from last month
+                </p>
+              </div>
+              <CheckCircle2 className="h-10 w-10 text-green-600" />
+            </div>
           </div>
 
           {/* Charts Section */}
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-            {/* Volunteer Growth Chart - Bar Chart */}
+            {/* Weekly Volunteer Activity - Line Chart */}
             <div className="bg-white rounded-xl border border-gray-200 p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-semibold text-gray-900">
-                  Volunteer Signups Over Time
+                  Weekly Volunteer Activity
                 </h2>
-                <span className="text-sm text-gray-500">Monthly Growth</span>
+                <span className="text-sm text-gray-500">Hours & Tasks</span>
               </div>
               <div className="w-full h-80">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData.volunteerGrowth}>
+                  <LineChart data={chartData.weeklyActivity}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
                     <XAxis 
-                      dataKey="month" 
+                      dataKey="day" 
                       fontSize={12}
                     />
                     <YAxis fontSize={12} />
                     <Tooltip content={<CustomTooltip />} />
+                    <Legend />
+                    <Line 
+                      type="monotone" 
+                      dataKey="hours" 
+                      stroke="#3b82f6" 
+                      strokeWidth={2}
+                      name="Volunteer Hours"
+                      dot={{ r: 4 }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="tasks" 
+                      stroke="#10b981" 
+                      strokeWidth={2}
+                      name="Tasks Completed"
+                      dot={{ r: 4 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="mt-4 text-center">
+                <p className="text-sm text-gray-600">
+                  Total hours this week: {chartData.weeklyActivity.reduce((sum, day) => sum + day.hours, 0)}
+                </p>
+              </div>
+            </div>
+
+            {/* Tasks Completed This Week - Bar Chart */}
+            <div className="bg-white rounded-xl border border-gray-200 p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Tasks Completed This Week
+                </h2>
+                <span className="text-sm text-gray-500">Daily Progress</span>
+              </div>
+              <div className="w-full h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={chartData.weeklyTasks}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
+                    <XAxis 
+                      dataKey="day" 
+                      fontSize={12}
+                    />
+                    <YAxis fontSize={12} />
+                    <Tooltip content={<WeeklyTasksTooltip />} />
                     <Bar 
-                      dataKey="volunteers" 
-                      fill="#3b82f6"
+                      dataKey="completed" 
+                      fill="#10b981"
                       radius={[4, 4, 0, 0]}
-                      name="New Volunteers"
+                      name="Tasks Completed"
                     />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
               <div className="mt-4 text-center">
                 <p className="text-sm text-gray-600">
-                  Total new volunteers this year: {chartData.volunteerGrowth.reduce((sum, month) => sum + month.volunteers, 0)}
+                  Total tasks completed this week: {chartData.weeklyTasks.reduce((sum, day) => sum + day.completed, 0)}
                 </p>
-              </div>
-            </div>
-
-            {/* Opportunity Status Breakdown - Pie Chart */}
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-semibold text-gray-900">
-                  Opportunities by Status
-                </h2>
-                <span className="text-sm text-gray-500">Current Distribution</span>
-              </div>
-              <div className="w-full h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={chartData.opportunityStatus}
-                      dataKey="value"
-                      nameKey="name"
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={120}
-                      label={({ name, value }) => `${name}: ${value}`}
-                      labelLine={false}
-                    >
-                      {chartData.opportunityStatus.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip content={<PieTooltip />} />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="mt-4 grid grid-cols-3 gap-4 text-center">
-                {chartData.opportunityStatus.map((status, index) => (
-                  <div key={index} className="text-center">
-                    <div className="flex items-center justify-center mb-1">
-                      <div 
-                        className="w-3 h-3 rounded-full mr-2"
-                        style={{ backgroundColor: status.color }}
-                      ></div>
-                      <span className="text-sm font-medium text-gray-900">
-                        {status.value}
-                      </span>
-                    </div>
-                    <p className="text-xs text-gray-600">{status.name}</p>
-                  </div>
-                ))}
               </div>
             </div>
           </div>

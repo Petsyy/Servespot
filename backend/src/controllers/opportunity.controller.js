@@ -111,7 +111,6 @@ export const updateOpportunity = async (req, res) => {
 };
 
 // Volunteer signs up for an opportunity
-// Volunteer signs up for an opportunity
 export const volunteerSignup = async (req, res) => {
   try {
     const volunteerId = req.user?.id;
@@ -200,7 +199,7 @@ export const getAllOpportunities = async (req, res) => {
 
     res.status(200).json(opportunities);
   } catch (err) {
-    console.error("❌ Error fetching uncompleted opportunities:", err);
+    console.error("Error fetching uncompleted opportunities:", err);
     res
       .status(500)
       .json({ message: "Failed to load opportunities", error: err.message });

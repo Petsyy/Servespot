@@ -32,8 +32,6 @@ export default function AdminSidebar({ isOpen, onClose }) {
     { to: "/admin/dashboard", icon: LayoutGrid, label: "Dashboard" },
     { to: "/admin/management", icon: Users, label: "User Management" },
     { to: "/admin/reports", icon: BarChart3, label: "Reports & Analytics" },
-    { to: "/admin/approvals", icon: Shield, label: "Content Moderation" },
-    { to: "/admin/system", icon: Settings, label: "System Settings" },
   ];
 
   return (
@@ -110,7 +108,6 @@ export default function AdminSidebar({ isOpen, onClose }) {
 
           {/* Bottom Section */}
           <div className="flex-shrink-0 space-y-3">
-
             {/* Logout Button */}
             <button
               onClick={handleLogout}
