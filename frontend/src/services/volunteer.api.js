@@ -26,8 +26,14 @@ export const signupForOpportunity = (id) =>
 export const getVolunteerOverview = () => API.get("/volunteer/me");
 
 export const getVolunteerTasks = () => API.get("/volunteer/me/tasks");
+
 export const getVolunteerNotifications = () =>
-  API.get("/volunteer/me/notifications");
+  API.get("/notifications/volunteer", {
+    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+  });
+  
 export const getVolunteerProgress = () => API.get("/volunteer/me/progress");
+
 export const getVolunteerBadges = () => API.get("/volunteer/me/badges?limit=6");
+
 export const getTopVolunteers = () => API.get("/volunteer/top?limit=3");

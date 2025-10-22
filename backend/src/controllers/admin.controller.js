@@ -4,7 +4,7 @@ import Volunteer from "../models/Volunteer.js";
 import Opportunity from "../models/Opportunity.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
-import { io } from "../../server.js";
+import { emitToVolunteer, broadcastToAdmins, emitToOrganization} from "../../server.js";
 
 /* =====================================================
 ADMIN AUTHENTICATION
@@ -30,7 +30,7 @@ export const loginAdmin = async (req, res) => {
     res.status(200).json({
       message: "Login successful",
       token,
-      admin: { name: admin.name, email: admin.email },
+      admin: { id: admin._id, name: admin.name, email: admin.email },
     });
   } catch (err) {
     console.error("Login error:", err);
@@ -90,6 +90,18 @@ export const updateOrganizationStatus = async (req, res) => {
       );
     }
 
+    if (status === "suspended") {
+      emitToOrganization(id, "suspended", { reason });
+    } else if (status === "active") {
+      emitToOrganization(id, "reactivated", {});
+    }
+
+    // ✅ Broadcast to all admins for instant refresh
+    broadcastToAdmins("organizationStatusUpdated", {
+      orgId: id,
+      status,
+    });
+
     res.status(200).json({
       message:
         status === "suspended"
@@ -140,17 +152,20 @@ export const updateVolunteerStatus = async (req, res) => {
 
     await volunteer.save();
 
-    // Real-time Socket.IO events
-    const socketId = global.onlineVolunteers.get(id);
-    if (socketId) {
-      if (status === "suspended") {
-        io.to(socketId).emit("suspended", {
-          reason: volunteer.suspensionReason,
-        });
-      } else if (status === "active") {
-        io.to(socketId).emit("reactivated");
-      }
+    // Emit real-time socket event after DB update
+    if (status === "suspended") {
+      emitToVolunteer(id, "suspended", {
+        reason: volunteer.suspensionReason,
+      });
+    } else if (status === "active") {
+      emitToVolunteer(id, "reactivated", {});
     }
+
+    // Notify all connected admins (auto-refresh on dashboard)
+    broadcastToAdmins("volunteerStatusUpdated", {
+      userId: id,
+      status,
+    });
 
     res.status(200).json({
       message:

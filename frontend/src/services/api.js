@@ -32,10 +32,6 @@ API.interceptors.response.use(
     if (status === 403 && message.toLowerCase().includes("suspended")) {
       const reason = error.response?.data?.reason || "No reason provided";
 
-      toast.error(`Your account has been suspended.\nReason: ${reason}`, {
-        autoClose: 6000,
-      });
-
       // Clear all stored sessions
       localStorage.removeItem("token");
       localStorage.removeItem("orgToken");

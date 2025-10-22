@@ -25,6 +25,7 @@ import {
   updateVolunteerStatus,
 } from "@/services/admin.api";
 import { toast } from "react-toastify";
+import { socket, registerUserSocket } from "@/utils/socket";
 import { buildFileUrl } from "@/utils/fileUrl";
 import DocumentViewerModal from "@/components/organization-dashboard/modal/DocumentViewerModal";
 import AdminSidebar from "@/components/layout/sidebars/AdminSidebar";
@@ -215,6 +216,7 @@ export default function UserManagement() {
   const [organizations, setOrganizations] = useState([]);
   const [volunteers, setVolunteers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
   const closeSidebar = () => setSidebarOpen(false);
@@ -251,6 +253,29 @@ export default function UserManagement() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+  const adminId = localStorage.getItem("adminId") || "defaultAdmin";
+  registerUserSocket(adminId, "admin");
+
+  socket.on("volunteerStatusUpdated", ({ userId, status }) => {
+    setVolunteers((prev) =>
+      prev.map((v) => (v._id === userId ? { ...v, status } : v))
+    );
+  });
+
+  socket.on("organizationStatusUpdated", ({ orgId, status }) => {
+    setOrganizations((prev) =>
+      prev.map((o) => (o._id === orgId ? { ...o, status } : o))
+    );
+    toast.info(`Organization status updated: ${status}`);
+  });
+
+  return () => {
+    socket.off("volunteerStatusUpdated");
+    socket.off("organizationStatusUpdated");
+  };
+}, []);
+
   /* -----------------------------
      SWEETALERT2 HANDLERS
   ----------------------------- */
@@ -277,32 +302,41 @@ export default function UserManagement() {
   };
 
 const handleSuspendUser = async (user) => {
+  if (actionLoading) return; // prevent double click
+  setActionLoading(true);
+
   const userType = user.role === "organization" ? "Organization" : "Volunteer";
   const userName = user.orgName || user.fullName;
-
   const confirmed = await confirmSuspension(userType, userName);
-  if (!confirmed) return;
+  if (!confirmed) {
+    setActionLoading(false);
+    return;
+  }
 
   try {
     if (user.role === "organization") {
       await updateOrganizationStatus(user._id, "suspended");
       toast.info(`${user.orgName} has been suspended.`);
-      const updated = await getAllOrganizations();
-      const orgs = Array.isArray(updated.data)
-        ? updated.data
-        : updated.data.organizations;
-      setOrganizations((orgs || []).map((o) => ({ ...o, role: "organization" })));
+      setOrganizations((prev) =>
+        prev.map((o) =>
+          o._id === user._id ? { ...o, status: "suspended" } : o
+        )
+      );
     } else {
       await updateVolunteerStatus(user._id, "suspended");
       toast.info(`${user.fullName} has been suspended.`);
-      const updated = await getAllVolunteers();
-      const vols = Array.isArray(updated.data)
-        ? updated.data
-        : updated.data.volunteers;
-      setVolunteers((vols || []).map((v) => ({ ...v, role: "volunteer" })));
+      setVolunteers((prev) =>
+        prev.map((v) =>
+          v._id === user._id ? { ...v, status: "suspended" } : v
+        )
+      );
     }
   } catch (error) {
+    console.error(error);
     toast.error(`Failed to suspend ${user.role}`);
+  } finally {
+    // prevent rapid toggling
+    setTimeout(() => setActionLoading(false), 800);
   }
 };
 
@@ -507,7 +541,7 @@ const handleSuspendUser = async (user) => {
                                 icon={UserX}
                                 label="Suspend"
                                 variant="suspend"
-                                onClick={() => handleSuspendUser(user)}
+                                onClick={() => !actionLoading && handleSuspendUser(user)}
                               />
                             ) : null}
 
@@ -517,7 +551,7 @@ const handleSuspendUser = async (user) => {
                                 icon={RotateCcw}
                                 label="Reactivate"
                                 variant="reactivate"
-                                onClick={() => handleReactivateUser(user)}
+                                onClick={() => !actionLoading && handleReactivateUser(user)}
                               />
                             )}
                           </div>

@@ -106,8 +106,6 @@ export const updateOrgVolunteerStatus = async (req, res) => {
     }
 
     await opportunity.save();
-
-    res.status(200).json({ message: `Volunteer status updated to ${status}` });
   } catch (err) {
     console.error("updateOrgVolunteerStatus error:", err);
     res.status(500).json({ message: "Failed to update volunteer status" });

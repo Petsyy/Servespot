@@ -5,6 +5,7 @@ import FormInput from "@/components/ui/FormInput";
 import { Link, useNavigate } from "react-router-dom";
 import { loginVolunteer, loginOrganization } from "@/services/api";
 import useApi from "@/hooks/useApi";
+import { registerUserSocket } from "@/utils/socket";
 
 export default function LoginForm({ role = "Volunteer", icon: Icon }) {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -46,10 +47,14 @@ export default function LoginForm({ role = "Volunteer", icon: Icon }) {
         const volunteerName = data.user?.fullName || "Volunteer";
 
         localStorage.setItem("volunteerName", volunteerName);
-        console.log("🔍 Stored volunteerName in localStorage:", volunteerName);
+        console.log("Stored volunteerName in localStorage:", volunteerName);
 
         localStorage.setItem("token", data.token);
         localStorage.setItem("activeRole", "volunteer");
+
+        // Immediately register volunteer socket right after login
+        registerUserSocket(userId, "volunteer");
+        console.log("Volunteer socket registered after login:", userId);
 
         navigate("/volunteer/homepage");
       } else {
@@ -76,6 +81,10 @@ export default function LoginForm({ role = "Volunteer", icon: Icon }) {
 
         localStorage.setItem("orgName", orgName);
         console.log("🔍 Stored orgName in localStorage:", orgName);
+
+        // ✅ Register socket instantly
+        registerUserSocket(orgId, "organization");
+        console.log("📡 Organization socket registered after login:", orgId);
 
         navigate("/organization/homepage");
       }

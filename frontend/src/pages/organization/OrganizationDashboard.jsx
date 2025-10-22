@@ -9,6 +9,7 @@ import {
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { confirmDelete, successAlert, errorAlert } from "@/utils/swalAlerts";
+import { io } from "socket.io-client";
 import {
   getOpportunities,
   getOrgStats,
@@ -25,6 +26,7 @@ import Notifications from "@/components/organization-dashboard/notifications/Not
 import ImpactSummary from "@/components/organization-dashboard/metrics/ImpactSummary";
 import VolunteerActivity from "@/components/organization-dashboard/volunteers/VolunteerActivity";
 import PostOpportunityModal from "@/components/organization-dashboard/modal/PostOpportunityModal";
+import { socket, registerUserSocket } from "@/utils/socket";
 
 export default function OrganizationDashboard() {
   const navigate = useNavigate();
@@ -53,7 +55,47 @@ export default function OrganizationDashboard() {
     setSidebarOpen(false);
   };
 
-  // SESSION & TOKEN VALIDATION
+  useEffect(() => {
+    const orgId = localStorage.getItem("orgId");
+    const role = "organization";
+    if (orgId) registerUserSocket(orgId, role);
+
+    registerUserSocket(orgId, "organization");
+
+    socket.on("newNotification", (notif) => {
+      toast.info(`${notif.title}: ${notif.message}`, { autoClose: 5000 });
+      setNotifications((prev) => [notif, ...prev]);
+    });
+
+    // ✅ Listen for suspension/reactivation
+    socket.on("suspended", (data) => {
+      const reason = data.reason || "No reason provided.";
+      toast.error(
+        `Your organization account has been suspended.\nReason: ${reason}`,
+        {
+          autoClose: 6000,
+        }
+      );
+      setTimeout(() => {
+        localStorage.clear();
+        window.location.href = "/organization-suspended";
+      }, 3000);
+    });
+
+    socket.on("reactivated", () => {
+      toast.success("✅ Your organization account has been reactivated!", {
+        autoClose: 5000,
+      });
+      localStorage.setItem("justReactivated", "true");
+    });
+
+    return () => {
+      socket.off("newNotification");
+      socket.off("suspended");
+      socket.off("reactivated");
+    };
+  }, []);
+
   useEffect(() => {
     const orgId = localStorage.getItem("orgId");
     const orgToken = localStorage.getItem("orgToken");

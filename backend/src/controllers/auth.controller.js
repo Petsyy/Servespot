@@ -166,15 +166,16 @@ export const loginOrganization = async (req, res) => {
   }
 };
 
-// STEP 1: SEND OTP TO EMAIL
+// ===============================
+// STEP 1: SEND OTP
+// ===============================
 export const sendOTP = async (req, res) => {
   try {
     const { email, role } = req.body;
-    console.log("📧 Received request for OTP:", email, role);
+    console.log("Received request for OTP:", email, role);
 
     const Model = role === "volunteer" ? Volunteer : Organization;
     const user = await Model.findOne({ email });
-
     if (!user) return res.status(404).json({ message: "Email not found" });
 
     const otp = Math.floor(100000 + Math.random() * 900000);
@@ -184,71 +185,52 @@ export const sendOTP = async (req, res) => {
 
     console.log("OTP generated:", otp);
 
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
-
-    const mailOptions = {
-      from: `"ServeSpot Support" <${process.env.EMAIL_USER}>`,
+    // Send using centralized email utility
+    await sendEmail({
       to: email,
       subject: "ServeSpot OTP Code for Password Reset",
       html: `
-    <div style="font-family: Arial, sans-serif; background-color: #f8f9fa; padding: 24px;">
-      <div style="max-width: 480px; margin: auto; background: #ffffff; border-radius: 10px; padding: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
-        
-        <div style="text-align: center; margin-bottom: 20px;">
-          <h1 style="color: #2E8B57; margin: 0;">ServeSpot</h1>
-          <p style="color: #555; font-size: 14px;">Volunteer & Organization Portal</p>
-        </div>
-
-        <hr style="border: none; border-top: 2px solid #e0e0e0; margin: 16px 0;" />
-
-        <h2 style="color: #333; text-align: center; font-size: 18px; margin-bottom: 8px;">
-          Password Reset OTP
-        </h2>
-
-        <p style="color: #555; text-align: center; font-size: 14px;">
-          Hello, we received a request to reset your ServeSpot account password.<br/>
-          Please use the OTP code below to proceed:
-        </p>
-
-        <div style="text-align: center; margin: 25px 0;">
-          <div style="
-            display: inline-block;
-            background: #2E8B57;
-            color: white;
-            padding: 15px 40px;
-            font-size: 26px;
-            letter-spacing: 5px;
-            border-radius: 8px;
-            font-weight: bold;
-          ">
-            ${otp}
+        <div style="font-family: Arial, sans-serif; background-color: #f8f9fa; padding: 24px;">
+          <div style="max-width: 480px; margin: auto; background: #ffffff; border-radius: 10px; padding: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+            <div style="text-align: center; margin-bottom: 20px;">
+              <h1 style="color: #2E8B57; margin: 0;">ServeSpot</h1>
+              <p style="color: #555; font-size: 14px;">Volunteer & Organization Portal</p>
+            </div>
+            <hr style="border: none; border-top: 2px solid #e0e0e0; margin: 16px 0;" />
+            <h2 style="color: #333; text-align: center; font-size: 18px; margin-bottom: 8px;">
+              Password Reset OTP
+            </h2>
+            <p style="color: #555; text-align: center; font-size: 14px;">
+              Hello, we received a request to reset your ServeSpot account password.<br/>
+              Please use the OTP code below to proceed:
+            </p>
+            <div style="text-align: center; margin: 25px 0;">
+              <div style="
+                display: inline-block;
+                background: #2E8B57;
+                color: white;
+                padding: 15px 40px;
+                font-size: 26px;
+                letter-spacing: 5px;
+                border-radius: 8px;
+                font-weight: bold;
+              ">
+                ${otp}
+              </div>
+            </div>
+            <p style="color: #777; text-align: center; font-size: 13px;">
+              This code will expire in <strong>5 minutes</strong> for your security.<br/>
+              If you did not request this, please ignore this message.
+            </p>
+            <hr style="border: none; border-top: 2px solid #e0e0e0; margin: 20px 0;" />
+            <p style="color: #888; font-size: 12px; text-align: center;">
+              © ${new Date().getFullYear()} ServeSpot. All rights reserved.<br/>
+              This is an automated email — please do not reply.
+            </p>
           </div>
         </div>
-
-        <p style="color: #777; text-align: center; font-size: 13px;">
-          This code will expire in <strong>5 minutes</strong> for your security.<br/>
-          If you did not request this, please ignore this message.
-        </p>
-
-        <hr style="border: none; border-top: 2px solid #e0e0e0; margin: 20px 0;" />
-
-        <p style="color: #888; font-size: 12px; text-align: center;">
-          © ${new Date().getFullYear()} ServeSpot. All rights reserved.<br/>
-          This is an automated email — please do not reply.
-        </p>
-
-      </div>
-    </div>
-  `,
-    };
-    const info = await transporter.sendMail(mailOptions);
-    console.log("📨 Email sent:", info.response);
+      `,
+    });
 
     res.status(200).json({ message: "OTP sent successfully" });
   } catch (error) {
@@ -257,7 +239,9 @@ export const sendOTP = async (req, res) => {
   }
 };
 
+// ===============================
 // STEP 2: VERIFY OTP
+// ===============================
 export const verifyOTP = async (req, res) => {
   try {
     const { email, role, otp } = req.body;
@@ -266,14 +250,11 @@ export const verifyOTP = async (req, res) => {
 
     if (!user) return res.status(404).json({ message: "User not found" });
     if (!user.otpCode) return res.status(400).json({ message: "No OTP found" });
-
     if (user.otpExpire < Date.now())
       return res.status(400).json({ message: "OTP expired" });
-
     if (user.otpCode != otp)
       return res.status(400).json({ message: "Invalid OTP" });
 
-    // OTP verified — clear it
     user.otpCode = null;
     user.otpExpire = null;
     await user.save();
@@ -284,7 +265,9 @@ export const verifyOTP = async (req, res) => {
   }
 };
 
+// ===============================
 // STEP 3: RESET PASSWORD
+// ===============================
 export const resetPassword = async (req, res) => {
   try {
     const { email, role, newPassword } = req.body;

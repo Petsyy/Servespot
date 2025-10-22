@@ -13,60 +13,90 @@ import {
   Menu,
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
+import { io } from "socket.io-client";
+import { toast } from "react-toastify";
+import { getVolunteerNotifications } from "@/services/volunteer.api";
+import API from "@/services/api";
+import { socket } from "@/utils/socket";
 
-export default function VolunteerNavbar({
-  onToggleSidebar,
-  notifCount,
-  notifications: notificationsProp,
-}) {
+export default function VolunteerNavbar({ onToggleSidebar }) {
   const navigate = useNavigate();
 
-  // Get volunteer name from localStorage - try multiple possible keys
+  // 🧠 State for notifications
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [openNotif, setOpenNotif] = useState(false);
+  const [openProfile, setOpenProfile] = useState(false);
+  const [isConnected, setIsConnected] = useState(socket.connected);
+
+  const notifRef = useRef(null);
+  const profileRef = useRef(null);
+
+  // 🧩 Get volunteer name (same logic you had)
   const getVolunteerName = () => {
     if (typeof window === "undefined") return "Volunteer";
-    
-    // Try different possible localStorage keys
     const volUser = localStorage.getItem("volUser");
     if (volUser) {
       try {
         const userData = JSON.parse(volUser);
-        if (userData.firstName && userData.lastName) {
+        if (userData.firstName && userData.lastName)
           return `${userData.firstName} ${userData.lastName}`;
-        }
-        if (userData.name) {
-          return userData.name;
-        }
-        if (userData.firstName) {
-          return userData.firstName;
-        }
+        if (userData.name) return userData.name;
+        if (userData.firstName) return userData.firstName;
       } catch (err) {
         console.error("Error parsing volUser:", err);
       }
     }
-    
-    // Try direct localStorage keys
-    const directName = localStorage.getItem("volunteerName") || 
-                      localStorage.getItem("volunteerFullName") || 
-                      localStorage.getItem("userName");
-    
+    const directName =
+      localStorage.getItem("volunteerName") ||
+      localStorage.getItem("volunteerFullName") ||
+      localStorage.getItem("userName");
     return directName?.trim() || "Volunteer";
   };
 
   const volunteerName = getVolunteerName();
 
-  const fallbackNotifs = [
-    { id: 1, title: "Badge Unlocked: First Step", icon: <Award size={16} /> },
-    { id: 2, title: "Task Approved: Park Cleanup" },
-  ];
-  const notifications = notificationsProp ?? fallbackNotifs;
-  const computedCount =
-    typeof notifCount === "number" ? notifCount : notifications.length;
+  // 🧩 Real-time socket notifications
+  useEffect(() => {
+    const volunteerId = localStorage.getItem("volunteerId");
+    if (!volunteerId) return;
 
-  const [openNotif, setOpenNotif] = useState(false);
-  const [openProfile, setOpenProfile] = useState(false);
-  const notifRef = useRef(null);
-  const profileRef = useRef(null);
+    socket.emit("registerVolunteer", volunteerId);
 
+    socket.on("newNotification", (notif) => {
+      toast.info(`🔔 ${notif.title}: ${notif.message}`, { autoClose: 5000 });
+      setNotifications((prev) => [notif, ...prev]);
+      setUnreadCount((c) => c + 1);
+    });
+
+    return () => socket.disconnect();
+  }, []);
+
+  useEffect(() => {
+    // Update state when socket connects/disconnects
+    const handleConnect = () => setIsConnected(true);
+    const handleDisconnect = () => setIsConnected(false);
+
+    socket.on("connect", handleConnect);
+    socket.on("disconnect", handleDisconnect);
+
+    // Auto-register this volunteer if not yet registered
+    const volunteerId = localStorage.getItem("volunteerId");
+    if (volunteerId) socket.emit("registerVolunteer", volunteerId);
+
+    return () => {
+      socket.off("connect", handleConnect);
+      socket.off("disconnect", handleDisconnect);
+    };
+  }, []);
+
+  // 🧩 Mark all read
+  const markAllRead = () => {
+    setUnreadCount(0);
+    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+  };
+
+  // 🧩 Outside click/ESC close
   useEffect(() => {
     const onClick = (e) => {
       if (notifRef.current && !notifRef.current.contains(e.target))
@@ -86,6 +116,23 @@ export default function VolunteerNavbar({
       document.removeEventListener("mousedown", onClick);
       document.removeEventListener("keydown", onEsc);
     };
+  }, []);
+
+  useEffect(() => {
+    const fetchNotifs = async () => {
+      try {
+        const res = await getVolunteerNotifications();
+        if (res?.data) {
+          const notifs = Array.isArray(res.data) ? res.data : [];
+          setNotifications(notifs);
+          setUnreadCount(notifs.filter((n) => !n.isRead).length);
+        }
+      } catch (err) {
+        console.error("❌ Failed to load notifications:", err);
+      }
+    };
+
+    fetchNotifs();
   }, []);
 
   const initials = useMemo(() => {
@@ -109,7 +156,6 @@ export default function VolunteerNavbar({
       <div className="h-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         {/* Left: Sidebar Toggle + Brand */}
         <div className="flex items-center gap-3">
-          {/* Hamburger Menu - Only visible on mobile */}
           <button
             onClick={onToggleSidebar}
             className="md:hidden p-2 rounded-lg hover:bg-gray-100 text-gray-600"
@@ -122,7 +168,7 @@ export default function VolunteerNavbar({
           </h1>
         </div>
 
-        {/* Center: Navigation */}
+        {/* Center Navigation */}
         <div className="hidden md:flex items-center gap-8 flex-1 justify-center">
           <nav className="flex items-center gap-6">
             <NavLink to="/volunteer/dashboard" className={navLinkCls}>
@@ -133,7 +179,6 @@ export default function VolunteerNavbar({
             </NavLink>
           </nav>
 
-          {/* Search Bar */}
           <label className="relative w-64">
             <Search
               size={18}
@@ -149,10 +194,25 @@ export default function VolunteerNavbar({
 
         {/* Right: Notifications & Profile */}
         <div className="flex items-center gap-2 sm:gap-3">
-          {/* Mobile Search Button - Visible only on mobile */}
           <button className="md:hidden p-2 rounded-lg hover:bg-gray-100 text-gray-600">
             <Search size={20} />
           </button>
+
+          {/* Live Connection Indicator */}
+          <div
+            className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full border ${
+              isConnected
+                ? "text-green-700 border-green-400 bg-green-50"
+                : "text-red-700 border-red-400 bg-red-50"
+            }`}
+          >
+            <span
+              className={`w-2.5 h-2.5 rounded-full ${
+                isConnected ? "bg-green-500" : "bg-red-500"
+              }`}
+            />
+            {isConnected ? "Connected" : "Disconnected"}
+          </div>
 
           {/* Notifications */}
           <div className="relative" ref={notifRef}>
@@ -161,31 +221,68 @@ export default function VolunteerNavbar({
               className="relative p-2 rounded-xl hover:bg-gray-100 text-gray-600 hover:text-blue-600 outline-none focus:ring-2 focus:ring-blue-300"
             >
               <Bell size={20} />
-              {computedCount > 0 && (
+              {notifications && notifications.some((n) => !n.isRead) && (
                 <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] rounded-full min-w-[16px] h-4 px-1 grid place-items-center">
-                  {computedCount > 9 ? "9+" : computedCount}
+                  ●
                 </span>
               )}
             </button>
 
             {openNotif && (
-              <div className="absolute right-0 mt-2 w-72 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden animate-in fade-in zoom-in-95">
-                <div className="px-3 py-2 border-b bg-gray-50">
+              <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden animate-in fade-in zoom-in-95">
+                <div className="px-3 py-2 border-b bg-gray-50 flex justify-between items-center">
                   <p className="text-sm font-semibold text-gray-800">
                     Notifications
                   </p>
+                  <button
+                    onClick={async () => {
+                      try {
+                        await API.patch(
+                          "/notifications/mark-all-read",
+                          {},
+                          {
+                            headers: {
+                              Authorization: `Bearer ${localStorage.getItem("volToken")}`,
+                            },
+                          }
+                        );
+                        setNotifications((prev) =>
+                          prev.map((n) => ({ ...n, isRead: true }))
+                        );
+                        setUnreadCount(0);
+                        setOpenNotif(false);
+                      } catch (err) {
+                        console.error(
+                          "❌ Failed to mark notifications read:",
+                          err
+                        );
+                      }
+                    }}
+                    className="text-xs text-blue-600 hover:underline"
+                  >
+                    Mark all read
+                  </button>
                 </div>
-                {notifications.length ? (
+
+                {notifications && notifications.length ? (
                   <ul className="max-h-72 overflow-auto">
-                    {notifications.map((n) => (
+                    {notifications.map((n, i) => (
                       <li
-                        key={n.id}
-                        className="px-3 py-3 text-sm text-gray-700 flex items-center gap-2 hover:bg-gray-50"
+                        key={i}
+                        className={`px-3 py-3 text-sm flex items-start gap-2 ${
+                          n.isRead ? "bg-white" : "bg-orange-50"
+                        } hover:bg-gray-50 transition`}
                       >
                         <div className="w-6 h-6 rounded-md bg-blue-50 text-blue-600 grid place-items-center">
-                          {n.icon || <Bell size={14} />}
+                          <Bell size={14} />
                         </div>
-                        <span className="truncate">{n.title}</span>
+                        <div className="flex-1">
+                          <p className="font-medium text-gray-800">{n.title}</p>
+                          <p className="text-xs text-gray-500">{n.message}</p>
+                          <p className="text-[10px] text-gray-400 mt-0.5">
+                            {new Date(n.createdAt).toLocaleString()}
+                          </p>
+                        </div>
                       </li>
                     ))}
                   </ul>
@@ -194,17 +291,11 @@ export default function VolunteerNavbar({
                     You're all caught up!
                   </div>
                 )}
-                <button
-                  className="w-full px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 border-t"
-                  onClick={() => setOpenNotif(false)}
-                >
-                  Mark all as read
-                </button>
               </div>
             )}
           </div>
 
-          {/* Profile Dropdown */}
+          {/* 👤 Profile Dropdown */}
           <div className="relative" ref={profileRef}>
             <button
               onClick={() => setOpenProfile((v) => !v)}
@@ -227,9 +318,7 @@ export default function VolunteerNavbar({
             {openProfile && (
               <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden animate-in fade-in zoom-in-95">
                 <div className="px-3 py-2 border-b bg-gray-50">
-                  <p className="text-sm font-semibold text-gray-800">
-                    Account
-                  </p>
+                  <p className="text-sm font-semibold text-gray-800">Account</p>
                   <p className="text-xs text-gray-600">{volunteerName}</p>
                 </div>
                 <button
@@ -252,11 +341,7 @@ export default function VolunteerNavbar({
                 </button>
                 <button
                   onClick={() => {
-                    localStorage.removeItem("volToken");
-                    localStorage.removeItem("activeRole");
-                    localStorage.removeItem("volunteerId");
-                    localStorage.removeItem("volUser");
-                    localStorage.removeItem("volunteerName");
+                    localStorage.clear();
                     setOpenProfile(false);
                     navigate("/volunteer/login");
                   }}

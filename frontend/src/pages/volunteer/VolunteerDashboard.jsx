@@ -23,6 +23,7 @@ import RecentBadges from "@/components/volunteer-dashboard/community/RecentBadge
 import TopVolunteers from "@/components/volunteer-dashboard/community/TopVolunteers";
 import ProofUploadModal from "@/components/volunteer-dashboard/opportunities/ProofUploadModal";
 import getOpportunityById from "@/services/api";
+import { socket, registerUserSocket } from "@/utils/socket";
 import {
   getVolunteerOverview,
   getVolunteerTasks,
@@ -63,6 +64,7 @@ export default function VolunteerDashboard() {
     setSidebarOpen(false);
   };
 
+  // ✅ Validate session and ensure volunteer context
   useEffect(() => {
     const volToken = localStorage.getItem("volToken");
     const activeRole = localStorage.getItem("activeRole");
@@ -84,17 +86,46 @@ export default function VolunteerDashboard() {
 
   useEffect(() => {
     const volunteerId = localStorage.getItem("volunteerId");
+    const role = "volunteer";
+    if (volunteerId) registerUserSocket(volunteerId, role);
+
+    socket.on("newNotification", (notif) => {
+      toast.info(`🔔 ${notif.title}: ${notif.message}`, { autoClose: 5000 });
+      setNotifications((prev) => [notif, ...prev]);
+    });
+
+    return () => socket.off("newNotification");
+  }, []);
+
+  useEffect(() => {
+  socket.on("connect", () => {
+    console.log("Socket reconnected, refreshing dashboard...");
+    const volunteerId = localStorage.getItem("volunteerId");
+    if (volunteerId) registerUserSocket(volunteerId, "volunteer");
+  });
+  return () => socket.off("connect");
+}, []);
+
+
+  // Unified socket setup for volunteer notifications & suspension/reactivation
+  useEffect(() => {
+    const volunteerId = localStorage.getItem("volunteerId");
+    const role = "volunteer";
     if (!volunteerId) return;
 
-    const socket = io("http://localhost:5000");
+    // Register this volunteer socket
+    registerUserSocket(volunteerId, role);
 
-    // Register volunteer with server
-    socket.emit("registerVolunteer", volunteerId);
+    // Notification listener
+    socket.on("newNotification", (notif) => {
+      toast.info(`${notif.title}: ${notif.message}`, { autoClose: 5000 });
+      setNotifications((prev) => [notif, ...prev]);
+    });
 
-    // Listen for suspension event
+    // Suspension listener
     socket.on("suspended", (data) => {
-      const reason = data.reason || "No reason provided";
-      toast.error(`⚠️ Your account has been suspended.\nReason: ${reason}`, {
+      const reason = data.reason || "No reason provided.";
+      toast.error(` Your account has been suspended.\nReason: ${reason}`, {
         autoClose: 6000,
       });
 
@@ -104,14 +135,18 @@ export default function VolunteerDashboard() {
       }, 3000);
     });
 
-      socket.io("reactivated", () => {
-        toast.success("Your account has been reactivated!", {
-          autoClose: 5000,
-        });
+    // Reactivation listener
+    socket.on("reactivated", () => {
+      toast.success("✅ Your account has been reactivated!", {
+        autoClose: 5000,
       });
+      localStorage.setItem("justReactivated", "true");
+    });
 
     return () => {
-      socket.disconnect();
+      socket.off("newNotification");
+      socket.off("suspended");
+      socket.off("reactivated");
     };
   }, []);
 
@@ -160,10 +195,11 @@ export default function VolunteerDashboard() {
           });
 
           const firstLoad = sessionStorage.getItem("firstDashboardLoad");
-          if (!firstLoad) {
-            // Mark that we’ve done one dashboard load this session
+          const justReactivated = localStorage.getItem("justReactivated");
+          if (!firstLoad || justReactivated) {
             sessionStorage.setItem("firstDashboardLoad", "true");
 
+            // Mark all badges as shown but skip showing confetti
             if (newBadges.length > 0) {
               const updatedIds = [
                 ...shownBadgeIds,
@@ -172,8 +208,9 @@ export default function VolunteerDashboard() {
               localStorage.setItem("shownBadgeIds", JSON.stringify(updatedIds));
             }
 
-            // Exit early — skip popup
-            return;
+            // Remove the reactivation flag
+            localStorage.removeItem("justReactivated");
+            return; // skip confetti & sounds
           }
 
           // Only trigger if new badges appear during active session
@@ -280,7 +317,11 @@ export default function VolunteerDashboard() {
       <VolSidebar isOpen={sidebarOpen} onClose={closeSidebar} />
 
       <div className="flex-1 flex flex-col">
-        <VolunteerNavbar onToggleSidebar={toggleSidebar} />
+        <VolunteerNavbar
+          onToggleSidebar={toggleSidebar}
+          notifCount={notifications.filter((n) => !n.isRead).length}
+          notifications={notifications}
+        />
 
         <main className="flex-1 p-6">
           {/* Header */}
@@ -615,7 +656,16 @@ export default function VolunteerDashboard() {
 
             {/* Sidebar widgets */}
             <div className="space-y-6">
-              <Notifications items={notifications} loading={loading} />
+              <Notifications
+                items={notifications}
+                loading={loading}
+                onMarkAllRead={() => {
+                  setNotifications((prev) =>
+                    prev.map((n) => ({ ...n, isRead: true }))
+                  );
+                }}
+              />
+
               <ProgressCard progress={progress} loading={loading} />
               <RecentBadges badges={badges} loading={loading} />
               <TopVolunteers items={top} loading={loading} />

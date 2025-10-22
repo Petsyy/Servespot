@@ -1,5 +1,8 @@
 import Opportunity from "../models/Opportunity.js";
+import Organization from "../models/Organization.js";
+import Volunteer from "../models/Volunteer.js";
 import { awardVolunteerRewards } from "../utils/volunteer.badges.js";
+import { sendNotification } from "../utils/sendNotification.js";
 
 // Fetch all opportunities for an organization
 export const getOpportunities = async (req, res) => {
@@ -177,7 +180,6 @@ export const volunteerSignup = async (req, res) => {
 };
 
 
-// Fetch all uncompleted opportunities (public view for volunteers)
 export const getAllOpportunities = async (req, res) => {
   try {
     const userId = req.user?.id; // optional if logged in
@@ -537,6 +539,39 @@ export const forceCompleteOpportunity = async (req, res) => {
     console.error("❌ Force complete error:", err);
     res.status(500).json({ message: "Failed to force complete opportunity" });
   }
+};
+
+export const submitProof = async (req, res) => {
+  const { opportunityId } = req.params;
+  const volunteerId = req.user.id;
+
+  // Save proof logic here ...
+
+  // After saving proof, send notifications
+  const volunteer = await Volunteer.findById(volunteerId);
+  const opportunity = await Opportunity.findById(opportunityId).populate("organization");
+
+  // Notify organization
+  await sendNotification({
+    userId: opportunity.organization._id,
+    userModel: "Organization",
+    email: opportunity.organization.email,
+    title: `Volunteer submitted proof`,
+    message: `${volunteer.fullName} submitted proof for ${opportunity.title}.`,
+    type: "update",
+  });
+
+  // Notify volunteer (confirmation)
+  await sendNotification({
+    userId: volunteer._id,
+    userModel: "Volunteer",
+    email: volunteer.email,
+    title: `Proof submitted successfully`,
+    message: `You successfully submitted proof for ${opportunity.title}.`,
+    type: "completion",
+  });
+
+  res.json({ message: "Proof submitted and notifications sent." });
 };
 
 // Delete specific opportunity

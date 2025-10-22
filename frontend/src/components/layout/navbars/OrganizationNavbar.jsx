@@ -10,6 +10,7 @@ import {
   Menu,
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
+import { socket } from "@/utils/socket";
 
 export default function OrganizationNavbar({
   onToggleSidebar,
@@ -17,6 +18,7 @@ export default function OrganizationNavbar({
   notifications: notificationsProp,
 }) {
   const navigate = useNavigate();
+  const [isConnected, setIsConnected] = useState(socket.connected);
 
   const organizationName =
     (typeof window !== "undefined" &&
@@ -60,6 +62,33 @@ export default function OrganizationNavbar({
       document.removeEventListener("keydown", onEsc);
     };
   }, []);
+
+  useEffect(() => {
+  const handleConnect = () => {
+    console.log("🟢 Navbar detected socket connect");
+    setIsConnected(true);
+  };
+  const handleDisconnect = () => {
+    console.log("🔴 Navbar detected socket disconnect");
+    setIsConnected(false);
+  };
+
+  // Listen for socket events
+  socket.on("connect", handleConnect);
+  socket.on("disconnect", handleDisconnect);
+
+  // Force re-check of state immediately
+  setIsConnected(socket.connected);
+
+  // Ensure connection is active
+  if (!socket.connected) socket.connect();
+
+  // Cleanup
+  return () => {
+    socket.off("connect", handleConnect);
+    socket.off("disconnect", handleDisconnect);
+  };
+}, []);
 
   const initials = useMemo(() => {
     return organizationName
@@ -149,6 +178,22 @@ export default function OrganizationNavbar({
           <button className="md:hidden p-2 rounded-lg hover:bg-gray-100 text-gray-600">
             <Search size={20} />
           </button>
+
+          {/* 🟢 Socket Status */}
+          <div
+            className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full border ${
+              isConnected
+                ? "text-green-700 border-green-400 bg-green-50"
+                : "text-red-700 border-red-400 bg-red-50"
+            }`}
+          >
+            <span
+              className={`w-2.5 h-2.5 rounded-full ${
+                isConnected ? "bg-green-500" : "bg-red-500"
+              }`}
+            />
+            {isConnected ? "Connected" : "Disconnected"}
+          </div>
 
           {/* Notifications */}
           <div className="relative" ref={notifRef}>

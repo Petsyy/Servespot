@@ -11,10 +11,10 @@ export default function Suspended() {
         Please contact support if you think this is a mistake.
       </p>
       <button
-        onClick={() => (window.location.href = "/login")}
+        onClick={() => (window.location.href = "/")}
         className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
       >
-        Return to Login
+        Return to Homepage
       </button>
     </div>
   );
