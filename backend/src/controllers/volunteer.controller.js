@@ -148,4 +148,68 @@ export const getMyOpportunities = async (req, res) => {
   }
 };
 
+// Compute level and progress based on points
+function computeLevelProgress(points) {
+  const safePoints = Number(points) || 0;
+  const pointsPerLevel = 100; // simple, predictable progression
+  const level = Math.floor(safePoints / pointsPerLevel) + 1;
+  const current = safePoints % pointsPerLevel;
+  const target = pointsPerLevel;
+  return {
+    level,
+    current,
+    target,
+    levelLabel: `Level ${level}`,
+  };
+}
+
+// GET /volunteer/me/progress
+export const getMyProgress = async (req, res) => {
+  try {
+    const me = await Volunteer.findById(req.user.id).select("points badges").lean();
+    if (!me) return res.status(404).json({ message: "Volunteer not found" });
+
+    const points = me.points || 0;
+    const { level, current, target, levelLabel } = computeLevelProgress(points);
+
+    // compute global rank: number with more points + 1
+    const higher = await Volunteer.countDocuments({ points: { $gt: points } });
+    const rank = higher + 1;
+
+    res.status(200).json({
+      current,
+      target,
+      level,
+      levelLabel,
+      rank,
+      totalBadges: Array.isArray(me.badges) ? me.badges.length : 0,
+    });
+  } catch (err) {
+    console.error("getMyProgress error:", err);
+    res.status(500).json({ message: "Failed to load progress" });
+  }
+};
+
+// GET /volunteer/top
+export const getTopVolunteers = async (req, res) => {
+  try {
+    const limit = Math.max(1, Math.min(50, Number(req.query.limit) || 3));
+    const top = await Volunteer.find({}, "fullName points")
+      .sort({ points: -1 })
+      .limit(limit)
+      .lean();
+
+    const items = top.map((v) => ({
+      id: v._id,
+      name: v.fullName || "Volunteer",
+      points: v.points || 0,
+    }));
+
+    res.status(200).json(items);
+  } catch (err) {
+    console.error("getTopVolunteers error:", err);
+    res.status(500).json({ message: "Failed to load leaderboard" });
+  }
+};
+
 

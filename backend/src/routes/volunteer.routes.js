@@ -6,6 +6,8 @@ import {
   updateMyProfile,
   getMyBadges,
   getMyOpportunities,
+  getMyProgress,
+  getTopVolunteers,
 
 } from "../controllers/volunteer.controller.js";
 
@@ -22,6 +24,12 @@ router.get("/me/tasks", verifyToken, getMyTasks);
 
 //  NEW: Get volunteer badges & points
 router.get("/me/badges", verifyToken, getMyBadges);
+
+//  NEW: Progress widget data (level progress, rank, totals)
+router.get("/me/progress", verifyToken, getMyProgress);
+
+//  NEW: Top volunteers leaderboard
+router.get("/top", getTopVolunteers);
 
 // Simple dashboard check route
 router.get("/dashboard", protect, (req, res) => {
