@@ -5,6 +5,7 @@ import Opportunity from "../models/Opportunity.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { emitToVolunteer, broadcastToAdmins, emitToOrganization} from "../../server.js";
+import { sendAdminNotification } from "../utils/sendNotification.js";
 
 /* =====================================================
 ADMIN AUTHENTICATION
@@ -96,7 +97,13 @@ export const updateOrganizationStatus = async (req, res) => {
       emitToOrganization(id, "reactivated", {});
     }
 
-    // ✅ Broadcast to all admins for instant refresh
+    // ✅ Notify all admins (record + socket) and broadcast for instant refresh
+    await sendAdminNotification({
+      title: `Organization status updated`,
+      message: `Organization ${organization.orgName} is now ${status}.`,
+      type: "update",
+    });
+    // Realtime event (UI refreshers)
     broadcastToAdmins("organizationStatusUpdated", {
       orgId: id,
       status,
@@ -161,7 +168,12 @@ export const updateVolunteerStatus = async (req, res) => {
       emitToVolunteer(id, "reactivated", {});
     }
 
-    // Notify all connected admins (auto-refresh on dashboard)
+    // Notify all admins (record + socket) and broadcast (auto-refresh)
+    await sendAdminNotification({
+      title: `Volunteer status updated`,
+      message: `${volunteer.fullName} is now ${status}.`,
+      type: "update",
+    });
     broadcastToAdmins("volunteerStatusUpdated", {
       userId: id,
       status,

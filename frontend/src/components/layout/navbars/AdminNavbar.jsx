@@ -11,6 +11,8 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
+import { socket, registerUserSocket } from "@/utils/socket";
+import { getAdminNotifications, markAllAdminNotificationsRead } from "@/services/admin.api";
 
 export default function AdminNavbar({
   onToggleSidebar,
@@ -21,18 +23,41 @@ export default function AdminNavbar({
 
   const adminName = "Admin"; // You can fetch this from localStorage if needed
 
-  const fallbackNotifs = [
-    { id: 1, title: "New organization registration pending approval", icon: <Shield size={16} /> },
-    { id: 2, title: "System backup completed successfully" },
-    { id: 3, title: "High traffic alert - 500+ active users" },
-  ];
-  const notifications = notificationsProp ?? fallbackNotifs;
-  const computedCount = typeof notifCount === "number" ? notifCount : notifications.length;
+  const [notifications, setNotifications] = useState([]);
+  const computedCount = typeof notifCount === "number" ? notifCount : notifications.filter((n) => !n.isRead).length;
 
   const [openNotif, setOpenNotif] = useState(false);
   const [openProfile, setOpenProfile] = useState(false);
   const notifRef = useRef(null);
   const profileRef = useRef(null);
+
+  useEffect(() => {
+    // Register admin socket
+    const adminId = localStorage.getItem("adminId") || "defaultAdmin";
+    registerUserSocket(adminId, "admin");
+
+    // Initial fetch
+    (async () => {
+      try {
+        const res = await getAdminNotifications();
+        setNotifications(res.data || []);
+      } catch (err) {
+        console.error("❌ Failed to load admin notifications:", err);
+      }
+    })();
+
+    // Socket listeners
+    socket.on("newNotification", (notif) => {
+      // Ensure it's for Admin model to avoid cross-role noise
+      if (notif?.userModel === "Admin") {
+        setNotifications((prev) => [notif, ...prev]);
+      }
+    });
+
+    return () => {
+      socket.off("newNotification");
+    };
+  }, []);
 
   useEffect(() => {
     const onClick = (e) => {
@@ -70,6 +95,16 @@ export default function AdminNavbar({
         ? "text-blue-600 border-b-2 border-blue-600"
         : "text-gray-600 hover:text-blue-600 hover:border-blue-400"
     } pb-1 border-transparent`;
+
+  const handleMarkAllRead = async () => {
+    try {
+      await markAllAdminNotificationsRead();
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+      setOpenNotif(false);
+    } catch (err) {
+      console.error("❌ Failed to mark admin notifications read:", err);
+    }
+  };
 
   return (
     <header className="sticky top-0 z-30 backdrop-blur bg-white/70 border-b border-gray-200">
@@ -174,13 +209,18 @@ export default function AdminNavbar({
                   <ul className="max-h-72 overflow-auto">
                     {notifications.map((n) => (
                       <li
-                        key={n.id}
-                        className="px-3 py-3 text-sm text-gray-700 flex items-center gap-2 hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                        key={n._id || n.id}
+                        className={`px-3 py-3 text-sm text-gray-700 flex items-center gap-2 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 ${!n.isRead ? "bg-blue-50/40" : ""}`}
                       >
                         <div className="w-6 h-6 rounded-md bg-blue-50 text-blue-600 grid place-items-center">
-                          {n.icon || <Bell size={14} />}
+                          <Bell size={14} />
                         </div>
-                        <span className="truncate">{n.title}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="truncate font-medium">{n.title}</p>
+                          {n.message && (
+                            <p className="truncate text-gray-500">{n.message}</p>
+                          )}
+                        </div>
                       </li>
                     ))}
                   </ul>
@@ -191,7 +231,7 @@ export default function AdminNavbar({
                 )}
                 <button
                   className="w-full px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 border-t"
-                  onClick={() => setOpenNotif(false)}
+                  onClick={handleMarkAllRead}
                 >
                   Mark all as read
                 </button>

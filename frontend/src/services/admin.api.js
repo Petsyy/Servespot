@@ -48,3 +48,18 @@ export const updateVolunteerStatus = (id, status, data = {}) =>
       },
     }
   );
+
+// -------------------------------
+// Admin Notifications
+// -------------------------------
+export const getAdminNotifications = () =>
+  API.get("/notifications/admin", {
+    headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
+  });
+
+export const markAllAdminNotificationsRead = () =>
+  API.patch(
+    "/notifications/admin/mark-all-read",
+    {},
+    { headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` } }
+  );

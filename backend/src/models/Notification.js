@@ -10,7 +10,7 @@ const notificationSchema = new mongoose.Schema(
     userModel: {
       type: String,
       required: true,
-      enum: ["Volunteer", "Organization"],
+      enum: ["Volunteer", "Organization", "Admin"],
     },
     title: { type: String, required: true },
     message: { type: String, required: true },

@@ -1,5 +1,6 @@
 import Volunteer from "../models/Volunteer.js";
 import Organization from "../models/Organization.js";
+import { sendAdminNotification } from "../utils/sendNotification.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
@@ -69,6 +70,13 @@ export const registerOrganization = async (req, res) => {
     });
 
     await organization.save();
+
+    // Notify admins about new pending organization
+    await sendAdminNotification({
+      title: "New organization registration",
+      message: `${organization.orgName} submitted registration and awaits verification.`,
+      type: "update",
+    });
 
     // Generate token
     const token = generateToken(organization._id, "organization");

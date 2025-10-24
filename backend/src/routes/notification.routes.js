@@ -1,6 +1,6 @@
 import express from "express";
-import { getNotifications, getVolunteerNotifications, markAsRead } from "../controllers/notification.controller.js";
-import { protect } from "../middlewares/auth.middleware.js";
+import { getNotifications, getVolunteerNotifications, markAsRead, getAdminNotifications, markAllAdminNotificationsRead } from "../controllers/notification.controller.js";
+import { protect, protectAdmin } from "../middlewares/auth.middleware.js";
 import { verifyToken } from "../middlewares/auth.middleware.js"
 import Notification from "../models/Notification.js";
 
@@ -10,6 +10,10 @@ router.get("/", protect, getNotifications);
 router.patch("/:id/read", protect, markAsRead);
 
 router.get("/volunteer", verifyToken, getVolunteerNotifications)
+
+// Admin
+router.get("/admin", protectAdmin, getAdminNotifications);
+router.patch("/admin/mark-all-read", protectAdmin, markAllAdminNotificationsRead);
 
 // Mark all notifications as read for the current logged-in user
 router.patch("/mark-all-read", protect, async (req, res) => {
