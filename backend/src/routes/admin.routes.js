@@ -342,4 +342,104 @@ router.post("/:adminId/notifications/test", protectAdmin, async (req, res) => {
   }
 });
 
+// =====================================================
+//   ADMIN NOTIFICATIONS (Self using token)
+// =====================================================
+router.get("/me/notifications", protectAdmin, async (req, res) => {
+  try {
+    const adminId = req.user?.id;
+    if (!adminId) return res.status(401).json({ message: "Unauthorized" });
+
+    const notifications = await Notification.find({
+      user: adminId,
+      userModel: "Admin",
+    })
+      .sort({ createdAt: -1 })
+      .limit(50);
+
+    res.json({ data: notifications });
+  } catch (err) {
+    console.error("❌ Error fetching admin (me) notifications:", err);
+    res.status(500).json({ message: "Failed to fetch notifications" });
+  }
+});
+
+router.put("/me/notifications/read", protectAdmin, async (req, res) => {
+  try {
+    const adminId = req.user?.id;
+    if (!adminId) return res.status(401).json({ message: "Unauthorized" });
+
+    await Notification.updateMany(
+      { user: adminId, userModel: "Admin", isRead: false },
+      { isRead: true }
+    );
+
+    res.json({ message: "All notifications marked as read" });
+  } catch (err) {
+    console.error("❌ Error marking admin (me) notifications as read:", err);
+    res.status(500).json({ message: "Failed to mark notifications as read" });
+  }
+});
+
+router.post("/me/notifications/test", protectAdmin, async (req, res) => {
+  try {
+    const adminId = req.user?.id;
+    if (!adminId) return res.status(401).json({ message: "Unauthorized" });
+
+    const sampleNotifications = [
+      {
+        user: adminId,
+        userModel: "Admin",
+        title: "New Organization Registration",
+        message:
+          "Socia organization has registered and needs verification.",
+        type: "organization_verification",
+        channel: "inApp",
+        link: "/admin/organizations",
+      },
+      {
+        user: adminId,
+        userModel: "Admin",
+        title: "New Volunteer Registration",
+        message: "Peter Arenas has registered and needs verification.",
+        type: "user_registration",
+        channel: "inApp",
+        link: "/admin/volunteers",
+      },
+      {
+        user: adminId,
+        userModel: "Admin",
+        title: "System Update Available",
+        message:
+          "A new system update is available. Please review the changelog.",
+        type: "system",
+        channel: "inApp",
+        link: "/admin/settings",
+      },
+      {
+        user: adminId,
+        userModel: "Admin",
+        title: "Monthly Report Generated",
+        message:
+          "The monthly analytics report has been generated and is ready for review.",
+        type: "report",
+        channel: "inApp",
+        link: "/admin/reports",
+      },
+    ];
+
+    const createdNotifications = await Notification.insertMany(
+      sampleNotifications
+    );
+
+    res.json({
+      message: "Test notifications created successfully",
+      notifications: createdNotifications,
+    });
+  } catch (err) {
+    console.error("❌ Error creating test notifications (me):", err);
+    res.status(500).json({ message: "Failed to create test notifications" });
+  }
+});
+
 export default router;

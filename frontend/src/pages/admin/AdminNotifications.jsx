@@ -37,8 +37,7 @@ export default function AdminNotifications() {
 
     async function load() {
       try {
-        if (!adminId) return;
-        const res = await getAdminNotifications(adminId);
+        const res = await getAdminNotifications();
         if (!mounted) return;
 
         setItems((prev) => {
@@ -135,8 +134,7 @@ export default function AdminNotifications() {
   // =============================
   const markAllAsRead = async () => {
     try {
-      if (!adminId) return;
-      await markAdminNotificationsRead(adminId);
+      await markAdminNotificationsRead();
       setItems((prev) => prev.map((n) => ({ ...n, isRead: true })));
       toast.success("All notifications marked as read.");
     } catch (e) {

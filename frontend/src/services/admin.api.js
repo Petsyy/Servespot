@@ -50,9 +50,9 @@ export const updateVolunteerStatus = (id, status, data = {}) =>
     }
   );
 
-export const getAdminNotifications = async (adminId) => {
+export const getAdminNotifications = async () => {
   try {
-    const response = await API.get(`/admin/${adminId}/notifications`, {
+    const response = await API.get(`/admin/me/notifications`, {
       headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
     });
     return response;
@@ -62,8 +62,8 @@ export const getAdminNotifications = async (adminId) => {
   }
 };
 
-export const markAdminNotificationsRead = (adminId) => {
-  return API.put(`/admin/${adminId}/notifications/read`, {}, {
+export const markAdminNotificationsRead = () => {
+  return API.put(`/admin/me/notifications/read`, {}, {
     headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
   });
 };
