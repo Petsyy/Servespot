@@ -105,10 +105,10 @@ export const updateOrganizationStatus = async (req, res) => {
     // --- Create in-app & email notification ---
     const notifTitle =
       status === "suspended"
-        ? " Account Suspended"
+        ? "Account Suspended"
         : status === "active"
-        ? " Account Reactivated"
-        : " Account Pending Verification";
+        ? "Account Reactivated"
+        : "Account Pending Verification";
 
     const notifMsg =
       status === "suspended"
@@ -133,6 +133,29 @@ export const updateOrganizationStatus = async (req, res) => {
       orgId: id,
       status,
     });
+
+    // --- Create admin notifications about this status change ---
+    try {
+      const admins = await Admin.find({ status: "active" });
+      const adminTitle = "Organization Status Updated";
+      const adminMessage = `Organization "${organization.orgName}" status changed to ${status}${
+        status === "suspended" ? `. Reason: ${reason || "No reason provided"}` : ""
+      }.`;
+
+      for (const admin of admins) {
+        await sendNotification({
+          userId: admin._id,
+          userModel: "Admin",
+          title: adminTitle,
+          message: adminMessage,
+          type: "report",
+          channel: "inApp",
+          link: "/admin/organizations",
+        });
+      }
+    } catch (notifyErr) {
+      console.error("❌ Error creating admin notifications (org status):", notifyErr);
+    }
 
     res.status(200).json({
       message:
@@ -196,7 +219,7 @@ export const updateVolunteerStatus = async (req, res) => {
       status === "suspended"
         ? "Account Suspended"
         : status === "active"
-        ? " Account Reactivated"
+        ? "Account Reactivated"
         : "Account Pending Review";
 
     const notifMsg =
@@ -222,6 +245,29 @@ export const updateVolunteerStatus = async (req, res) => {
       userId: id,
       status,
     });
+
+    // --- Create admin notifications about this volunteer status change ---
+    try {
+      const admins = await Admin.find({ status: "active" });
+      const adminTitle = "Volunteer Status Updated";
+      const adminMessage = `Volunteer "${volunteer.fullName}" status changed to ${status}${
+        status === "suspended" ? `. Reason: ${reason || "No reason provided"}` : ""
+      }.`;
+
+      for (const admin of admins) {
+        await sendNotification({
+          userId: admin._id,
+          userModel: "Admin",
+          title: adminTitle,
+          message: adminMessage,
+          type: "report",
+          channel: "inApp",
+          link: "/admin/volunteers",
+        });
+      }
+    } catch (notifyErr) {
+      console.error("❌ Error creating admin notifications (vol status):", notifyErr);
+    }
 
     res.status(200).json({
       message:

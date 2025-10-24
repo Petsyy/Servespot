@@ -244,9 +244,12 @@ router.put("/volunteers/:id/status", protectAdmin, updateVolunteerStatus);
 /* =====================================================
     ADMIN NOTIFICATIONS
 ===================================================== */
-router.get("/:adminId/notifications", async (req, res) => {
+router.get("/:adminId/notifications", protectAdmin, async (req, res) => {
   try {
     const { adminId } = req.params;
+    if (req.user?.id && String(req.user.id) !== String(adminId)) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
     const notifications = await Notification.find({ 
       user: adminId, 
       userModel: "Admin" 
@@ -261,9 +264,12 @@ router.get("/:adminId/notifications", async (req, res) => {
   }
 });
 
-router.put("/:adminId/notifications/read", async (req, res) => {
+router.put("/:adminId/notifications/read", protectAdmin, async (req, res) => {
   try {
     const { adminId } = req.params;
+    if (req.user?.id && String(req.user.id) !== String(adminId)) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
     await Notification.updateMany(
       { user: adminId, userModel: "Admin", isRead: false },
       { isRead: true }
@@ -277,9 +283,12 @@ router.put("/:adminId/notifications/read", async (req, res) => {
 });
 
 // Test route to create sample admin notifications
-router.post("/:adminId/notifications/test", async (req, res) => {
+router.post("/:adminId/notifications/test", protectAdmin, async (req, res) => {
   try {
     const { adminId } = req.params;
+    if (req.user?.id && String(req.user.id) !== String(adminId)) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
     
     // Create sample notifications
     const sampleNotifications = [
