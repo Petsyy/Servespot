@@ -1,8 +1,10 @@
 import Volunteer from "../models/Volunteer.js";
 import Organization from "../models/Organization.js";
+import Admin from "../models/Admin.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
+import { sendNotification } from "../utils/sendNotification.js";
 
 const generateToken = (id, role) => {
   return jwt.sign({ id, role }, process.env.JWT_SECRET, {
@@ -13,7 +15,36 @@ const generateToken = (id, role) => {
 // VOLUNTEER SIGNUP
 export const registerVolunteer = async (req, res) => {
   try {
-    const { fullName, email, password } = req.body;
+    const { fullName, email, password, birthdate } = req.body;
+
+    // Validate birthdate and age (18+)
+    if (!birthdate) {
+      return res.status(400).json({ message: "Birthdate is required" });
+    }
+
+    const parsedBirthdate = new Date(birthdate);
+    if (Number.isNaN(parsedBirthdate.getTime())) {
+      return res
+        .status(400)
+        .json({ message: "Invalid birthdate. Please provide a valid date." });
+    }
+
+    const today = new Date();
+    let age = today.getFullYear() - parsedBirthdate.getFullYear();
+    const monthDiff = today.getMonth() - parsedBirthdate.getMonth();
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < parsedBirthdate.getDate())
+    ) {
+      age -= 1;
+    }
+
+    if (age < 18) {
+      return res.status(400).json({
+        message:
+          "You must be at least 18 years old to create a volunteer account.",
+      });
+    }
 
     // Check if email already exists
     const existing = await Volunteer.findOne({ email });
@@ -24,8 +55,32 @@ export const registerVolunteer = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create volunteer
-    const volunteer = new Volunteer({ ...req.body, password: hashedPassword });
+    const volunteer = new Volunteer({
+      ...req.body,
+      // Ensure we store a proper Date instance for birthdate
+      birthdate: parsedBirthdate,
+      password: hashedPassword,
+    });
     await volunteer.save();
+
+    // Notify admins about new volunteer registration
+    try {
+      const admins = await Admin.find({ status: "active" });
+      for (const admin of admins) {
+        await sendNotification({
+          userId: admin._id,
+          userModel: "Admin",
+          title: "New Volunteer Registration",
+          message: `A new volunteer "${volunteer.fullName}" has registered and needs verification.`,
+          type: "user_registration",
+          channel: "inApp",
+          link: "/admin/volunteers",
+        });
+      }
+    } catch (notifErr) {
+      console.error("Failed to notify admins of new volunteer:", notifErr);
+      // Don't fail the main request if notification fails
+    }
 
     //  Generate token for auto-login
     const token = generateToken(volunteer._id, "volunteer");
@@ -69,6 +124,25 @@ export const registerOrganization = async (req, res) => {
     });
 
     await organization.save();
+
+    // Notify admins about new organization registration
+    try {
+      const admins = await Admin.find({ status: "active" });
+      for (const admin of admins) {
+        await sendNotification({
+          userId: admin._id,
+          userModel: "Admin",
+          title: "New Organization Registration",
+          message: `A new organization "${organization.orgName}" has registered and needs verification.`,
+          type: "organization_verification",
+          channel: "inApp",
+          link: "/admin/organizations",
+        });
+      }
+    } catch (notifErr) {
+      console.error("Failed to notify admins of new organization:", notifErr);
+      // Don't fail the main request if notification fails
+    }
 
     // Generate token
     const token = generateToken(organization._id, "organization");

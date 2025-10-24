@@ -388,13 +388,20 @@ export default function OpportunityCard({
                       >
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                            {v.firstName?.[0] || v.fullName?.[0] || "V"}
+                            {v.fullName?.[0]?.toUpperCase() || 
+                             v.firstName?.[0]?.toUpperCase() || 
+                             v.lastName?.[0]?.toUpperCase() || 
+                             v.email?.[0]?.toUpperCase() || 
+                             "V"}
                           </div>
                           <div>
                             <h4 className="font-semibold text-gray-900">
-                              {v.firstName && v.lastName
-                                ? `${v.firstName} ${v.lastName}`
-                                : v.fullName || "Unnamed Volunteer"}
+                              {v.fullName || 
+                               (v.firstName && v.lastName ? `${v.firstName} ${v.lastName}` : null) ||
+                               v.firstName || 
+                               v.lastName || 
+                               v.email?.split('@')[0] || 
+                               "Volunteer"}
                             </h4>
                             <p className="text-sm text-gray-600">{v.email}</p>
                           </div>

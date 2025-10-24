@@ -8,6 +8,7 @@ export const loginAdmin = (formData) => API.post("/admin/login", formData);
 // -------------------------------
 //  Admin Dashboard
 // -------------------------------
+// Fetch Admin Dashboard statistics
 export const getAdminDashboard = () =>
   API.get("/admin/dashboard", {
     headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
@@ -48,3 +49,23 @@ export const updateVolunteerStatus = (id, status, data = {}) =>
       },
     }
   );
+
+export const getAdminNotifications = async (adminId) => {
+  try {
+    const response = await API.get(`/admin/${adminId}/notifications`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
+    });
+    return response;
+  } catch (error) {
+    console.error("Error fetching admin notifications:", error);
+    throw error;
+  }
+};
+
+export const markAdminNotificationsRead = (adminId) => {
+  return API.put(`/admin/${adminId}/notifications/read`, {}, {
+    headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
+  });
+};
+
+

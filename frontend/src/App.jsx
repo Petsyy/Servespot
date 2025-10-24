@@ -20,6 +20,7 @@ import VolunteerDashboard from "@/pages/volunteer/VolunteerDashboard";
 import BrowseOpportunities from "@/pages/volunteer/browse-page/BrowseOpportunities";
 import VolunteerProfile from "@/pages/volunteer/VolunteerProfile";
 import VolunteerBadges from "@/pages/volunteer/VolunteerBadges";
+import VolunteerNotifications from "@/pages/volunteer/VolunteerNotifications";
 
 // Organization Pages
 import OrganizationLogin from "@/pages/organization/auth/OrganizationLogin";
@@ -29,7 +30,7 @@ import OrganizationDashboard from "@/pages/organization/OrganizationDashboard";
 import MyOpportunity from "@/pages/organization/posted-page/PostedOpportunity";
 import OrganizationProfile from "@/pages/organization/OrganizationProfile";
 import OrganizationReports from "@/pages/organization/OrganizationReports"
-import Notifications from "@/pages/organization/Notifications";
+import OrganizationNotifications from "@/pages/organization/OrganizationNotifications";
 
 // Auth (Shared)
 import ForgotPassword from "@/pages/auth/ForgotPassword";
@@ -40,7 +41,8 @@ import ManageVolunteers from "@/pages/organization/ManageVolunteers";
 import AdminLogin from '@/components/auth/AdminLogin';
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import UserManagement from "@/pages/admin/UserManagement";
-import AdminReports from "./pages/admin/AdminReports";
+import AdminReports from "@/pages/admin/AdminReports";
+import AdminNotifications from "@/pages/admin/AdminNotifications";
 
 export default function App() {
   return (
@@ -60,6 +62,7 @@ export default function App() {
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/management" element={<UserManagement /> } />
         <Route path="/admin/reports" element={<AdminReports />} />
+        <Route path="/admin/notifications" element={<AdminNotifications />} />
 
         {/* Volunteer */}
         <Route path="/volunteer/login" element={<VolunteerLogin />} />
@@ -71,6 +74,7 @@ export default function App() {
         <Route path="/volunteer/tasks" element={<MyTasks />} />
         <Route path="/volunteer/profile" element={<VolunteerProfile />} />
         <Route path="/volunteer/badges" element={<VolunteerBadges />} />
+        <Route path="/volunteer/notifications" element={<VolunteerNotifications />} />
          
         {/* Organization */}
         <Route path="/organization/login" element={<OrganizationLogin />} />
@@ -82,7 +86,7 @@ export default function App() {
         <Route path="/organization/profile" element={<OrganizationProfile/>} />
         <Route path="/organization/manage" element={< ManageVolunteers/>} />
         <Route path="/organization/reports" element={<OrganizationReports/>} />
-        <Route path="/organization/notifications" element={<Notifications />} />
+        <Route path="/organization/notifications" element={<OrganizationNotifications />} />
 
       </Routes>
 

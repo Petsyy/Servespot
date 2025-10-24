@@ -11,6 +11,7 @@ import {
   X,
   ChevronLeft,
   Settings,
+  Bell,
 } from "lucide-react";
 
 // Updated color scheme with better contrast and visual hierarchy
@@ -41,6 +42,7 @@ export default function VolSidebar({ isOpen, onClose }) {
     { to: "/volunteer/tasks", icon: ClipboardList, label: "My Activities" },
     { to: "/volunteer/badges", icon: Award, label: "Badges" },
     { to: "/volunteer/profile", icon: User, label: "Profile" },
+    { to: "/volunteer/notifications", icon: Bell, label: "Notifications" },
   ];
 
   return (

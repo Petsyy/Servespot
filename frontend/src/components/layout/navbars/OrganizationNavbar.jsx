@@ -25,6 +25,8 @@ export default function OrganizationNavbar({
       localStorage.getItem("orgName")?.trim()) ||
     "Organization";
 
+  const organizationEmail = localStorage.getItem("orgEmail") || "organization@servespot.com";
+
   const fallbackNotifs = [
     {
       id: 1,
@@ -64,31 +66,31 @@ export default function OrganizationNavbar({
   }, []);
 
   useEffect(() => {
-  const handleConnect = () => {
-    console.log("🟢 Navbar detected socket connect");
-    setIsConnected(true);
-  };
-  const handleDisconnect = () => {
-    console.log("🔴 Navbar detected socket disconnect");
-    setIsConnected(false);
-  };
+    const handleConnect = () => {
+      console.log("Navbar detected socket connect");
+      setIsConnected(true);
+    };
+    const handleDisconnect = () => {
+      console.log("Navbar detected socket disconnect");
+      setIsConnected(false);
+    };
 
-  // Listen for socket events
-  socket.on("connect", handleConnect);
-  socket.on("disconnect", handleDisconnect);
+    // Listen for socket events
+    socket.on("connect", handleConnect);
+    socket.on("disconnect", handleDisconnect);
 
-  // Force re-check of state immediately
-  setIsConnected(socket.connected);
+    // Force re-check of state immediately
+    setIsConnected(socket.connected);
 
-  // Ensure connection is active
-  if (!socket.connected) socket.connect();
+    // Ensure connection is active
+    if (!socket.connected) socket.connect();
 
-  // Cleanup
-  return () => {
-    socket.off("connect", handleConnect);
-    socket.off("disconnect", handleDisconnect);
-  };
-}, []);
+    // Cleanup
+    return () => {
+      socket.off("connect", handleConnect);
+      socket.off("disconnect", handleDisconnect);
+    };
+  }, []);
 
   const initials = useMemo(() => {
     return organizationName
@@ -99,6 +101,33 @@ export default function OrganizationNavbar({
       .toUpperCase();
   }, [organizationName]);
 
+  const handleLogout = () => {
+    localStorage.removeItem("orgToken");
+    localStorage.removeItem("activeRole");
+    localStorage.removeItem("organizationId");
+    localStorage.removeItem("orgId");
+    localStorage.removeItem("orgName");
+    localStorage.removeItem("orgEmail");
+    navigate("/organization/login");
+  };
+
+  const profileMenuItems = [
+    {
+      icon: Building,
+      label: "Profile",
+      onClick: () => navigate("/organization/profile"),
+    },
+    {
+      icon: LogOut,
+      label: "Sign out",
+      onClick: handleLogout,
+      danger: true,
+    },
+  ];
+
+  // Calculate unread count for notification badge
+  const computedUnreadCount = notifications.filter(n => !n.isRead).length;
+
   return (
     <header className="sticky top-0 z-30 backdrop-blur bg-white/70 border-b border-gray-200">
       <div className="h-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
@@ -107,7 +136,7 @@ export default function OrganizationNavbar({
           {/* Hamburger Menu - Only visible on mobile */}
           <button
             onClick={onToggleSidebar}
-            className="md:hidden p-2 rounded-lg hover:bg-gray-100 text-gray-600"
+            className="md:hidden p-2 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors"
           >
             <Menu size={20} />
           </button>
@@ -117,61 +146,6 @@ export default function OrganizationNavbar({
           </h1>
         </div>
 
-        {/* Center: Navigation - Hidden on mobile, visible on desktop */}
-        <div className="hidden md:flex items-center gap-8 flex-1 justify-center">
-          <nav className="flex items-center gap-6">
-            <NavLink
-              to="/organization/dashboard"
-              className={({ isActive }) =>
-                `flex items-center gap-1 text-sm font-medium transition-all ${
-                  isActive
-                    ? "text-blue-600 border-b-2 border-blue-600"
-                    : "text-gray-600 hover:text-blue-600 hover:border-blue-400"
-                } pb-1 border-transparent`
-              }
-            >
-              Dashboard
-            </NavLink>
-            <NavLink
-              to="/organization/opportunities"
-              className={({ isActive }) =>
-                `flex items-center gap-1 text-sm font-medium transition-all ${
-                  isActive
-                    ? "text-blue-600 border-b-2 border-blue-600"
-                    : "text-gray-600 hover:text-blue-600 hover:border-blue-400"
-                } pb-1 border-transparent`
-              }
-            >
-              Opportunities
-            </NavLink>
-            <NavLink
-              to="/organization/manage"
-              className={({ isActive }) =>
-                `flex items-center gap-1 text-sm font-medium transition-all ${
-                  isActive
-                    ? "text-blue-600 border-b-2 border-blue-600"
-                    : "text-gray-600 hover:text-blue-600 hover:border-blue-400"
-                } pb-1 border-transparent`
-              }
-            >
-              Volunteers
-            </NavLink>
-          </nav>
-
-          {/* Search Bar */}
-          <label className="relative w-64">
-            <Search
-              size={18}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-            />
-            <input
-              type="search"
-              placeholder="Search volunteers, opportunities..."
-              className="w-full h-9 pl-10 pr-3 rounded-lg bg-gray-100 border border-transparent focus:border-blue-300 focus:bg-white outline-none transition text-sm"
-            />
-          </label>
-        </div>
-
         {/* Right: Notifications & Profile */}
         <div className="flex items-center gap-2 sm:gap-3">
           {/* Mobile Search Button - Visible only on mobile */}
@@ -179,7 +153,7 @@ export default function OrganizationNavbar({
             <Search size={20} />
           </button>
 
-          {/* 🟢 Socket Status */}
+          {/* Socket Status */}
           <div
             className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full border ${
               isConnected
@@ -195,52 +169,79 @@ export default function OrganizationNavbar({
             {isConnected ? "Connected" : "Disconnected"}
           </div>
 
-          {/* Notifications */}
+          {/* Notifications - Updated UI */}
           <div className="relative" ref={notifRef}>
             <button
               onClick={() => setOpenNotif((v) => !v)}
-              className="relative p-2 rounded-xl hover:bg-gray-100 text-gray-600 hover:text-blue-600 outline-none focus:ring-2 focus:ring-blue-300"
+              className="relative p-2 rounded-xl hover:bg-gray-100 text-gray-600 hover:text-blue-600 outline-none focus:ring-2 focus:ring-blue-300 transition-colors"
             >
               <Bell size={20} />
-              {computedCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] rounded-full min-w-[16px] h-4 px-1 grid place-items-center">
-                  {computedCount > 9 ? "9+" : computedCount}
+              {computedUnreadCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] rounded-full min-w-[16px] h-4 px-1 grid place-items-center font-medium">
+                  {computedUnreadCount > 9 ? "9+" : computedUnreadCount}
                 </span>
               )}
             </button>
 
             {openNotif && (
-              <div className="absolute right-0 mt-2 w-72 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden animate-in fade-in zoom-in-95">
-                <div className="px-3 py-2 border-b bg-gray-50">
+              <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-50 animate-in fade-in zoom-in-95">
+                {/* Notification Header */}
+                <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/80">
                   <p className="text-sm font-semibold text-gray-800">
                     Notifications
                   </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {computedUnreadCount} unread {computedUnreadCount === 1 ? 'notification' : 'notifications'}
+                  </p>
                 </div>
+
+                {/* Notifications List */}
                 {notifications.length ? (
                   <ul className="max-h-72 overflow-auto">
-                    {notifications.map((n) => (
+                    {notifications.slice(0, 5).map((n) => (
                       <li
                         key={n.id}
-                        className="px-3 py-3 text-sm text-gray-700 flex items-center gap-2 hover:bg-gray-50"
+                        className={`px-4 py-3 text-sm flex items-start gap-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors ${
+                          !n.isRead ? "bg-blue-50/70" : ""
+                        }`}
                       >
-                        <div className="w-6 h-6 rounded-md bg-blue-50 text-blue-600 grid place-items-center">
-                          {n.icon || <Bell size={14} />}
+                        <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 grid place-items-center flex-shrink-0 mt-0.5">
+                          {n.icon || <Bell size={16} />}
                         </div>
-                        <span className="truncate">{n.title}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-gray-900 font-medium truncate">{n.title}</p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            {n.message || "New update for your organization"}
+                          </p>
+                          <p className="text-xs text-gray-400 mt-1">
+                            {new Date().toLocaleString(undefined, {
+                              dateStyle: "medium",
+                              timeStyle: "short",
+                            })}
+                          </p>
+                        </div>
                       </li>
                     ))}
                   </ul>
                 ) : (
-                  <div className="px-3 py-6 text-sm text-gray-500">
-                    You're all caught up!
+                  <div className="px-4 py-8 text-center">
+                    <Bell className="mx-auto mb-2 text-gray-300 w-8 h-8" />
+                    <p className="text-sm text-gray-500">No new notifications</p>
                   </div>
                 )}
-                <button
-                  className="w-full px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 border-t"
-                  onClick={() => setOpenNotif(false)}
-                >
-                  Mark all as read
-                </button>
+
+                {/* Footer with View All Button */}
+                <div className="border-t border-gray-100">
+                  <button
+                    onClick={() => {
+                      setOpenNotif(false);
+                      navigate("/organization/notifications");
+                    }}
+                    className="w-full px-4 py-3 text-sm text-blue-600 hover:bg-blue-50 font-medium transition-colors"
+                  >
+                    View all notifications
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -249,61 +250,71 @@ export default function OrganizationNavbar({
           <div className="relative" ref={profileRef}>
             <button
               onClick={() => setOpenProfile((v) => !v)}
-              className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-xl hover:bg-gray-100 outline-none focus:ring-2 focus:ring-blue-300"
+              className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-xl hover:bg-gray-100 outline-none focus:ring-2 focus:ring-blue-300 transition-colors group"
             >
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-xs font-bold grid place-items-center shadow">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-xs font-bold grid place-items-center shadow-sm group-hover:shadow transition-shadow">
                 {initials}
               </div>
-              <span className="hidden sm:block text-sm font-medium text-gray-800">
-                {organizationName}
-              </span>
+              <div className="hidden sm:block text-left">
+                <p className="text-sm font-medium text-gray-800 leading-tight">
+                  {organizationName}
+                </p>
+                <p className="text-xs text-gray-500 leading-tight">Organization</p>
+              </div>
               <ChevronDown
                 size={16}
-                className={`text-gray-500 transition ${
+                className={`text-gray-400 transition-transform duration-200 ${
                   openProfile ? "rotate-180" : ""
                 }`}
               />
             </button>
 
             {openProfile && (
-              <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden animate-in fade-in zoom-in-95">
-                <div className="px-3 py-2 border-b bg-gray-50">
-                  <p className="text-sm font-semibold text-gray-800">
-                    Organization
+              <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-50 animate-in fade-in zoom-in-95">
+                {/* Profile Header */}
+                <div className="px-4 py-3 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-sm font-bold grid place-items-center shadow">
+                      {initials}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-gray-900 truncate">
+                        {organizationName}
+                      </p>
+                      <p className="text-xs text-gray-600 truncate">
+                        {organizationEmail}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Menu Items */}
+                <div className="py-2">
+                  {profileMenuItems.map((item, index) => (
+                    <button
+                      key={item.label}
+                      onClick={() => {
+                        item.onClick();
+                        setOpenProfile(false);
+                      }}
+                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                        item.danger
+                          ? "text-red-600 hover:bg-red-50"
+                          : "text-gray-700 hover:bg-gray-50"
+                      }`}
+                    >
+                      <item.icon size={16} className={item.danger ? "text-red-500" : "text-gray-400"} />
+                      <span>{item.label}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Footer */}
+                <div className="px-4 py-2 border-t border-gray-100 bg-gray-50/50">
+                  <p className="text-xs text-gray-500">
+                    ServeSpot Organization
                   </p>
                 </div>
-                <button
-                  onClick={() => {
-                    setOpenProfile(false);
-                    navigate("/organization/profile");
-                  }}
-                  className="w-full text-left px-3 py-3 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                >
-                  <Building size={16} /> Profile
-                </button>
-                <button
-                  onClick={() => {
-                    setOpenProfile(false);
-                    navigate("/organization/settings");
-                  }}
-                  className="w-full text-left px-3 py-3 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                >
-                  <Settings size={16} /> Settings
-                </button>
-                <button
-                  onClick={() => {
-                    localStorage.removeItem("orgToken");
-                    localStorage.removeItem("activeRole");
-                    localStorage.removeItem("organizationId");
-                    localStorage.removeItem("orgId"); // Make sure this matches your login
-                    localStorage.removeItem("orgName"); // Add this to clear orgName too
-                    setOpenProfile(false);
-                    navigate("/organization/login");
-                  }}
-                  className="w-full text-left px-3 py-3 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 border-t"
-                >
-                  <LogOut size={16} /> Logout
-                </button>
               </div>
             )}
           </div>

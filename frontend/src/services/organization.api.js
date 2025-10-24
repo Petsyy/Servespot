@@ -38,8 +38,6 @@ export const updateOpportunity = (id, formData) =>
 export const getOrgStats = (orgId) =>
   API.get(`/opportunities/organization/${orgId}/stats`);
 
-export const getOrgNotifications = (orgId) =>
-  API.get(`/opportunities/organization/${orgId}/notifications`);
 
 export const getOrgActivity = (orgId) =>
   API.get(`/opportunities/organization/${orgId}/activity`);
@@ -59,7 +57,7 @@ export const getOrganizationProfile = (orgId) =>
     headers: { Authorization: `Bearer ${localStorage.getItem("orgToken")}` },
   });
 
-// Update volunteer status (approve / reject / complete)
+  // Update volunteer status (approve / reject / complete)
 export const updateVolunteerStatus = (oppId, volunteerId, status) =>
   API.put(`/organization/volunteers/${oppId}/${volunteerId}/status`, { status });
 
@@ -69,3 +67,12 @@ export const updateOrganization = (id, data) =>
   API.put(`/organization/${id}`, data, {
     headers: { "Content-Type": "application/json" },
   });
+
+// ✅ Mark all organization notifications as read
+export const markOrgNotificationsRead = (orgId) =>
+  API.put(`/notifications/organization/${orgId}/read-all`);
+
+// Email Notifcation Tab
+export const getOrgNotifications = (orgId) =>
+  API.get(`/notifications/organization/${orgId}`);
+

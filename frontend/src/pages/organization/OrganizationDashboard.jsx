@@ -14,7 +14,6 @@ import {
   getOpportunities,
   getOrgStats,
   getOrgNotifications,
-  getOrgActivity,
   deleteOpportunity,
   getOrganizationProfile,
 } from "@/services/organization.api";
@@ -24,7 +23,6 @@ import StatCard from "@/components/organization-dashboard/metrics/StatCard";
 import OpportunityCard from "@/components/organization-dashboard/opportunities/OpportunityCard";
 import Notifications from "@/components/organization-dashboard/notifications/Notifications";
 import ImpactSummary from "@/components/organization-dashboard/metrics/ImpactSummary";
-import VolunteerActivity from "@/components/organization-dashboard/volunteers/VolunteerActivity";
 import PostOpportunityModal from "@/components/organization-dashboard/modal/PostOpportunityModal";
 import { socket, registerUserSocket } from "@/utils/socket";
 
@@ -35,7 +33,6 @@ export default function OrganizationDashboard() {
   const [opportunities, setOpportunities] = useState([]);
   const [stats, setStats] = useState({});
   const [notifications, setNotifications] = useState([]);
-  const [activity, setActivity] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
 
@@ -137,17 +134,15 @@ export default function OrganizationDashboard() {
         setOrgName(orgRes.data?.orgName || "Organization");
         localStorage.setItem("orgName", orgRes.data?.orgName || "Organization");
 
-        const [oppRes, statsRes, notifRes, activityRes] = await Promise.all([
+        const [oppRes, statsRes, notifRes] = await Promise.all([
           getOpportunities(orgId),
           getOrgStats(orgId),
           getOrgNotifications(orgId),
-          getOrgActivity(orgId),
         ]);
 
         setOpportunities(oppRes.data);
         setStats(statsRes.data);
         setNotifications(notifRes.data);
-        setActivity(activityRes.data);
       } catch (err) {
         console.error("❌ Failed to load dashboard data", err);
         toast.error("Failed to load organization data.");
@@ -249,26 +244,26 @@ export default function OrganizationDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <StatCard
               icon={<CalendarDays size={20} />}
-              title="Active Opportunities"
-              value={stats.active || 0}
+              title="Opportunities Created"
+              value={stats.totalOpportunities || 0}
               color="green"
             />
             <StatCard
               icon={<Users size={20} />}
-              title="Volunteers Engaged"
-              value={stats.engagedVolunteers || 0}
+              title="Volunteers Recruited"
+              value={stats.totalVolunteers || 0}
               color="blue"
             />
             <StatCard
               icon={<TrendingUp size={20} />}
-              title="Total Hours"
+              title="Impact Hours"
               value={stats.totalHours || 0}
               color="purple"
             />
             <StatCard
               icon={<Award size={20} />}
-              title="Completed Tasks"
-              value={stats.completedTasks || 0}
+              title="Completion Rate"
+              value={stats.completionRate ? `${stats.completionRate}%` : "0%"}
               color="orange"
             />
           </div>
@@ -346,8 +341,6 @@ export default function OrganizationDashboard() {
                 </div>
               </div>
 
-              {/* Volunteer Activity */}
-              <VolunteerActivity items={activity} />
             </div>
 
             {/* Sidebar Widgets */}

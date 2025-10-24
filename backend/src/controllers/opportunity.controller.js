@@ -1,6 +1,7 @@
 import Opportunity from "../models/Opportunity.js";
 import Organization from "../models/Organization.js";
 import Volunteer from "../models/Volunteer.js";
+import Notification from "../models/Notification.js";
 import { awardVolunteerRewards } from "../utils/volunteer.badges.js";
 import { sendNotification } from "../utils/sendNotification.js";
 
@@ -56,6 +57,37 @@ export const createOpportunity = async (req, res) => {
 
     await opportunity.save();
     console.log("Saved opportunity for org:", organization);
+
+    // Notify nearby volunteers about new opportunity (optional)
+    try {
+      const org = await Organization.findById(organization);
+      if (org) {
+        // Find volunteers in the same city or with matching skills
+        const volunteers = await Volunteer.find({
+          $or: [
+            { city: org.city },
+            { skills: { $in: opportunity.skills } }
+          ],
+          status: "active"
+        }).limit(10); // Limit to avoid spam
+
+        for (const volunteer of volunteers) {
+          await sendNotification({
+            userId: volunteer._id,
+            userModel: "Volunteer",
+            email: volunteer.email,
+            title: "New Opportunity Available",
+            message: `"${opportunity.title}" by ${org.orgName} is now available in ${opportunity.location || org.city}.`,
+            type: "update",
+            channel: "both",
+            link: `/volunteer/opportunities/${opportunity._id}`,
+          });
+        }
+      }
+    } catch (notifErr) {
+      console.error("Failed to send new opportunity notifications:", notifErr);
+      // Don't fail the main request if notification fails
+    }
 
     // Return full object wrapped in a message
     return res.status(201).json({
@@ -164,6 +196,28 @@ export const volunteerSignup = async (req, res) => {
 
     console.log("Volunteer added:", volunteerId, "→", opportunity.title);
 
+    // Notify organization about new volunteer application
+    try {
+      const opportunityWithOrg = await Opportunity.findById(opportunityId).populate('organization');
+      const volunteer = await Volunteer.findById(volunteerId);
+      
+      if (opportunityWithOrg?.organization && volunteer) {
+        await sendNotification({
+          userId: opportunityWithOrg.organization._id,
+          userModel: "Organization",
+          email: opportunityWithOrg.organization.email,
+          title: "New Volunteer Application",
+          message: `${volunteer.fullName} applied for "${opportunity.title}".`,
+          type: "update",
+          channel: "both",
+          link: `/organization/opportunities/${opportunityId}`,
+        });
+      }
+    } catch (notifErr) {
+      console.error("Failed to send volunteer application notification:", notifErr);
+      // Don't fail the main request if notification fails
+    }
+
     res.status(200).json({
       message: "Successfully joined the opportunity!",
       currentVolunteers: opportunity.volunteers.length,
@@ -268,30 +322,50 @@ export const markOpportunityCompleted = async (req, res) => {
 export const getStats = async (req, res) => {
   try {
     const { orgId } = req.params;
-    const total = await Opportunity.countDocuments({ organization: orgId });
-    const open = await Opportunity.countDocuments({
-      organization: orgId,
-      status: "Open",
+    
+    // Get all opportunities for this organization
+    const opportunities = await Opportunity.find({ organization: orgId })
+      .populate('volunteers', '_id')
+      .populate('completedVolunteers', '_id')
+      .lean();
+
+    // Calculate total opportunities created
+    const totalOpportunities = opportunities.length;
+    
+    // Calculate total volunteers recruited (unique volunteers across all opportunities)
+    const allVolunteers = new Set();
+    opportunities.forEach(opp => {
+      if (opp.volunteers) {
+        opp.volunteers.forEach(vol => allVolunteers.add(vol._id.toString()));
+      }
     });
-    const inProgress = await Opportunity.countDocuments({
-      organization: orgId,
-      status: "In Progress",
-    });
-    const closed = await Opportunity.countDocuments({
-      organization: orgId,
-      status: "Closed",
-    });
+    const totalVolunteers = allVolunteers.size;
+    
+    // Calculate total hours (estimate based on completed opportunities)
+    const completedOpportunities = opportunities.filter(opp => 
+      opp.status === 'Completed' || opp.completedVolunteers?.length > 0
+    );
+    const totalHours = completedOpportunities.length * 4; // Estimate 4 hours per completed opportunity
+    
+    // Calculate completion rate
+    const completionRate = totalOpportunities > 0 
+      ? Math.round((completedOpportunities.length / totalOpportunities) * 100)
+      : 0;
 
     res.json({
-      total,
-      active: open,
-      inProgress,
-      completedTasks: closed,
-      engagedVolunteers: 1, // placeholder
-      totalHours: 2, // placeholder
+      totalOpportunities,
+      totalVolunteers,
+      totalHours,
+      completionRate,
+      // Keep legacy fields for backward compatibility
+      total: totalOpportunities,
+      active: opportunities.filter(opp => opp.status === 'Open').length,
+      inProgress: opportunities.filter(opp => opp.status === 'In Progress').length,
+      completedTasks: completedOpportunities.length,
+      engagedVolunteers: totalVolunteers,
     });
   } catch (err) {
-    console.error(err);
+    console.error("Error fetching organization stats:", err);
     res.status(500).json({ message: "Failed to fetch stats" });
   }
 };
@@ -303,7 +377,7 @@ export const getOpportunityVolunteers = async (req, res) => {
     const opportunity = await Opportunity.findById(id)
       .populate(
         "volunteers",
-        "firstName lastName email city skills interests availability"
+        "firstName lastName fullName email city skills interests availability"
       )
       .lean();
 
@@ -385,6 +459,28 @@ export const confirmVolunteerCompletion = async (req, res) => {
     }
 
     await opportunity.save();
+
+    // Notify volunteer about completion confirmation
+    try {
+      const volunteer = await Volunteer.findById(volunteerId);
+      const org = await Organization.findById(opportunity.organization);
+      
+      if (volunteer && org) {
+        await sendNotification({
+          userId: volunteer._id,
+          userModel: "Volunteer",
+          email: volunteer.email,
+          title: "Volunteer Completion Confirmed",
+          message: `Your completion for "${opportunity.title}" by ${org.orgName} has been confirmed.`,
+          type: "completion",
+          channel: "both",
+          link: `/volunteer/opportunities/${oppId}`,
+        });
+      }
+    } catch (notifErr) {
+      console.error("Failed to send completion confirmation notification:", notifErr);
+      // Don't fail the main request if notification fails
+    }
 
     res.status(200).json({
       message: "Volunteer marked as completed",
@@ -507,6 +603,30 @@ export const reviewCompletionProof = async (req, res) => {
 
     await opportunity.save();
 
+    // Notify volunteer about proof approval/rejection
+    try {
+      const volunteer = await Volunteer.findById(volunteerId);
+      const org = await Organization.findById(opportunity.organization);
+      
+      if (volunteer && org) {
+        await sendNotification({
+          userId: volunteer._id,
+          userModel: "Volunteer",
+          email: volunteer.email,
+          title: action === "approve" ? "Proof Approved" : "Proof Rejected",
+          message: action === "approve" 
+            ? `Your proof for "${opportunity.title}" by ${org.orgName} has been approved.`
+            : `Your proof for "${opportunity.title}" by ${org.orgName} was rejected. You can submit a new proof.`,
+          type: action === "approve" ? "completion" : "update",
+          channel: "both",
+          link: `/volunteer/opportunities/${id}`,
+        });
+      }
+    } catch (notifErr) {
+      console.error("Failed to send proof review notification:", notifErr);
+      // Don't fail the main request if notification fails
+    }
+
     res.status(200).json({
       message:
         action === "approve"
@@ -586,22 +706,21 @@ export const deleteOpportunity = async (req, res) => {
   }
 };
 
-// Dummy notifications
-export const getNotifications = (req, res) => {
-  res.json([
-    {
-      title: "5 new volunteers signed up for Community Garden Clean-up",
-      time: "30 minutes ago",
-    },
-    {
-      title: "Food Bank Sorting completed by 12 volunteers",
-      time: "2 hours ago",
-    },
-    {
-      title: "Reminder: Senior Center Visit starts tomorrow",
-      time: "5 hours ago",
-    },
-  ]);
+export const getOrgNotifications = async (req, res) => {
+  try {
+    const { orgId } = req.params;
+    const notifs = await Notification.find({
+      user: orgId,
+      userModel: "Organization",
+    })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.json(notifs);
+  } catch (err) {
+    console.error("❌ Error fetching organization notifications:", err);
+    res.status(500).json({ message: "Failed to load organization notifications" });
+  }
 };
 
 // Dummy activity

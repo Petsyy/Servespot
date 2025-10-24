@@ -1,5 +1,7 @@
 import Opportunity from "../models/Opportunity.js";
 import Volunteer from "../models/Volunteer.js";
+import Organization from "../models/Organization.js";
+import { sendNotification } from "../utils/sendNotification.js";
 
 /**
  * GET all volunteers across all opportunities of a specific organization
@@ -106,6 +108,53 @@ export const updateOrgVolunteerStatus = async (req, res) => {
     }
 
     await opportunity.save();
+
+    // Notify volunteer about status change
+    try {
+      const volunteer = await Volunteer.findById(id);
+      const org = await Organization.findById(opportunity.organization);
+      
+      if (volunteer && org) {
+        let title, message, notificationType;
+        
+        if (status === "Approved") {
+          title = "Application Approved";
+          message = `Your application for "${opportunity.title}" by ${org.orgName} has been approved.`;
+          notificationType = "update";
+        } else if (status === "Rejected") {
+          title = "Application Rejected";
+          message = `Your application for "${opportunity.title}" by ${org.orgName} was rejected.`;
+          notificationType = "update";
+        } else if (status === "Completed") {
+          title = "Volunteer Completion Confirmed";
+          message = `Your completion for "${opportunity.title}" by ${org.orgName} has been confirmed.`;
+          notificationType = "completion";
+        }
+
+        if (title && message) {
+          await sendNotification({
+            userId: volunteer._id,
+            userModel: "Volunteer",
+            email: volunteer.email,
+            title,
+            message,
+            type: notificationType,
+            channel: "both",
+            link: `/volunteer/opportunities/${opportunityId}`,
+          });
+        }
+      }
+    } catch (notifErr) {
+      console.error("Failed to send volunteer status notification:", notifErr);
+      // Don't fail the main request if notification fails
+    }
+
+    res.status(200).json({
+      message: `Volunteer status updated to ${status}`,
+      volunteerId: id,
+      opportunityId,
+      status,
+    });
   } catch (err) {
     console.error("updateOrgVolunteerStatus error:", err);
     res.status(500).json({ message: "Failed to update volunteer status" });

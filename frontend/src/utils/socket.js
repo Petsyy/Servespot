@@ -20,11 +20,11 @@ export const registerUserSocket = (userId, role) => {
   if (role === "admin") socket.emit("registerAdmin", userId);
 
   socket.on("connect", () => {
-    console.log("🟢 Socket connected:", socket.id);
+    console.log(" Socket connected:", socket.id);
   });
 
   socket.on("disconnect", (reason) => {
-    console.warn("🔴 Socket disconnected:", reason);
+    console.warn("Socket disconnected:", reason);
   });
 
   console.log(`📡 Registered ${role} socket: ${userId}`);

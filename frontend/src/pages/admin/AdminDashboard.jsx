@@ -3,22 +3,18 @@ import { useNavigate } from "react-router-dom";
 import {
   Users,
   Building,
-  Activity,
   CheckCircle,
-  TrendingUp,
   Building2,
   ClipboardList,
   CheckCircle2,
 } from "lucide-react";
 import AdminSidebar from "@/components/layout/sidebars/AdminSidebar";
 import AdminNavbar from "@/components/layout/navbars/AdminNavbar";
+import { getAdminDashboard } from "@/services/admin.api";
 import {
   ResponsiveContainer,
   BarChart,
   Bar,
-  PieChart,
-  Pie,
-  Cell,
   CartesianGrid,
   XAxis,
   YAxis,
@@ -31,30 +27,9 @@ import {
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [stats, setStats] = useState({});
+  const [stats, setStats] = useState(null);
+  const [chartData, setChartData] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  // Updated chart data
-  const chartData = {
-    weeklyActivity: [
-      { day: "Mon", hours: 45, tasks: 12 },
-      { day: "Tue", hours: 52, tasks: 15 },
-      { day: "Wed", hours: 48, tasks: 11 },
-      { day: "Thu", hours: 61, tasks: 18 },
-      { day: "Fri", hours: 67, tasks: 20 },
-      { day: "Sat", hours: 85, tasks: 25 },
-      { day: "Sun", hours: 72, tasks: 22 },
-    ],
-    weeklyTasks: [
-      { day: "Mon", completed: 8 },
-      { day: "Tue", completed: 12 },
-      { day: "Wed", completed: 9 },
-      { day: "Thu", completed: 15 },
-      { day: "Fri", completed: 18 },
-      { day: "Sat", completed: 22 },
-      { day: "Sun", completed: 16 },
-    ],
-  };
 
   // Toggle sidebar function
   const toggleSidebar = () => {
@@ -79,24 +54,32 @@ export default function AdminDashboard() {
   }, [navigate]);
 
   useEffect(() => {
-    // Simulate fetching admin data
-    const fetchAdminData = async () => {
+    const fetchDashboardData = async () => {
       try {
-        const mockStats = {
-          totalVolunteers: 1284,
-          totalOrganizations: 156,
-          activeOpportunities: 245, // Open + In Progress
-          completedOpportunities: 2341,
-        };
-        setStats(mockStats);
-      } catch (err) {
-        console.error("❌ Failed to load admin data", err);
+        setLoading(true);
+        const res = await getAdminDashboard();
+        const data = res.data;
+
+        setStats({
+          totalVolunteers: data.totalVolunteers,
+          totalOrganizations: data.totalOrganizations,
+          activeOpportunities: data.activeOpportunities,
+          completedOpportunities: data.completedOpportunities,
+        });
+
+        setChartData({
+          weeklyActivity: data.weeklyActivity,
+          weeklyTasks: data.weeklyTasks,
+        });
+      } catch (error) {
+        console.error("❌ Error fetching dashboard:", error);
+        toast.error("Failed to load dashboard data");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchAdminData();
+    fetchDashboardData();
   }, []);
 
   const CustomTooltip = ({ active, payload, label }) => {
@@ -129,6 +112,13 @@ export default function AdminDashboard() {
     return null;
   };
 
+  // Helper function to format numbers with loading state
+  const formatStat = (value) => {
+    if (loading) return "...";
+    if (!stats || value === undefined || value === null) return "0";
+    return value.toLocaleString();
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
       <AdminSidebar isOpen={sidebarOpen} onClose={closeSidebar} />
@@ -157,10 +147,14 @@ export default function AdminDashboard() {
                   Total Volunteers
                 </p>
                 <h3 className="text-2xl font-bold text-gray-800">
-                  {loading ? "..." : stats.totalVolunteers?.toLocaleString()}
+                  {formatStat(stats?.totalVolunteers)}
                 </h3>
                 <p className="text-xs text-green-600 mt-1">
-                  ↑ 12% from last month
+                  {loading
+                    ? "..."
+                    : stats
+                      ? "↑ 12% from last month"
+                      : "No data available"}
                 </p>
               </div>
               <Users className="h-10 w-10 text-blue-600" />
@@ -172,10 +166,14 @@ export default function AdminDashboard() {
                   Total Organizations
                 </p>
                 <h3 className="text-2xl font-bold text-gray-800">
-                  {loading ? "..." : stats.totalOrganizations?.toLocaleString()}
+                  {formatStat(stats?.totalOrganizations)}
                 </h3>
                 <p className="text-xs text-green-600 mt-1">
-                  ↑ 8% from last month
+                  {loading
+                    ? "..."
+                    : stats
+                      ? "↑ 8% from last month"
+                      : "No data available"}
                 </p>
               </div>
               <Building2 className="h-10 w-10 text-indigo-600" />
@@ -187,10 +185,14 @@ export default function AdminDashboard() {
                   Active Opportunities
                 </p>
                 <h3 className="text-2xl font-bold text-gray-800">
-                  {loading ? "..." : stats.activeOpportunities?.toLocaleString()}
+                  {formatStat(stats?.activeOpportunities)}
                 </h3>
                 <p className="text-xs text-green-600 mt-1">
-                  ↑ 15% from last month
+                  {loading
+                    ? "..."
+                    : stats
+                      ? "↑ 15% from last month"
+                      : "No data available"}
                 </p>
               </div>
               <ClipboardList className="h-10 w-10 text-yellow-600" />
@@ -202,10 +204,14 @@ export default function AdminDashboard() {
                   Completed Opportunities
                 </p>
                 <h3 className="text-2xl font-bold text-gray-800">
-                  {loading ? "..." : stats.completedOpportunities?.toLocaleString()}
+                  {formatStat(stats?.completedOpportunities)}
                 </h3>
                 <p className="text-xs text-green-600 mt-1">
-                  ↑ 18% from last month
+                  {loading
+                    ? "..."
+                    : stats
+                      ? "↑ 18% from last month"
+                      : "No data available"}
                 </p>
               </div>
               <CheckCircle2 className="h-10 w-10 text-green-600" />
@@ -223,38 +229,54 @@ export default function AdminDashboard() {
                 <span className="text-sm text-gray-500">Hours & Tasks</span>
               </div>
               <div className="w-full h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={chartData.weeklyActivity}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
-                    <XAxis 
-                      dataKey="day" 
-                      fontSize={12}
-                    />
-                    <YAxis fontSize={12} />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Legend />
-                    <Line 
-                      type="monotone" 
-                      dataKey="hours" 
-                      stroke="#3b82f6" 
-                      strokeWidth={2}
-                      name="Volunteer Hours"
-                      dot={{ r: 4 }}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="tasks" 
-                      stroke="#10b981" 
-                      strokeWidth={2}
-                      name="Tasks Completed"
-                      dot={{ r: 4 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+                {loading ? (
+                  <div className="h-full flex items-center justify-center">
+                    <div className="text-gray-500">Loading chart data...</div>
+                  </div>
+                ) : !chartData?.weeklyActivity ? (
+                  <div className="h-full flex items-center justify-center">
+                    <div className="text-gray-500 text-center">
+                      <p>No chart data available</p>
+                      <p className="text-sm mt-2">
+                        Connect to your data source to display analytics
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={chartData.weeklyActivity}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
+                      <XAxis dataKey="day" fontSize={12} />
+                      <YAxis fontSize={12} />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Legend />
+                      <Line
+                        type="monotone"
+                        dataKey="hours"
+                        stroke="#3b82f6"
+                        strokeWidth={2}
+                        name="Volunteer Hours"
+                        dot={{ r: 4 }}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="tasks"
+                        stroke="#10b981"
+                        strokeWidth={2}
+                        name="Tasks Completed"
+                        dot={{ r: 4 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                )}
               </div>
               <div className="mt-4 text-center">
                 <p className="text-sm text-gray-600">
-                  Total hours this week: {chartData.weeklyActivity.reduce((sum, day) => sum + day.hours, 0)}
+                  {loading
+                    ? "Calculating..."
+                    : chartData?.weeklyActivity
+                      ? `Total hours this week: ${chartData.weeklyActivity.reduce((sum, day) => sum + day.hours, 0)}`
+                      : "Connect data source to see totals"}
                 </p>
               </div>
             </div>
@@ -268,27 +290,43 @@ export default function AdminDashboard() {
                 <span className="text-sm text-gray-500">Daily Progress</span>
               </div>
               <div className="w-full h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData.weeklyTasks}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
-                    <XAxis 
-                      dataKey="day" 
-                      fontSize={12}
-                    />
-                    <YAxis fontSize={12} />
-                    <Tooltip content={<WeeklyTasksTooltip />} />
-                    <Bar 
-                      dataKey="completed" 
-                      fill="#10b981"
-                      radius={[4, 4, 0, 0]}
-                      name="Tasks Completed"
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
+                {loading ? (
+                  <div className="h-full flex items-center justify-center">
+                    <div className="text-gray-500">Loading chart data...</div>
+                  </div>
+                ) : !chartData?.weeklyTasks ? (
+                  <div className="h-full flex items-center justify-center">
+                    <div className="text-gray-500 text-center">
+                      <p>No chart data available</p>
+                      <p className="text-sm mt-2">
+                        Connect to your data source to display analytics
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartData.weeklyTasks}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
+                      <XAxis dataKey="day" fontSize={12} />
+                      <YAxis fontSize={12} />
+                      <Tooltip content={<WeeklyTasksTooltip />} />
+                      <Bar
+                        dataKey="completed"
+                        fill="#10b981"
+                        radius={[4, 4, 0, 0]}
+                        name="Tasks Completed"
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                )}
               </div>
               <div className="mt-4 text-center">
                 <p className="text-sm text-gray-600">
-                  Total tasks completed this week: {chartData.weeklyTasks.reduce((sum, day) => sum + day.completed, 0)}
+                  {loading
+                    ? "Calculating..."
+                    : chartData?.weeklyTasks
+                      ? `Total tasks completed this week: ${chartData.weeklyTasks.reduce((sum, day) => sum + day.completed, 0)}`
+                      : "Connect data source to see totals"}
                 </p>
               </div>
             </div>
@@ -302,31 +340,47 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div className="p-4 border border-gray-100 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-medium text-gray-900">Volunteer Engagement</h3>
+                  <h3 className="font-medium text-gray-900">
+                    Volunteer Engagement
+                  </h3>
                   <Users className="w-4 h-4 text-blue-600" />
                 </div>
                 <p className="text-sm text-gray-600">
-                  1,284 registered volunteers with steady 12% monthly growth.
+                  {loading
+                    ? "Loading insights..."
+                    : stats
+                      ? `${stats.totalVolunteers?.toLocaleString()} registered volunteers with steady 12% monthly growth.`
+                      : "No volunteer data available"}
                 </p>
               </div>
-              
+
               <div className="p-4 border border-gray-100 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-medium text-gray-900">Organization Activity</h3>
+                  <h3 className="font-medium text-gray-900">
+                    Organization Activity
+                  </h3>
                   <Building className="w-4 h-4 text-indigo-600" />
                 </div>
                 <p className="text-sm text-gray-600">
-                  156 total organizations actively posting opportunities.
+                  {loading
+                    ? "Loading insights..."
+                    : stats
+                      ? `${stats.totalOrganizations?.toLocaleString()} total organizations actively posting opportunities.`
+                      : "No organization data available"}
                 </p>
               </div>
-              
+
               <div className="p-4 border border-gray-100 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="font-medium text-gray-900">Task Completion</h3>
                   <CheckCircle className="w-4 h-4 text-green-600" />
                 </div>
                 <p className="text-sm text-gray-600">
-                  2,341 opportunities completed with 18% monthly increase.
+                  {loading
+                    ? "Loading insights..."
+                    : stats
+                      ? `${stats.completedOpportunities?.toLocaleString()} opportunities completed with 18% monthly increase.`
+                      : "No completion data available"}
                 </p>
               </div>
             </div>

@@ -216,7 +216,7 @@ export default function UserManagement() {
   const [organizations, setOrganizations] = useState([]);
   const [volunteers, setVolunteers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState(false);
+  const [loadingUserId, setLoadingUserId] = useState(null);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
   const closeSidebar = () => setSidebarOpen(false);
@@ -254,27 +254,27 @@ export default function UserManagement() {
   }, []);
 
   useEffect(() => {
-  const adminId = localStorage.getItem("adminId") || "defaultAdmin";
-  registerUserSocket(adminId, "admin");
+    const adminId = localStorage.getItem("adminId") || "defaultAdmin";
+    registerUserSocket(adminId, "admin");
 
-  socket.on("volunteerStatusUpdated", ({ userId, status }) => {
-    setVolunteers((prev) =>
-      prev.map((v) => (v._id === userId ? { ...v, status } : v))
-    );
-  });
+    socket.on("volunteerStatusUpdated", ({ userId, status }) => {
+      setVolunteers((prev) =>
+        prev.map((v) => (v._id === userId ? { ...v, status } : v))
+      );
+    });
 
-  socket.on("organizationStatusUpdated", ({ orgId, status }) => {
-    setOrganizations((prev) =>
-      prev.map((o) => (o._id === orgId ? { ...o, status } : o))
-    );
-    toast.info(`Organization status updated: ${status}`);
-  });
+    socket.on("organizationStatusUpdated", ({ orgId, status }) => {
+      setOrganizations((prev) =>
+        prev.map((o) => (o._id === orgId ? { ...o, status } : o))
+      );
+      toast.info(`Organization status updated: ${status}`);
+    });
 
-  return () => {
-    socket.off("volunteerStatusUpdated");
-    socket.off("organizationStatusUpdated");
-  };
-}, []);
+    return () => {
+      socket.off("volunteerStatusUpdated");
+      socket.off("organizationStatusUpdated");
+    };
+  }, []);
 
   /* -----------------------------
      SWEETALERT2 HANDLERS
@@ -301,79 +301,79 @@ export default function UserManagement() {
     }
   };
 
-const handleSuspendUser = async (user) => {
-  if (actionLoading) return; // prevent double click
-  setActionLoading(true);
+  const handleSuspendUser = async (user) => {
+    if (loadingUserId) return;
 
-  const userType = user.role === "organization" ? "Organization" : "Volunteer";
-  const userName = user.orgName || user.fullName;
-  const confirmed = await confirmSuspension(userType, userName);
-  if (!confirmed) {
-    setActionLoading(false);
-    return;
-  }
-
-  try {
-    if (user.role === "organization") {
-      await updateOrganizationStatus(user._id, "suspended");
-      toast.info(`${user.orgName} has been suspended.`);
-      setOrganizations((prev) =>
-        prev.map((o) =>
-          o._id === user._id ? { ...o, status: "suspended" } : o
-        )
-      );
-    } else {
-      await updateVolunteerStatus(user._id, "suspended");
-      toast.info(`${user.fullName} has been suspended.`);
-      setVolunteers((prev) =>
-        prev.map((v) =>
-          v._id === user._id ? { ...v, status: "suspended" } : v
-        )
-      );
-    }
-  } catch (error) {
-    console.error(error);
-    toast.error(`Failed to suspend ${user.role}`);
-  } finally {
-    // prevent rapid toggling
-    setTimeout(() => setActionLoading(false), 800);
-  }
-};
-
-
-  const handleReactivateUser = async (user) => {
     const userType =
       user.role === "organization" ? "Organization" : "Volunteer";
     const userName = user.orgName || user.fullName;
 
-    const confirmed = await confirmReactivation(userType, userName);
-
+    // Ask first — no loader yet
+    const confirmed = await confirmSuspension(userType, userName);
     if (!confirmed) return;
+
+    // Show loader only AFTER clicking "Yes"
+    setLoadingUserId(user._id);
+
+    try {
+      if (user.role === "organization") {
+        await updateOrganizationStatus(user._id, "suspended");
+        toast.info(`${user.orgName} has been suspended.`);
+        setOrganizations((prev) =>
+          prev.map((o) =>
+            o._id === user._id ? { ...o, status: "suspended" } : o
+          )
+        );
+      } else {
+        await updateVolunteerStatus(user._id, "suspended");
+        toast.info(`${user.fullName} has been suspended.`);
+        setVolunteers((prev) =>
+          prev.map((v) =>
+            v._id === user._id ? { ...v, status: "suspended" } : v
+          )
+        );
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(`Failed to suspend ${user.role}`);
+    } finally {
+      setLoadingUserId(null);
+    }
+  };
+
+  const handleReactivateUser = async (user) => {
+    if (loadingUserId) return;
+
+    const userType =
+      user.role === "organization" ? "Organization" : "Volunteer";
+    const userName = user.orgName || user.fullName;
+
+    // Ask first — no loader yet
+    const confirmed = await confirmReactivation(userType, userName);
+    if (!confirmed) return;
+
+    // Loader appears only after confirmation
+    setLoadingUserId(user._id);
 
     try {
       if (user.role === "organization") {
         await updateOrganizationStatus(user._id, "active");
         toast.success(`${user.orgName} has been reactivated successfully!`);
-
-        const updated = await getAllOrganizations();
-        const orgs = Array.isArray(updated.data)
-          ? updated.data
-          : updated.data.organizations;
-        setOrganizations(
-          (orgs || []).map((o) => ({ ...o, role: "organization" }))
+        setOrganizations((prev) =>
+          prev.map((o) => (o._id === user._id ? { ...o, status: "active" } : o))
         );
       } else {
         await updateVolunteerStatus(user._id, "active");
         toast.success(`${user.fullName} has been reactivated successfully!`);
-
-        const updated = await getAllVolunteers();
-        const vols = Array.isArray(updated.data)
-          ? updated.data
-          : updated.data.volunteers;
-        setVolunteers((vols || []).map((v) => ({ ...v, role: "volunteer" })));
+        setVolunteers((prev) =>
+          prev.map((v) => (v._id === user._id ? { ...v, status: "active" } : v))
+        );
       }
     } catch (error) {
+      console.error(error);
       toast.error(`Failed to reactivate ${user.role}`);
+    } finally {
+      setLoadingUserId(null);
     }
   };
 
@@ -532,26 +532,84 @@ const handleSuspendUser = async (user) => {
                                 />
                               )}
 
-                            {/* Suspend Button - Only for active users */}
+                            {/* Suspend Button */}
                             {(user.role === "organization" &&
                               user.status === "active") ||
                             (user.role === "volunteer" &&
                               user.status === "active") ? (
                               <ActionButton
                                 icon={UserX}
-                                label="Suspend"
+                                label={
+                                  loadingUserId === user._id ? (
+                                    <div className="flex items-center gap-1">
+                                      <svg
+                                        className="animate-spin h-4 w-4 text-red-700"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                      >
+                                        <circle
+                                          className="opacity-25"
+                                          cx="12"
+                                          cy="12"
+                                          r="10"
+                                          stroke="currentColor"
+                                          strokeWidth="4"
+                                        ></circle>
+                                        <path
+                                          className="opacity-75"
+                                          fill="currentColor"
+                                          d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                                        ></path>
+                                      </svg>
+                                      Processing…
+                                    </div>
+                                  ) : (
+                                    "Suspend"
+                                  )
+                                }
                                 variant="suspend"
-                                onClick={() => !actionLoading && handleSuspendUser(user)}
+                                onClick={() => handleSuspendUser(user)}
+                                disabled={loadingUserId === user._id}
                               />
                             ) : null}
 
-                            {/* Reactivate Button - Only for suspended users */}
+                            {/* Reactivate Button */}
                             {user.status === "suspended" && (
                               <ActionButton
                                 icon={RotateCcw}
-                                label="Reactivate"
+                                label={
+                                  loadingUserId === user._id ? (
+                                    <div className="flex items-center gap-1">
+                                      <svg
+                                        className="animate-spin h-4 w-4 text-green-700"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                      >
+                                        <circle
+                                          className="opacity-25"
+                                          cx="12"
+                                          cy="12"
+                                          r="10"
+                                          stroke="currentColor"
+                                          strokeWidth="4"
+                                        ></circle>
+                                        <path
+                                          className="opacity-75"
+                                          fill="currentColor"
+                                          d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                                        ></path>
+                                      </svg>
+                                      Processing…
+                                    </div>
+                                  ) : (
+                                    "Reactivate"
+                                  )
+                                }
                                 variant="reactivate"
-                                onClick={() => !actionLoading && handleReactivateUser(user)}
+                                onClick={() => handleReactivateUser(user)}
+                                disabled={loadingUserId === user._id}
                               />
                             )}
                           </div>

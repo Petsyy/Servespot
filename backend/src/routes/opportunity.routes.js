@@ -11,7 +11,7 @@ import {
   updateOpportunity,
   getOpportunities,
   getStats,
-  getNotifications,
+  getOrgNotifications,
   getActivity,
   deleteOpportunity,
   volunteerSignup,
@@ -23,6 +23,8 @@ import {
   reviewCompletionProof,
   forceCompleteOpportunity,
 } from "../controllers/opportunity.controller.js";
+
+import { triggerReminderTest } from "../utils/reminderNotifications.js";
 
 const router = express.Router();
 
@@ -99,7 +101,7 @@ router.put("/:id", uploadImages.single("file"), updateOpportunity);
    Dashboard routes (organization-specific)
 ------------------------------------------------ */
 router.get("/organization/:orgId/stats", getStats);
-router.get("/organization/:orgId/notifications", getNotifications);
+router.get("/organization/:orgId/notifications", getOrgNotifications);
 router.get("/organization/:orgId/activity", getActivity);
 router.get("/:id/volunteers", getOpportunityVolunteers);
 
@@ -121,6 +123,23 @@ router.patch("/:id/proof/:volunteerId/review", verifyToken, reviewCompletionProo
 
 // Force mark opportunity complete
 router.patch("/:id/force-complete", forceCompleteOpportunity);
+
+// Test reminder notifications
+router.post("/:id/test-reminder", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await triggerReminderTest(id);
+    
+    if (result.success) {
+      res.status(200).json({ message: result.message });
+    } else {
+      res.status(500).json({ message: "Failed to send test reminders", error: result.error });
+    }
+  } catch (error) {
+    console.error("Test reminder error:", error);
+    res.status(500).json({ message: "Failed to send test reminders", error: error.message });
+  }
+});
 
 /* ------------------------------------------------
    Delete specific opportunity

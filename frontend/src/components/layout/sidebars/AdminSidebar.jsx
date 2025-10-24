@@ -9,6 +9,7 @@ import {
   Shield,
   LogOut,
   X,
+  Bell,
 } from "lucide-react";
 
 const linkCls = ({ isActive }) =>
@@ -32,6 +33,7 @@ export default function AdminSidebar({ isOpen, onClose }) {
     { to: "/admin/dashboard", icon: LayoutGrid, label: "Dashboard" },
     { to: "/admin/management", icon: Users, label: "User Management" },
     { to: "/admin/reports", icon: BarChart3, label: "Reports & Analytics" },
+    { to: "/admin/notifications", icon: Bell, label: "Notifications" },
   ];
 
   return (

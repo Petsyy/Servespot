@@ -65,21 +65,9 @@ export default function VolunteerBadges() {
   ];
 
   useEffect(() => {
-    // Try loading cached data first
-    const cached = localStorage.getItem("volunteerOverview");
-    if (cached) {
-      try {
-        const parsed = JSON.parse(cached);
-        setVolunteer(parsed);
-        setLoading(false); // Immediately show cached data
-      } catch {
-        console.warn("Corrupted volunteer cache, refetching...");
-      }
-    }
-
-    // Fetch fresh data in background
     const fetchData = async () => {
       try {
+        setLoading(true);
         const res = await getVolunteerOverview();
         if (res?.data) {
           setVolunteer(res.data);
@@ -87,6 +75,16 @@ export default function VolunteerBadges() {
         }
       } catch (err) {
         console.error("Failed to fetch volunteer info:", err);
+        // Try loading cached data as fallback
+        const cached = localStorage.getItem("volunteerOverview");
+        if (cached) {
+          try {
+            const parsed = JSON.parse(cached);
+            setVolunteer(parsed);
+          } catch {
+            console.warn("Corrupted volunteer cache");
+          }
+        }
       } finally {
         setLoading(false);
       }
@@ -97,6 +95,20 @@ export default function VolunteerBadges() {
 
   const completed = volunteer?.completedTasks || 0;
   const earnedNames = (volunteer?.badges || []).map((b) => b.name);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen bg-gray-50">
+        <VolSidebar isOpen={sidebarOpen} onClose={closeSidebar} />
+        <div className="flex-1 flex flex-col min-w-0">
+          <VolunteerNavbar onToggleSidebar={toggleSidebar} />
+          <main className="flex-1 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          </main>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -112,10 +124,10 @@ export default function VolunteerBadges() {
           onToggleSidebar={toggleSidebar}
         />
 
-        <main className="flex-1 px-8 py-10 overflow-y-auto animate-fadeInUp">
+        <main className="flex-1 px-8 py-10 overflow-y-auto">
           <div className="max-w-6xl mx-auto">
             {/* Header */}
-            <div className="text-center mb-10 transition-opacity duration-300">
+            <div className="text-center mb-10">
               <h1 className="text-4xl font-extrabold text-gray-900 mb-2 flex justify-center items-center gap-2">
                 🏅 Your Rewards & Badges
               </h1>
@@ -142,8 +154,7 @@ export default function VolunteerBadges() {
                     key={index}
                     className={`relative p-6 rounded-2xl border border-gray-200 shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-1 ${
                       earned ? "bg-gradient-to-br from-green-50 to-white" : "bg-white"
-                    } animate-fadeInDelay`}
-                    style={{ animationDelay: `${index * 0.1}s` }}
+                    }`}
                   >
                     <div className="relative flex flex-col items-center text-center">
                       <div
@@ -193,7 +204,7 @@ export default function VolunteerBadges() {
 // Simple stat card component
 function Stat({ label, value, color }) {
   return (
-    <div className="bg-white shadow-sm border border-gray-200 rounded-2xl px-8 py-5 flex flex-col items-center w-full sm:w-60 animate-fadeInUp">
+    <div className="bg-white shadow-sm border border-gray-200 rounded-2xl px-8 py-5 flex flex-col items-center w-full sm:w-60">
       <span className={`text-4xl font-bold ${color}`}>{value}</span>
       <span className="text-gray-600 font-medium">{label}</span>
     </div>

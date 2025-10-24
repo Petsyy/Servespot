@@ -15,9 +15,25 @@ export const markAsRead = async (req, res) => {
 export const getVolunteerNotifications = async (req, res) => {
   try {
     const userId = req.user?.id;
-    const notifs = await Notification.find({ user: userId })
+    
+    // Clean up old notifications (older than 90 days) before fetching
+    const ninetyDaysAgo = new Date();
+    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+    
+    await Notification.deleteMany({
+      user: userId,
+      userModel: "Volunteer",
+      createdAt: { $lt: ninetyDaysAgo }
+    });
+    
+    const notifs = await Notification.find({ 
+      user: userId,
+      userModel: "Volunteer"
+    })
       .sort({ createdAt: -1 })
+      .limit(100) // Increased limit to 100 most recent notifications
       .lean();
+      
     res.json(notifs);
   } catch (err) {
     console.error("Failed to fetch notifications:", err);

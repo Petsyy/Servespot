@@ -4,7 +4,12 @@ import Volunteer from "../models/Volunteer.js";
 import Opportunity from "../models/Opportunity.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
-import { emitToVolunteer, broadcastToAdmins, emitToOrganization} from "../../server.js";
+import {
+  emitToVolunteer,
+  broadcastToAdmins,
+  emitToOrganization,
+} from "../../server.js";
+import { sendNotification } from "../utils/sendNotification.js"; // ✅ Added
 
 /* =====================================================
 ADMIN AUTHENTICATION
@@ -90,13 +95,40 @@ export const updateOrganizationStatus = async (req, res) => {
       );
     }
 
+    // --- Emit real-time Socket event ---
     if (status === "suspended") {
       emitToOrganization(id, "suspended", { reason });
     } else if (status === "active") {
       emitToOrganization(id, "reactivated", {});
     }
 
-    // ✅ Broadcast to all admins for instant refresh
+    // --- Create in-app & email notification ---
+    const notifTitle =
+      status === "suspended"
+        ? " Account Suspended"
+        : status === "active"
+        ? " Account Reactivated"
+        : " Account Pending Verification";
+
+    const notifMsg =
+      status === "suspended"
+        ? `Your organization account has been suspended. ${
+            reason ? `Reason: ${reason}` : ""
+          }`
+        : status === "active"
+        ? "Your ServeSpot account has been reactivated. You may now continue your activities."
+        : "Your organization account status has been set to pending. Please wait for admin review.";
+
+    await sendNotification({
+      userId: organization._id,
+      userModel: "Organization",
+      email: organization.email,
+      title: notifTitle,
+      message: notifMsg,
+      type: "update",
+    });
+
+    // --- Notify all admins for real-time updates ---
     broadcastToAdmins("organizationStatusUpdated", {
       orgId: id,
       status,
@@ -107,8 +139,8 @@ export const updateOrganizationStatus = async (req, res) => {
         status === "suspended"
           ? "Organization suspended successfully."
           : status === "active"
-            ? "Organization reactivated successfully."
-            : "Organization set to pending.",
+          ? "Organization reactivated successfully."
+          : "Organization set to pending.",
       organization,
     });
   } catch (err) {
@@ -152,16 +184,40 @@ export const updateVolunteerStatus = async (req, res) => {
 
     await volunteer.save();
 
-    // Emit real-time socket event after DB update
+    // --- Emit socket events ---
     if (status === "suspended") {
-      emitToVolunteer(id, "suspended", {
-        reason: volunteer.suspensionReason,
-      });
+      emitToVolunteer(id, "suspended", { reason: volunteer.suspensionReason });
     } else if (status === "active") {
       emitToVolunteer(id, "reactivated", {});
     }
 
-    // Notify all connected admins (auto-refresh on dashboard)
+    // --- Create in-app + email notification ---
+    const notifTitle =
+      status === "suspended"
+        ? "Account Suspended"
+        : status === "active"
+        ? " Account Reactivated"
+        : "Account Pending Review";
+
+    const notifMsg =
+      status === "suspended"
+        ? `Your volunteer account has been suspended. ${
+            reason ? `Reason: ${reason}` : ""
+          }`
+        : status === "active"
+        ? "Your volunteer account has been reactivated. You may now access ServeSpot again."
+        : "Your account is pending review by admin. Please wait for updates.";
+
+    await sendNotification({
+      userId: volunteer._id,
+      userModel: "Volunteer",
+      email: volunteer.email,
+      title: notifTitle,
+      message: notifMsg,
+      type: "update",
+    });
+
+    // --- Notify admins (auto-refresh) ---
     broadcastToAdmins("volunteerStatusUpdated", {
       userId: id,
       status,
@@ -172,12 +228,34 @@ export const updateVolunteerStatus = async (req, res) => {
         status === "suspended"
           ? "Volunteer suspended successfully."
           : status === "active"
-            ? "Volunteer reactivated successfully."
-            : "Volunteer set to pending.",
+          ? "Volunteer reactivated successfully."
+          : "Volunteer set to pending.",
       volunteer,
     });
   } catch (error) {
     console.error("Error updating volunteer status:", error);
     res.status(500).json({ message: "Failed to update status" });
+  }
+};
+
+// Helper function to notify admins about new registrations
+export const notifyAdminsOfNewRegistration = async (userType, userData) => {
+  try {
+    // Get all admins
+    const admins = await Admin.find({ status: "active" });
+    
+    for (const admin of admins) {
+      await sendNotification({
+        userId: admin._id,
+        userModel: "Admin",
+        title: `New ${userType} Registration`,
+        message: `A new ${userType.toLowerCase()} "${userData.name || userData.orgName}" has registered and needs verification.`,
+        type: userType === "Organization" ? "organization_verification" : "user_registration",
+        channel: "inApp",
+        link: userType === "Organization" ? "/admin/organizations" : "/admin/volunteers"
+      });
+    }
+  } catch (err) {
+    console.error("❌ Error notifying admins:", err);
   }
 };

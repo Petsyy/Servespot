@@ -9,9 +9,12 @@ import { connectDB } from "./src/config/db.js";
 import { sendEmail } from "./src/utils/sendEmail.js";
 import { sendNotification } from "./src/utils/sendNotification.js";
 
+// =============================
+// 🔧 EXPRESS APP SETUP
+// =============================
 const app = express();
 
-// --- middleware ---
+// Middleware
 app.use(
   cors({
     origin: "http://localhost:5173",
@@ -22,22 +25,28 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// --- connect DB ---
+// Database connection
 connectDB();
 
-// --- models ---
+// =============================
+// 🧩 LOAD MODELS
+// =============================
 import "./src/models/Volunteer.js";
 import "./src/models/Opportunity.js";
 import "./src/models/Organization.js";
 import "./src/models/Admin.js";
 import "./src/models/Notification.js";
 
-// --- uploads dir ---
+// =============================
+// 📁 UPLOADS DIRECTORY
+// =============================
 const UPLOADS_DIR = path.join(process.cwd(), "uploads");
 if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 app.use("/uploads", express.static(UPLOADS_DIR));
 
-// --- routes ---
+// =============================
+// 🧭 ROUTES
+// =============================
 import adminRoutes from "./src/routes/admin.routes.js";
 import authRoutes from "./src/routes/auth.routes.js";
 import volunteerRoutes from "./src/routes/volunteer.routes.js";
@@ -54,11 +63,13 @@ app.use("/api/opportunities", opportunityRoutes);
 app.use("/api/org/volunteers", orgVolunteerRoutes);
 app.use("/api/notifications", notificationRoutes);
 
-// --- health check ---
+// Health check
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
 
-// --- test endpoints ---
-app.get("/api/test-notif", async (req, res) => {
+// =============================
+// 🧪 TEST ROUTES
+// =============================
+app.get("/api/test-notif", async (_req, res) => {
   try {
     const testVolunteerId = "68f86f7e7177cde6079a5aca";
     const testVolunteerEmail = "peterarenasdiaz16@gmail.com";
@@ -79,15 +90,15 @@ app.get("/api/test-notif", async (req, res) => {
   }
 });
 
-app.get("/api/test-email", async (req, res) => {
+app.get("/api/test-email", async (_req, res) => {
   try {
     await sendEmail({
       to: "ezmarket1604@gmail.com",
-      subject: "📨 ServeSpot Test Email",
+      subject: "📨 ServeSpot Email Test",
       html: `
         <h2 style="color:#2563eb;">ServeSpot Email Test</h2>
-        <p>This is a test email from your ServeSpot backend. 🎉</p>
-        <p>If you received this, your SMTP setup works perfectly!</p>
+        <p>This is a test email from your ServeSpot backend 🎉</p>
+        <p>If you received this, your Gmail App Password setup works perfectly!</p>
       `,
     });
     res.json({ success: true, message: "✅ Email sent successfully!" });
@@ -97,7 +108,9 @@ app.get("/api/test-email", async (req, res) => {
   }
 });
 
-// --- global error handler ---
+// =============================
+// ⚠️ GLOBAL ERROR HANDLER
+// =============================
 app.use((err, _req, res, _next) => {
   console.error("GLOBAL ERROR:", err);
   res.status(500).json({
@@ -106,75 +119,73 @@ app.use((err, _req, res, _next) => {
   });
 });
 
-// --- SOCKET.IO SETUP ---
+// =============================
+// ⚡ SOCKET.IO SERVER
+// =============================
 const server = http.createServer(app);
 export const io = new Server(server, {
   cors: { origin: "http://localhost:5173" },
 });
 
-// Track connected users
+// --- Track connected clients ---
 global.onlineVolunteers = new Map();
 global.onlineOrganizations = new Map();
-global.onlineAdmins = new Map(); // ✅ NEW
+global.onlineAdmins = new Map();
 
-// Helper: remove stale socket IDs
+// --- Utility: Remove disconnected sockets ---
 function cleanSocket(map, socketId) {
   for (const [id, sId] of map.entries()) {
     if (sId === socketId) map.delete(id);
   }
 }
 
-// --- SOCKET CONNECTION HANDLERS ---
+// --- SOCKET CONNECTION HANDLER ---
 io.on("connection", (socket) => {
-  console.log("🟢 Socket connected:", socket.id);
+  console.log("Socket connected:", socket.id);
 
-  // Volunteer registration
+  // Register volunteer
   socket.on("registerVolunteer", (volunteerId) => {
     if (!volunteerId) return;
     cleanSocket(global.onlineVolunteers, socket.id);
     global.onlineVolunteers.set(volunteerId, socket.id);
-    console.log(`✅ Volunteer ${volunteerId} registered -> ${socket.id}`);
+    console.log(`Volunteer socket registered: ${volunteerId}`);
   });
 
-  // Organization registration
+  // Register organization
   socket.on("registerOrganization", (orgId) => {
     if (!orgId) return;
     cleanSocket(global.onlineOrganizations, socket.id);
     global.onlineOrganizations.set(orgId, socket.id);
-    console.log(`🏢 Organization ${orgId} registered -> ${socket.id}`);
+    console.log(`Organization socket registered: ${orgId}`);
   });
 
-  // Admin registration
+  // Register admin
   socket.on("registerAdmin", (adminId) => {
     if (!adminId) return;
     cleanSocket(global.onlineAdmins, socket.id);
     global.onlineAdmins.set(adminId, socket.id);
-    console.log(`🧑‍💼 Admin ${adminId} registered -> ${socket.id}`);
+    console.log(`Admin socket registered: ${adminId}`);
   });
 
+  // Disconnect
   socket.on("disconnect", () => {
     cleanSocket(global.onlineVolunteers, socket.id);
     cleanSocket(global.onlineOrganizations, socket.id);
     cleanSocket(global.onlineAdmins, socket.id);
-    console.log("🔴 Socket disconnected:", socket.id);
+    console.log("Socket disconnected:", socket.id);
   });
 });
 
-/* --- Safe emitter with retry (volunteers) --- */
+// =============================
+// 🚀 SOCKET HELPERS
+// =============================
 export function emitToVolunteer(volunteerId, event, payload) {
   const socketId = global.onlineVolunteers.get(volunteerId);
   if (socketId) {
     io.to(socketId).emit(event, payload);
-    console.log(`📢 Sent "${event}" to volunteer ${volunteerId}`);
+    console.log(`Sent "${event}" to volunteer ${volunteerId}`);
   } else {
-    console.log(`⚠️ Volunteer ${volunteerId} not online, retrying...`);
-    setTimeout(() => {
-      const retryId = global.onlineVolunteers.get(volunteerId);
-      if (retryId) {
-        io.to(retryId).emit(event, payload);
-        console.log(`✅ Retry success for volunteer ${volunteerId}`);
-      }
-    }, 1000);
+    console.log(`Volunteer ${volunteerId} not online`);
   }
 }
 
@@ -182,20 +193,23 @@ export function emitToOrganization(orgId, event, payload) {
   const socketId = global.onlineOrganizations.get(orgId);
   if (socketId) {
     io.to(socketId).emit(event, payload);
-    console.log(`📢 Emitted "${event}" to organization ${orgId}`);
+    console.log(`Sent "${event}" to organization ${orgId}`);
   } else {
-    console.log(`⚠️ Organization ${orgId} not online`);
+    console.log(`Organization ${orgId} not online`);
   }
 }
 
-/* --- Broadcast helpers for real-time admin refresh --- */
 export function broadcastToAdmins(event, payload) {
   for (const [adminId, socketId] of global.onlineAdmins.entries()) {
     io.to(socketId).emit(event, payload);
   }
-  console.log(`📡 Broadcasted "${event}" to all admins`);
+  console.log(`Broadcasted "${event}" to all admins`);
 }
 
-/* --- Start server --- */
+// =============================
+//  START SERVER
+// =============================
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+server.listen(PORT, () =>
+  console.log(`🚀 Server running on port ${PORT}`)
+);

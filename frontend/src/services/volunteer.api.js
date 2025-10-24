@@ -27,13 +27,17 @@ export const getVolunteerOverview = () => API.get("/volunteer/me");
 
 export const getVolunteerTasks = () => API.get("/volunteer/me/tasks");
 
-export const getVolunteerNotifications = () =>
-  API.get("/notifications/volunteer", {
-    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-  });
-  
 export const getVolunteerProgress = () => API.get("/volunteer/me/progress");
 
 export const getVolunteerBadges = () => API.get("/volunteer/me/badges?limit=6");
 
 export const getTopVolunteers = () => API.get("/volunteer/top?limit=3");
+
+
+
+export const getVolunteerNotifications = () =>
+  API.get("/notifications/volunteer");
+  
+// Mark all notifications as read
+export const markVolunteerNotificationsRead = () =>
+  API.put("/notifications/volunteer/read-all");

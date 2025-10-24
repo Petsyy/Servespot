@@ -42,6 +42,19 @@ export default function ProfileStep({
   const validateForm = () => {
     let newErrors = {};
     if (!formData.birthdate) newErrors.birthdate = "Birthdate is required";
+    else {
+      const bd = new Date(formData.birthdate);
+      if (Number.isNaN(bd.getTime())) {
+        newErrors.birthdate = "Please provide a valid birthdate";
+      } else {
+        const today = new Date();
+        let age = today.getFullYear() - bd.getFullYear();
+        const m = today.getMonth() - bd.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < bd.getDate())) age -= 1;
+        if (age < 18)
+          newErrors.birthdate = "You must be 18 or older to sign up";
+      }
+    }
     if (!formData.gender) newErrors.gender = "Gender is required";
     if (!formData.city || formData.city.trim() === "")
       newErrors.city = "City is required";
@@ -69,57 +82,61 @@ export default function ProfileStep({
     );
   };
 
- const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  if (!validateForm()) {
-    toast.error("Please complete the required fields");
-    return;
-  }
+    if (!validateForm()) {
+      toast.error("Please complete the required fields");
+      return;
+    }
 
-  setIsSubmitting(true);
+    setIsSubmitting(true);
 
-  try {
-    // 1️Sign up first
-    await signupVolunteer(formData);
+    try {
+      // 1️Sign up first - map contact to contactNumber for backend
+      const signupData = {
+        ...formData,
+        contactNumber: formData.contact, // Map contact field to contactNumber
+      };
+      await signupVolunteer(signupData);
 
-    // Automatically log in using same credentials
-    const loginRes = await loginVolunteer({
-      email: formData.email,
-      password: formData.password,
-    });
+      // Automatically log in using same credentials
+      const loginRes = await loginVolunteer({
+        email: formData.email,
+        password: formData.password,
+      });
 
-    // Save token and volunteer ID to localStorage
-    localStorage.setItem("token", loginRes.data.token);
-    localStorage.setItem("volunteerId", loginRes.data.user.id);
+      // Save token and volunteer ID to localStorage
+      localStorage.setItem("token", loginRes.data.token);
+      localStorage.setItem("volunteerId", loginRes.data.user.id);
 
-    // fixed: reference correct field from backend
-    toast.success(
-      <div>
-        <span className="text-sm text-black">
-          Welcome, {loginRes.data.user.fullName || "Volunteer"}!
-        </span>
-      </div>
-    );
+      // fixed: reference correct field from backend
+      toast.success(
+        <div>
+          <span className="text-sm text-black">
+            Welcome, {loginRes.data.user.fullName || "Volunteer"}!
+          </span>
+        </div>
+      );
 
-    // 4️Redirect to volunteer homepage
-    setTimeout(() => {
-      navigate("/volunteer/homepage");
-      if (onSubmit) onSubmit();
-    }, 1500);
-  } catch (error) {
-    console.error("Signup/Login error:", error);
-    toast.error(
-      <div>
-        <span className="text-sm text-black">
-          {error.response?.data?.message || "Signup failed. Try again."}
-        </span>
-      </div>
-    );
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+      // 4️Redirect to volunteer homepage
+      setTimeout(() => {
+        navigate("/volunteer/homepage");
+        if (onSubmit) onSubmit();
+      }, 1500);
+    } catch (error) {
+      console.error("Signup/Login error:", error);
+      toast.error(
+        <div>
+          <span className="text-sm text-black">
+            {error.response?.data?.message || "Signup failed. Try again."}
+          </span>
+        </div>
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="w-2xl max-w-3xl">
@@ -172,6 +189,17 @@ export default function ProfileStep({
               <p className="text-red-500 text-sm">{errors.gender}</p>
             )}
           </div>
+        </div>
+
+        {/* Contact Number */}
+        <div>
+          <FormInput
+            label="Contact Number"
+            type="text"
+            placeholder="Enter your phone number"
+            value={formData.contact}
+            onChange={(val) => updateField("contact", val)}
+          />
         </div>
 
         {/* City + Address */}

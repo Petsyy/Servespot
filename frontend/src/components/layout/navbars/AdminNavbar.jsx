@@ -9,6 +9,8 @@ import {
   Search,
   Menu,
   AlertTriangle,
+  HelpCircle,
+  UserCog,
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 
@@ -20,6 +22,7 @@ export default function AdminNavbar({
   const navigate = useNavigate();
 
   const adminName = "Admin"; // You can fetch this from localStorage if needed
+  const adminEmail = "admin@servespot.com"; // You can fetch this from localStorage if needed
 
   const fallbackNotifs = [
     { id: 1, title: "New organization registration pending approval", icon: <Shield size={16} /> },
@@ -64,12 +67,40 @@ export default function AdminNavbar({
       .toUpperCase();
   }, [adminName]);
 
-  const navLinkCls = ({ isActive }) =>
-    `flex items-center gap-1 text-sm font-medium transition-all ${
-      isActive
-        ? "text-blue-600 border-b-2 border-blue-600"
-        : "text-gray-600 hover:text-blue-600 hover:border-blue-400"
-    } pb-1 border-transparent`;
+  const handleLogout = () => {
+    localStorage.removeItem("adminToken");
+    localStorage.removeItem("activeRole");
+    localStorage.removeItem("adminId");
+    navigate("/admin/login");
+  };
+
+  const profileMenuItems = [
+    {
+      icon: UserCog,
+      label: "Profile Settings",
+      onClick: () => navigate("/admin/profile"),
+      divider: false,
+    },
+    {
+      icon: Settings,
+      label: "Preferences",
+      onClick: () => navigate("/admin/preferences"),
+      divider: false,
+    },
+    {
+      icon: HelpCircle,
+      label: "Help & Support",
+      onClick: () => navigate("/admin/support"),
+      divider: true,
+    },
+    {
+      icon: LogOut,
+      label: "Sign out",
+      onClick: handleLogout,
+      danger: true,
+      divider: false,
+    },
+  ];
 
   return (
     <header className="sticky top-0 z-30 backdrop-blur bg-white/70 border-b border-gray-200">
@@ -79,7 +110,7 @@ export default function AdminNavbar({
           {/* Hamburger Menu - Only visible on mobile */}
           <button
             onClick={onToggleSidebar}
-            className="md:hidden p-2 rounded-lg hover:bg-gray-100 text-gray-600"
+            className="md:hidden p-2 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors"
           >
             <Menu size={20} />
           </button>
@@ -89,85 +120,35 @@ export default function AdminNavbar({
           </h1>
         </div>
 
-        {/* Center: Navigation - Hidden on mobile, visible on desktop */}
-        <div className="hidden md:flex items-center gap-8 flex-1 justify-center">
-          <nav className="flex items-center gap-6">
-            <NavLink 
-              to="/admin/dashboard" 
-              className={navLinkCls}
-            >
-              Dashboard
-            </NavLink>
-            <NavLink 
-              to="/admin/users" 
-              className={navLinkCls}
-            >
-              Users
-            </NavLink>
-            <NavLink 
-              to="/admin/opportunities" 
-              className={navLinkCls}
-            >
-              Opportunities
-            </NavLink>
-            <NavLink 
-              to="/admin/reports" 
-              className={navLinkCls}
-            >
-              Reports
-            </NavLink>
-          </nav>
-
-          {/* Search Bar */}
-          <label className="relative w-64">
-            <Search
-              size={18}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-            />
-            <input
-              type="search"
-              placeholder="Search users, opportunities..."
-              className="w-full h-9 pl-10 pr-3 rounded-lg bg-gray-100 border border-transparent focus:border-blue-300 focus:bg-white outline-none transition text-sm"
-            />
-          </label>
-        </div>
-
         {/* Right: Notifications & Profile */}
         <div className="flex items-center gap-2 sm:gap-3">
           {/* Mobile Search Button - Visible only on mobile */}
-          <button className="md:hidden p-2 rounded-lg hover:bg-gray-100 text-gray-600">
+          <button className="md:hidden p-2 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors">
             <Search size={20} />
           </button>
-
-          {/* System Alert Indicator */}
-          <div className="relative">
-            <button className="relative p-2 rounded-xl hover:bg-yellow-100 text-yellow-600">
-              <AlertTriangle size={20} />
-              <span className="absolute -top-0.5 -right-0.5 bg-yellow-500 text-white text-[10px] rounded-full min-w-[16px] h-4 px-1 grid place-items-center">
-                3
-              </span>
-            </button>
-          </div>
 
           {/* Notifications */}
           <div className="relative" ref={notifRef}>
             <button
               onClick={() => setOpenNotif((v) => !v)}
-              className="relative p-2 rounded-xl hover:bg-gray-100 text-gray-600 hover:text-blue-600 outline-none focus:ring-2 focus:ring-blue-300"
+              className="relative p-2 rounded-xl hover:bg-gray-100 text-gray-600 hover:text-blue-600 outline-none focus:ring-2 focus:ring-blue-300 transition-colors"
             >
               <Bell size={20} />
               {computedCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] rounded-full min-w-[16px] h-4 px-1 grid place-items-center">
+                <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] rounded-full min-w-[16px] h-4 px-1 grid place-items-center font-medium">
                   {computedCount > 9 ? "9+" : computedCount}
                 </span>
               )}
             </button>
 
             {openNotif && (
-              <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden animate-in fade-in zoom-in-95">
-                <div className="px-3 py-2 border-b bg-gray-50">
+              <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-50 animate-in fade-in zoom-in-95">
+                <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/80">
                   <p className="text-sm font-semibold text-gray-800">
                     System Notifications
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {computedCount} unread {computedCount === 1 ? 'notification' : 'notifications'}
                   </p>
                 </div>
                 {notifications.length ? (
@@ -175,26 +156,32 @@ export default function AdminNavbar({
                     {notifications.map((n) => (
                       <li
                         key={n.id}
-                        className="px-3 py-3 text-sm text-gray-700 flex items-center gap-2 hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                        className="px-4 py-3 text-sm text-gray-700 flex items-start gap-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors"
                       >
-                        <div className="w-6 h-6 rounded-md bg-blue-50 text-blue-600 grid place-items-center">
-                          {n.icon || <Bell size={14} />}
+                        <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 grid place-items-center flex-shrink-0 mt-0.5">
+                          {n.icon || <Bell size={16} />}
                         </div>
-                        <span className="truncate">{n.title}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-gray-900 font-medium truncate">{n.title}</p>
+                          <p className="text-xs text-gray-500 mt-1">Just now</p>
+                        </div>
                       </li>
                     ))}
                   </ul>
                 ) : (
-                  <div className="px-3 py-6 text-sm text-gray-500 text-center">
-                    No new notifications
+                  <div className="px-4 py-8 text-center">
+                    <Bell className="mx-auto mb-2 text-gray-300 w-8 h-8" />
+                    <p className="text-sm text-gray-500">No new notifications</p>
                   </div>
                 )}
-                <button
-                  className="w-full px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 border-t"
-                  onClick={() => setOpenNotif(false)}
-                >
-                  Mark all as read
-                </button>
+                <div className="border-t border-gray-100">
+                  <button
+                    className="w-full px-4 py-3 text-sm text-blue-600 hover:bg-blue-50 font-medium transition-colors"
+                    onClick={() => setOpenNotif(false)}
+                  >
+                    View all notifications
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -203,60 +190,73 @@ export default function AdminNavbar({
           <div className="relative" ref={profileRef}>
             <button
               onClick={() => setOpenProfile((v) => !v)}
-              className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-xl hover:bg-gray-100 outline-none focus:ring-2 focus:ring-blue-300"
+              className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-xl hover:bg-gray-100 outline-none focus:ring-2 focus:ring-blue-300 transition-colors group"
             >
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-xs font-bold grid place-items-center shadow">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-xs font-bold grid place-items-center shadow-sm group-hover:shadow transition-shadow">
                 {initials}
               </div>
-              <span className="hidden sm:block text-sm font-medium text-gray-800">
-                {adminName}
-              </span>
+              <div className="hidden sm:block text-left">
+                <p className="text-sm font-medium text-gray-800 leading-tight">
+                  {adminName}
+                </p>
+                <p className="text-xs text-gray-500 leading-tight">Administrator</p>
+              </div>
               <ChevronDown
                 size={16}
-                className={`text-gray-500 transition ${
+                className={`text-gray-400 transition-transform duration-200 ${
                   openProfile ? "rotate-180" : ""
                 }`}
               />
             </button>
 
             {openProfile && (
-              <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden animate-in fade-in zoom-in-95">
-                <div className="px-3 py-2 border-b bg-gray-50">
-                  <p className="text-sm font-semibold text-gray-800">
-                    Administrator
-                  </p>
-                  <p className="text-xs text-gray-600">{adminName}</p>
+              <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-50 animate-in fade-in zoom-in-95">
+                {/* Profile Header */}
+                <div className="px-4 py-3 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-sm font-bold grid place-items-center shadow">
+                      {initials}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-gray-900 truncate">
+                        {adminName}
+                      </p>
+                      <p className="text-xs text-gray-600 truncate">
+                        {adminEmail}
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                <button
-                  onClick={() => {
-                    setOpenProfile(false);
-                    navigate("/admin/profile");
-                  }}
-                  className="w-full text-left px-3 py-3 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                >
-                  <User size={16} /> Profile
-                </button>
-                <button
-                  onClick={() => {
-                    setOpenProfile(false);
-                    navigate("/admin/settings");
-                  }}
-                  className="w-full text-left px-3 py-3 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                >
-                  <Settings size={16} /> Settings
-                </button>
-                <button
-                  onClick={() => {
-                    localStorage.removeItem("adminToken");
-                    localStorage.removeItem("activeRole");
-                    localStorage.removeItem("adminId");
-                    setOpenProfile(false);
-                    navigate("/admin/login");
-                  }}
-                  className="w-full text-left px-3 py-3 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 border-t"
-                >
-                  <LogOut size={16} /> Logout
-                </button>
+
+                {/* Menu Items */}
+                <div className="py-2">
+                  {profileMenuItems.map((item, index) => (
+                    <React.Fragment key={item.label}>
+                      <button
+                        onClick={() => {
+                          item.onClick();
+                          setOpenProfile(false);
+                        }}
+                        className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                          item.danger
+                            ? "text-red-600 hover:bg-red-50"
+                            : "text-gray-700 hover:bg-gray-50"
+                        }`}
+                      >
+                        <item.icon size={16} className={item.danger ? "text-red-500" : "text-gray-400"} />
+                        <span>{item.label}</span>
+                      </button>
+                      {item.divider && <div className="border-t border-gray-100 my-1" />}
+                    </React.Fragment>
+                  ))}
+                </div>
+
+                {/* Footer */}
+                <div className="px-4 py-2 border-t border-gray-100 bg-gray-50/50">
+                  <p className="text-xs text-gray-500">
+                    ServeSpot Admin Portal
+                  </p>
+                </div>
               </div>
             )}
           </div>

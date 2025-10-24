@@ -54,6 +54,28 @@ export default function VolunteerDashboard() {
     localStorage.getItem("volunteerName") || "Volunteer"
   );
 
+  // Clean up old notifications (older than 30 days for dashboard)
+  const cleanupOldNotifications = () => {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    setNotifications((prev) => 
+      prev.filter((n) => new Date(n.createdAt) > thirtyDaysAgo)
+    );
+  };
+
+  // Mark notification as read
+  const markNotificationRead = (notificationId) => {
+    console.log(`📖 Marking notification as read: ${notificationId}`);
+    setNotifications((prev) => {
+      const updated = prev.map((n) => 
+        n._id === notificationId ? { ...n, isRead: true } : n
+      );
+      console.log(`📖 Before: ${prev.length} notifications, After: ${updated.length} notifications`);
+      return updated;
+    });
+  };
+
   // Toggle sidebar function
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
@@ -91,7 +113,21 @@ export default function VolunteerDashboard() {
 
     socket.on("newNotification", (notif) => {
       toast.info(`🔔 ${notif.title}: ${notif.message}`, { autoClose: 5000 });
-      setNotifications((prev) => [notif, ...prev]);
+      
+      setNotifications((prev) => {
+        // Check if notification already exists to prevent duplicates
+        const exists = prev.some(n => n._id === notif._id);
+        if (exists) {
+          return prev;
+        }
+        
+        // Add new notification and limit to 50 for dashboard
+        const updated = [notif, ...prev]
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+          .slice(0, 50);
+        
+        return updated;
+      });
     });
 
     return () => socket.off("newNotification");
@@ -119,7 +155,21 @@ export default function VolunteerDashboard() {
     // Notification listener
     socket.on("newNotification", (notif) => {
       toast.info(`${notif.title}: ${notif.message}`, { autoClose: 5000 });
-      setNotifications((prev) => [notif, ...prev]);
+      
+      setNotifications((prev) => {
+        // Check if notification already exists to prevent duplicates
+        const exists = prev.some(n => n._id === notif._id);
+        if (exists) {
+          return prev;
+        }
+        
+        // Add new notification and limit to 50 for dashboard
+        const updated = [notif, ...prev]
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+          .slice(0, 50);
+        
+        return updated;
+      });
     });
 
     // Suspension listener
@@ -169,8 +219,31 @@ export default function VolunteerDashboard() {
         if (!mounted) return;
 
         if (ovrRes.status === "fulfilled") setOverview(ovrRes.value.data);
-        if (notifRes.status === "fulfilled")
-          setNotifications(notifRes.value.data || []);
+        if (notifRes.status === "fulfilled") {
+          const notifs = notifRes.value.data || [];
+          
+          // Deduplicate notifications by ID and limit to 20 for dashboard
+          const uniqueNotifs = notifs.reduce((acc, current) => {
+            const existingIndex = acc.findIndex(item => item._id === current._id);
+            if (existingIndex === -1) {
+              acc.push(current);
+            } else {
+              // Keep the more recent version if duplicate
+              if (new Date(current.createdAt) > new Date(acc[existingIndex].createdAt)) {
+                acc[existingIndex] = current;
+              }
+            }
+            return acc;
+          }, []);
+          
+          // Sort by creation date (newest first) and limit to 50
+          const sortedNotifs = uniqueNotifs
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+            .slice(0, 50);
+          
+          setNotifications(sortedNotifs);
+          console.log(`Dashboard: Loaded ${sortedNotifs.length} notifications`);
+        }
         if (progRes.status === "fulfilled") setProgress(progRes.value.data);
 
         // Badge Handling + New Badge Popup (final, persistent version)
@@ -284,9 +357,15 @@ export default function VolunteerDashboard() {
       }
     }, 10000);
 
+    // Set up periodic cleanup every 30 minutes (less aggressive)
+    const cleanupInterval = setInterval(() => {
+      cleanupOldNotifications();
+    }, 1800000); // 30 minutes
+
     return () => {
       mounted = false;
       clearInterval(badgeInterval);
+      clearInterval(cleanupInterval);
     };
   }, [navigate]);
 
@@ -664,7 +743,15 @@ export default function VolunteerDashboard() {
                     prev.map((n) => ({ ...n, isRead: true }))
                   );
                 }}
+                onMarkRead={markNotificationRead}
+                maxItems={3}
               />
+              {/* Debug: Log what we're passing to Notifications (remove in production) */}
+              {/* {console.log(`📊 Dashboard passing to Notifications:`, {
+                notificationsCount: notifications.length,
+                maxItems: 3,
+                notifications: notifications.slice(0, 5).map(n => ({ id: n._id, title: n.title }))
+              })} */}
 
               <ProgressCard progress={progress} loading={loading} />
               <RecentBadges badges={badges} loading={loading} />

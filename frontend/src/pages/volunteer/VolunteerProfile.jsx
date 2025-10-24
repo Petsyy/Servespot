@@ -19,6 +19,7 @@ import { useNavigate } from "react-router-dom";
 import {
   getVolunteerProfile,
   updateVolunteerProfile,
+  getVolunteerBadges,
 } from "@/services/volunteer.api";
 import VolSidebar from "@/components/layout/sidebars/VolSidebar";
 import VolunteerNavbar from "@/components/layout/navbars/VolunteerNavbar";
@@ -41,6 +42,14 @@ export default function VolunteerProfile() {
     availability: "",
     bio: "",
   });
+  const [badgesData, setBadgesData] = useState({
+    badges: [],
+    points: 0,
+    completedTasks: 0,
+    level: { level: "Beginner", color: "gray", icon: "🌱" },
+    nextMilestone: null,
+    volunteerName: "",
+  });
 
   // Toggle sidebar function
   const toggleSidebar = () => {
@@ -56,12 +65,27 @@ export default function VolunteerProfile() {
   useEffect(() => {
     (async () => {
       try {
-        const { data } = await getVolunteerProfile();
+        const [profileRes, badgesRes] = await Promise.all([
+          getVolunteerProfile(),
+          getVolunteerBadges(),
+        ]);
+        
+        const profileData = profileRes.data;
         setMe({
-          ...data,
-          birthdate: data.birthdate ? data.birthdate.slice(0, 10) : "",
-          skills: data.skills || [],
-          interests: data.interests || [],
+          ...profileData,
+          birthdate: profileData.birthdate ? profileData.birthdate.slice(0, 10) : "",
+          skills: profileData.skills || [],
+          interests: profileData.interests || [],
+        });
+
+        const badgesData = badgesRes.data;
+        setBadgesData({
+          badges: badgesData.badges || [],
+          points: badgesData.points || 0,
+          completedTasks: badgesData.completedTasks || 0,
+          level: badgesData.level || { level: "Beginner", color: "gray", icon: "🌱" },
+          nextMilestone: badgesData.nextMilestone || null,
+          volunteerName: badgesData.volunteerName || "",
         });
       } catch {
         toast.error("Failed to load profile.");
@@ -164,62 +188,92 @@ export default function VolunteerProfile() {
             </div>
 
             {/* 🔹 Profile Card */}
-            <div className="bg-white rounded-xl border border-gray-200 p-6 flex items-center gap-5 mb-8 shadow-sm">
-              {/* Avatar */}
-              <div className="w-20 h-20 flex items-center justify-center rounded-full bg-blue-100 text-blue-700 text-2xl font-bold shadow-sm">
-                {initials}
-              </div>
-
-              {/* Info Section */}
-              <div className="flex flex-col gap-1">
-                <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-                  <User size={18} className="text-blue-600" />
-                  {me.fullName || "—"}
-                </h2>
-                <p className="text-sm text-gray-600">Volunteer</p>
-
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-3 text-gray-700 text-sm mt-1">
-                  {me.city && (
-                    <div className="flex items-center gap-1">
-                      <MapPin size={16} className="text-blue-600" />
-                      <span>{me.city}</span>
-                    </div>
-                  )}
-                  {me.contactNumber && (
-                    <div className="flex items-center gap-1">
-                      <Phone size={16} className="text-blue-600" />
-                      <span>{me.contactNumber}</span>
-                    </div>
-                  )}
-                  {me.email && (
-                    <div className="flex items-center gap-1">
-                      <Mail size={16} className="text-blue-600" />
-                      <span>{me.email}</span>
-                    </div>
-                  )}
+            <div className="bg-white rounded-xl border border-gray-200 p-6 mb-8 shadow-sm">
+              <div className="flex items-start gap-6">
+                {/* Avatar */}
+                <div className="w-24 h-24 flex items-center justify-center rounded-full bg-gradient-to-br from-blue-100 to-purple-100 text-blue-700 text-2xl font-bold shadow-md">
+                  {initials}
                 </div>
 
-                {(me.skills?.length > 0 || me.interests?.length > 0) && (
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {[...(me.skills || []), ...(me.interests || [])]
-                      .slice(0, 6)
-                      .map((item, i) => (
-                        <span
-                          key={i}
-                          className="px-2 py-1 text-xs rounded-full bg-blue-50 border border-blue-100 text-blue-700"
-                        >
-                          {item}
-                        </span>
-                      ))}
+                {/* Info Section */}
+                <div className="flex-1">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2 mb-1">
+                        <User size={20} className="text-blue-600" />
+                        {me.fullName || "—"}
+                      </h2>
+                      <p className="text-sm text-gray-600 mb-3">Volunteer Member</p>
+
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-gray-700 text-sm mb-3">
+                        {me.city && (
+                          <div className="flex items-center gap-1">
+                            <MapPin size={16} className="text-blue-600" />
+                            <span>{me.city}</span>
+                          </div>
+                        )}
+                        {me.contactNumber && me.contactNumber.trim() && (
+                          <div className="flex items-center gap-1">
+                            <Phone size={16} className="text-blue-600" />
+                            <span>{me.contactNumber}</span>
+                          </div>
+                        )}
+                        {me.email && (
+                          <div className="flex items-center gap-1">
+                            <Mail size={16} className="text-blue-600" />
+                            <span>{me.email}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {(me.skills?.length > 0 || me.interests?.length > 0) && (
+                        <div className="flex flex-wrap gap-2">
+                          {[...(me.skills || []), ...(me.interests || [])]
+                            .slice(0, 8)
+                            .map((item, i) => (
+                              <span
+                                key={i}
+                                className="px-3 py-1 text-xs rounded-full bg-blue-50 border border-blue-100 text-blue-700 font-medium"
+                              >
+                                {item}
+                              </span>
+                            ))}
+                          {[...(me.skills || []), ...(me.interests || [])].length > 8 && (
+                            <span className="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-600">
+                              +{[...(me.skills || []), ...(me.interests || [])].length - 8} more
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Quick Stats */}
+                    <div className="text-right">
+                      <div className="text-sm text-gray-600 mb-1">Quick Stats</div>
+                      <div className="flex gap-4 text-sm">
+                        <div className="text-center">
+                          <div className="font-bold text-blue-600">{badgesData.points}</div>
+                          <div className="text-xs text-gray-500">Points</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="font-bold text-green-600">{badgesData.completedTasks}</div>
+                          <div className="text-xs text-gray-500">Tasks</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="font-bold text-purple-600">{badgesData.badges.length}</div>
+                          <div className="text-xs text-gray-500">Badges</div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                )}
+                </div>
               </div>
             </div>
 
-            {/* 🔹 Two-Column Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* 🔹 Three-Column Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
               {/* LEFT COLUMN (About & Preferences) */}
-              <div className="lg:col-span-1 space-y-6">
+              <div className="lg:col-span-4 space-y-6">
                 <Section
                   title="About & Preferences"
                   icon={<BadgeInfo size={18} />}
@@ -254,13 +308,13 @@ export default function VolunteerProfile() {
                 </Section>
               </div>
 
-              {/* RIGHT COLUMN (Personal Info) */}
-              <div className="lg:col-span-2">
+              {/* MIDDLE COLUMN (Personal Info) */}
+              <div className="lg:col-span-4">
                 <Section
                   title="Personal Information"
                   icon={<ShieldCheck size={18} />}
                 >
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="space-y-4">
                     <Field
                       label="Full Name"
                       icon={<User size={16} />}
@@ -274,21 +328,23 @@ export default function VolunteerProfile() {
                       value={me.email}
                       editable={false}
                     />
-                    <Field
-                      label="Birthdate"
-                      icon={<Calendar size={16} />}
-                      type="date"
-                      value={me.birthdate}
-                      editable={isEditing}
-                      onChange={(v) => handleChange("birthdate", v)}
-                    />
-                    <Field
-                      label="Gender"
-                      value={me.gender}
-                      editable={isEditing}
-                      onChange={(v) => handleChange("gender", v)}
-                      placeholder="Male / Female / Other"
-                    />
+                    <div className="grid grid-cols-2 gap-4">
+                      <Field
+                        label="Birthdate"
+                        icon={<Calendar size={16} />}
+                        type="date"
+                        value={me.birthdate}
+                        editable={isEditing}
+                        onChange={(v) => handleChange("birthdate", v)}
+                      />
+                      <Field
+                        label="Gender"
+                        value={me.gender}
+                        editable={isEditing}
+                        onChange={(v) => handleChange("gender", v)}
+                        placeholder="Male / Female / Other"
+                      />
+                    </div>
                     <Field
                       label="Contact Number"
                       icon={<Phone size={16} />}
@@ -309,8 +365,71 @@ export default function VolunteerProfile() {
                       value={me.address}
                       editable={isEditing}
                       onChange={(v) => handleChange("address", v)}
-                      className="md:col-span-2"
                     />
+                  </div>
+                </Section>
+              </div>
+
+              {/* RIGHT COLUMN (Badges & Achievements) */}
+              <div className="lg:col-span-4">
+                <Section
+                  title="Badges & Achievements"
+                  icon={<BadgeInfo size={18} />}
+                >
+                  <div className="space-y-5">
+                    {/* Stats Overview */}
+                    <div className="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-4 rounded-xl border border-gray-100">
+                      <div className="grid grid-cols-3 gap-3">
+                        <div className="text-center">
+                          <div className="text-xl font-bold text-blue-600">{badgesData.points}</div>
+                          <div className="text-xs text-gray-600 font-medium">Points</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-xl font-bold text-green-600">{badgesData.completedTasks}</div>
+                          <div className="text-xs text-gray-600 font-medium">Tasks</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-xl font-bold text-purple-600">{badgesData.badges.length}</div>
+                          <div className="text-xs text-gray-600 font-medium">Badges</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Level Display */}
+                    <div className="bg-gradient-to-br from-yellow-50 to-orange-50 p-4 rounded-xl border border-gray-100">
+                      <div className="text-center">
+                        <div className="text-sm font-semibold text-gray-700 mb-2">Current Level</div>
+                        <div className="flex items-center justify-center gap-2 mb-2">
+                          {badgesData.level?.icon && <span className="text-xl">{badgesData.level.icon}</span>}
+                          <span className="text-xl font-bold text-orange-600">
+                            {badgesData.level?.level || badgesData.level || "Beginner"}
+                          </span>
+                        </div>
+                        {badgesData.nextMilestone && typeof badgesData.nextMilestone === 'object' && (
+                          <div className="text-xs text-gray-600 leading-relaxed">
+                            {badgesData.nextMilestone.message || `Next: ${badgesData.nextMilestone.next || 0} tasks`}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Badges Grid */}
+                    <div>
+                      <h4 className="font-semibold text-gray-800 mb-3 text-sm">Earned Badges</h4>
+                      {badgesData.badges.length > 0 ? (
+                        <div className="grid grid-cols-2 gap-2">
+                          {badgesData.badges.map((badge, index) => (
+                            <BadgeCard key={index} badge={badge} />
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-6 text-gray-500">
+                          <BadgeInfo size={32} className="mx-auto mb-2 text-gray-300" />
+                          <p className="text-sm font-medium">No badges earned yet</p>
+                          <p className="text-xs text-gray-400 mt-1">Complete opportunities to earn your first badge!</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </Section>
               </div>
@@ -432,6 +551,55 @@ function TagInput({ label, icon, value = [], onChange, editable }) {
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+function BadgeCard({ badge }) {
+  const getBadgeColor = (badgeName) => {
+    const colors = {
+      "First Steps": "from-green-400 to-green-600",
+      "Community Helper": "from-blue-400 to-blue-600", 
+      "Dedicated Volunteer": "from-purple-400 to-purple-600",
+      "Volunteer Champion": "from-yellow-400 to-yellow-600",
+      "Community Leader": "from-red-400 to-red-600",
+      "Volunteer Hero": "from-indigo-400 to-indigo-600",
+      "Volunteer Legend": "from-pink-400 to-pink-600",
+      "Volunteer Master": "from-orange-400 to-orange-600",
+      "Volunteer Guru": "from-teal-400 to-teal-600",
+      "Volunteer Icon": "from-cyan-400 to-cyan-600",
+    };
+    return colors[badgeName] || "from-gray-400 to-gray-600";
+  };
+
+  const getBadgeIcon = (badgeName) => {
+    const icons = {
+      "First Steps": "🌱",
+      "Community Helper": "🤝",
+      "Dedicated Volunteer": "💪",
+      "Volunteer Champion": "🏆",
+      "Community Leader": "👑",
+      "Volunteer Hero": "🦸",
+      "Volunteer Legend": "⭐",
+      "Volunteer Master": "🎯",
+      "Volunteer Guru": "🧙",
+      "Volunteer Icon": "💎",
+    };
+    return icons[badgeName] || "🏅";
+  };
+
+  return (
+    <div className="group relative">
+      <div className={`bg-gradient-to-br ${getBadgeColor(badge.name)} p-3 rounded-lg text-white shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105`}>
+        <div className="text-center">
+          <div className="text-xl mb-1">{getBadgeIcon(badge.name)}</div>
+          <h3 className="font-semibold text-xs mb-1 truncate leading-tight">{badge.name}</h3>
+          <p className="text-xs opacity-90 line-clamp-2 leading-tight">{badge.description}</p>
+          <div className="mt-1 text-xs opacity-75">
+            {new Date(badge.earnedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
