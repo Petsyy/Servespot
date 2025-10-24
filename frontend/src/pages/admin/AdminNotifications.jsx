@@ -26,8 +26,16 @@ export default function AdminNotifications() {
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState([]);
 
-  const adminId =
-    typeof window !== "undefined" ? localStorage.getItem("adminId") : null;
+  const adminId = typeof window !== "undefined"
+    ? (localStorage.getItem("adminId") || (() => {
+        try {
+          const user = JSON.parse(localStorage.getItem("adminUser") || "null");
+          return user?.id || user?._id || null;
+        } catch {
+          return null;
+        }
+      })())
+    : null;
 
   // =============================
   // Load notifications from API

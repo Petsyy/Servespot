@@ -11,6 +11,7 @@ import Volunteer from "../models/Volunteer.js";
 import Organization from "../models/Organization.js";
 import Opportunity from "../models/Opportunity.js";
 import Notification from "../models/Notification.js";
+import { sendNotification } from "../utils/sendNotification.js";
 
 const router = express.Router();
 
@@ -277,60 +278,65 @@ router.put("/:adminId/notifications/read", async (req, res) => {
 });
 
 // Test route to create sample admin notifications
-router.post("/:adminId/notifications/test", async (req, res) => {
+// Accept both POST and GET for easier testing via browser/Postman
+const createAdminTestNotifications = async (req, res) => {
   try {
     const { adminId } = req.params;
-    
-    // Create sample notifications
-    const sampleNotifications = [
+
+    // Create sample notifications via utility to emit socket events
+    const payloads = [
       {
-        user: adminId,
-        userModel: "Admin",
         title: "New Organization Registration",
         message: "Socia organization has registered and needs verification.",
         type: "organization_verification",
-        channel: "inApp",
-        link: "/admin/organizations"
+        link: "/admin/organizations",
       },
       {
-        user: adminId,
-        userModel: "Admin",
         title: "New Volunteer Registration",
         message: "Peter Arenas has registered and needs verification.",
         type: "user_registration",
-        channel: "inApp",
-        link: "/admin/volunteers"
+        link: "/admin/volunteers",
       },
       {
-        user: adminId,
-        userModel: "Admin",
         title: "System Update Available",
         message: "A new system update is available. Please review the changelog.",
         type: "system",
-        channel: "inApp",
-        link: "/admin/settings"
+        link: "/admin/settings",
       },
       {
-        user: adminId,
-        userModel: "Admin",
         title: "Monthly Report Generated",
-        message: "The monthly analytics report has been generated and is ready for review.",
+        message:
+          "The monthly analytics report has been generated and is ready for review.",
         type: "report",
-        channel: "inApp",
-        link: "/admin/reports"
-      }
+        link: "/admin/reports",
+      },
     ];
 
-    const createdNotifications = await Notification.insertMany(sampleNotifications);
-    
-    res.json({ 
+    const created = [];
+    for (const p of payloads) {
+      const notif = await sendNotification({
+        userId: adminId,
+        userModel: "Admin",
+        title: p.title,
+        message: p.message,
+        type: p.type,
+        channel: "inApp", // avoid email for test
+        link: p.link,
+      });
+      if (notif) created.push(notif);
+    }
+
+    res.json({
       message: "Test notifications created successfully",
-      notifications: createdNotifications
+      notifications: created,
     });
   } catch (err) {
     console.error("❌ Error creating test notifications:", err);
     res.status(500).json({ message: "Failed to create test notifications" });
   }
-});
+};
+
+router.post("/:adminId/notifications/test", createAdminTestNotifications);
+router.get("/:adminId/notifications/test", createAdminTestNotifications);
 
 export default router;
