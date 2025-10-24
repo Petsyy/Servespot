@@ -246,25 +246,6 @@ export default function VolunteerProfile() {
                         </div>
                       )}
                     </div>
-
-                    {/* Quick Stats */}
-                    <div className="text-right">
-                      <div className="text-sm text-gray-600 mb-1">Quick Stats</div>
-                      <div className="flex gap-4 text-sm">
-                        <div className="text-center">
-                          <div className="font-bold text-blue-600">{badgesData.points}</div>
-                          <div className="text-xs text-gray-500">Points</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="font-bold text-green-600">{badgesData.completedTasks}</div>
-                          <div className="text-xs text-gray-500">Tasks</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="font-bold text-purple-600">{badgesData.badges.length}</div>
-                          <div className="text-xs text-gray-500">Badges</div>
-                        </div>
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>

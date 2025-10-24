@@ -65,14 +65,20 @@ export const registerVolunteer = async (req, res) => {
 
     // Notify admins about new volunteer registration
     try {
-      const admins = await Admin.find({ status: "active" });
-      for (const admin of admins) {
+      const Admin = (await import("../models/Admin.js")).default;
+      const admins = await Admin.find({});
+      
+      // Filter to active admins, fallback to all admins if none are active
+      const activeAdmins = admins.filter(admin => admin.status === "active");
+      const adminsToNotify = activeAdmins.length > 0 ? activeAdmins : admins;
+      
+      for (const admin of adminsToNotify) {
         await sendNotification({
           userId: admin._id,
           userModel: "Admin",
-          title: "New Volunteer Registration",
-          message: `A new volunteer "${volunteer.fullName}" has registered and needs verification.`,
-          type: "user_registration",
+          title: "New volunteer signup",
+          message: `New volunteer ${volunteer.fullName} joined ServeSpot.`,
+          type: "volunteer_signup",
           channel: "inApp",
           link: "/admin/volunteers",
         });
@@ -127,14 +133,20 @@ export const registerOrganization = async (req, res) => {
 
     // Notify admins about new organization registration
     try {
-      const admins = await Admin.find({ status: "active" });
-      for (const admin of admins) {
+      const Admin = (await import("../models/Admin.js")).default;
+      const admins = await Admin.find({});
+      
+      // Filter to active admins, fallback to all admins if none are active
+      const activeAdmins = admins.filter(admin => admin.status === "active");
+      const adminsToNotify = activeAdmins.length > 0 ? activeAdmins : admins;
+      
+      for (const admin of adminsToNotify) {
         await sendNotification({
           userId: admin._id,
           userModel: "Admin",
-          title: "New Organization Registration",
-          message: `A new organization "${organization.orgName}" has registered and needs verification.`,
-          type: "organization_verification",
+          title: "New organization signup",
+          message: `New organization ${organization.orgName} registered and is awaiting approval.`,
+          type: "organization_signup",
           channel: "inApp",
           link: "/admin/organizations",
         });

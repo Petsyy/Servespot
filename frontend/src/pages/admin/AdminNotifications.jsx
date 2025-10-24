@@ -37,34 +37,36 @@ export default function AdminNotifications() {
 
     async function load() {
       try {
-        if (!adminId) return;
+        if (!adminId) {
+          setLoading(false);
+          return;
+        }
+        
+        setLoading(true);
         const res = await getAdminNotifications(adminId);
         if (!mounted) return;
 
-        setItems((prev) => {
-          // Handle different response structures
-          let notifications = [];
-          if (Array.isArray(res.data)) {
-            notifications = res.data;
-          } else if (res.data?.data && Array.isArray(res.data.data)) {
-            notifications = res.data.data;
-          } else {
-            console.warn("Unexpected response structure:", res.data);
-            notifications = [];
-          }
+        // Handle different response structures
+        let notifications = [];
+        if (Array.isArray(res.data)) {
+          notifications = res.data;
+        } else if (res.data?.data && Array.isArray(res.data.data)) {
+          notifications = res.data.data;
+        } else if (res.data?.notifications && Array.isArray(res.data.notifications)) {
+          notifications = res.data.notifications;
+        } else {
+          console.warn("Unexpected response structure:", res.data);
+          notifications = [];
+        }
 
-          const existingIds = new Set(prev.map((n) => n._id));
-          const merged = [
-            ...notifications.filter((n) => !existingIds.has(n._id)),
-            ...prev,
-          ];
-          return merged.sort(
-            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-          );
-        });
+
+        // Replace all items instead of merging to avoid duplicates
+        setItems(notifications.sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        ));
       } catch (e) {
         console.error("Failed to load admin notifications:", e);
-        // Set empty array on error to prevent further issues
+        toast.error("Failed to load notifications. Please try again.");
         if (mounted) {
           setItems([]);
         }
@@ -84,22 +86,52 @@ export default function AdminNotifications() {
   // =============================
   useEffect(() => {
     if (!adminId) return;
-    registerUserSocket(adminId, "admin");
-
-    const onNew = (notif) => {
-      if (
-        notif?.userModel === "Admin" &&
-        String(notif?.user) === String(adminId)
-      ) {
-        setItems((prev) => [notif, ...prev]);
-        toast.info(`${notif.title}: ${notif.message}`, {
-          autoClose: 5000,
-        });
+    
+    let isMounted = true;
+    
+    const setupSocket = async () => {
+      try {
+        await registerUserSocket(adminId, "admin");
+      } catch (error) {
+        console.error("Failed to register socket:", error);
+        return;
       }
+
+      const onNew = (notif) => {
+        if (!isMounted) return;
+        
+        
+        if (
+          notif?.userModel === "Admin" &&
+          String(notif?.user) === String(adminId)
+        ) {
+          setItems((prev) => {
+            // Check if notification already exists to prevent duplicates
+            const exists = prev.some(item => item._id === notif._id);
+            if (exists) return prev;
+            
+            return [notif, ...prev];
+          });
+          
+          toast.info(`${notif.title}: ${notif.message}`, {
+            autoClose: 5000,
+          });
+        }
+      };
+
+      socket.on("newNotification", onNew);
+      
+      return () => {
+        socket.off("newNotification", onNew);
+      };
     };
 
-    socket.on("newNotification", onNew);
-    return () => socket.off("newNotification", onNew);
+    const cleanup = setupSocket();
+    
+    return () => {
+      isMounted = false;
+      cleanup?.then(cleanupFn => cleanupFn?.());
+    };
   }, [adminId]);
 
   // =============================
@@ -115,32 +147,85 @@ export default function AdminNotifications() {
   );
 
   // =============================
-  // Filter by System / User Management / All
+  // Filter by System / Organization Events / Volunteer Events / All
   // =============================
   const currentList = useMemo(() => {
     const src = activeTab === "inApp" ? inAppList : emailList;
+    
+    
     if (filter === "All") return src;
 
-    return src.filter((n) => {
-      if (filter === "System")
-        return ["status", "update", "system"].includes(n.type);
-      if (filter === "User Management")
-        return ["user_registration", "organization_verification", "report"].includes(n.type);
+    const filtered = src.filter((n) => {
+      if (filter === "System") {
+        return ["maintenance", "security", "system"].includes(n.type);
+      }
+      if (filter === "Organization Events") {
+        const orgTypes = [
+          "organization_signup", 
+          "organization_verification", 
+          "organization_suspension", 
+          "organization_reactivation", 
+          "organization_deleted", 
+          "opportunity_posted",
+          // Legacy/alternative type names
+          "org_signup",
+          "org_verification", 
+          "org_suspension",
+          "org_reactivation",
+          "org_deleted",
+          "new_opportunity",
+          "opportunity_created"
+        ];
+        return orgTypes.includes(n.type) || 
+               (n.type && n.type.toLowerCase().includes('organization')) ||
+               (n.type && n.type.toLowerCase().includes('org')) ||
+               (n.type && n.type.toLowerCase().includes('opportunity'));
+      }
+      if (filter === "Volunteer Events") {
+        const volunteerTypes = [
+          "volunteer_signup", 
+          "volunteer_suspension", 
+          "volunteer_reactivation", 
+          "volunteer_completion",
+          // Legacy/alternative type names
+          "vol_signup",
+          "vol_suspension", 
+          "vol_reactivation",
+          "vol_completion",
+          "user_registration", // Might be used for volunteers
+          "user_suspension",   // Might be used for volunteers
+          "user_reactivation"  // Might be used for volunteers
+        ];
+        return volunteerTypes.includes(n.type) || 
+               (n.type && n.type.toLowerCase().includes('volunteer')) ||
+               (n.type && n.type.toLowerCase().includes('vol'));
+      }
       return true;
     });
-  }, [activeTab, filter, inAppList, emailList]);
+    
+    
+    return filtered;
+  }, [activeTab, filter, inAppList, emailList, items]);
 
   // =============================
   // Mark all read
   // =============================
   const markAllAsRead = async () => {
     try {
-      if (!adminId) return;
+      if (!adminId) {
+        toast.error("Admin ID not found. Please log in again.");
+        return;
+      }
+      
+      setLoading(true);
       await markAdminNotificationsRead(adminId);
       setItems((prev) => prev.map((n) => ({ ...n, isRead: true })));
       toast.success("All notifications marked as read.");
     } catch (e) {
       console.error("Failed to mark admin notifications read:", e);
+      toast.error("Failed to mark notifications as read. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -151,14 +236,47 @@ export default function AdminNotifications() {
     switch (type) {
       case "email":
         return <Mail className="text-blue-600 w-5 h-5" />;
-      case "user_registration":
-        return <Users className="text-green-500 w-5 h-5" />;
+      
+      // Organization Events
+      case "organization_signup":
+        return <Building2 className="text-blue-500 w-5 h-5" />;
       case "organization_verification":
-        return <Building2 className="text-purple-500 w-5 h-5" />;
+        return <CheckCircle className="text-green-500 w-5 h-5" />;
+      case "organization_suspension":
+        return <AlertCircle className="text-red-500 w-5 h-5" />;
+      case "organization_reactivation":
+        return <CheckCircle className="text-green-600 w-5 h-5" />;
+      case "organization_deleted":
+        return <AlertCircle className="text-red-600 w-5 h-5" />;
+      case "opportunity_posted":
+        return <Bell className="text-purple-500 w-5 h-5" />;
+      
+      // Volunteer Events
+      case "volunteer_signup":
+        return <Users className="text-green-500 w-5 h-5" />;
+      case "volunteer_suspension":
+        return <AlertCircle className="text-orange-500 w-5 h-5" />;
+      case "volunteer_reactivation":
+        return <CheckCircle className="text-green-600 w-5 h-5" />;
+      case "volunteer_completion":
+        return <CheckCircle className="text-emerald-500 w-5 h-5" />;
+      
+      // Legacy types for backward compatibility
+      case "user_registration":
+      case "user_verification":
+        return <Users className="text-green-500 w-5 h-5" />;
       case "report":
+      case "user_suspension":
         return <AlertCircle className="text-orange-500 w-5 h-5" />;
       case "system":
+      case "status":
+      case "update":
+      case "maintenance":
+      case "security":
         return <Shield className="text-blue-500 w-5 h-5" />;
+      case "user_reactivation":
+        return <CheckCircle className="text-green-600 w-5 h-5" />;
+      
       default:
         return <Bell className="text-gray-500 w-5 h-5" />;
     }
@@ -198,6 +316,7 @@ export default function AdminNotifications() {
                 >
                   Mark all read
                 </button>
+                
 
                 <div className="relative">
                   <select
@@ -207,7 +326,8 @@ export default function AdminNotifications() {
                   >
                     <option>All</option>
                     <option>System</option>
-                    <option>User Management</option>
+                    <option>Organization Events</option>
+                    <option>Volunteer Events</option>
                   </select>
                   <Filter className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
                 </div>
@@ -242,7 +362,7 @@ export default function AdminNotifications() {
             <div className="space-y-4">
               {loading ? (
                 <div className="text-center py-16 bg-white rounded-2xl border border-gray-200 shadow-sm">
-                  <Bell className="mx-auto mb-3 text-gray-300 w-10 h-10" />
+                  <Bell className="mx-auto mb-3 text-gray-300 w-10 h-10 animate-pulse" />
                   <h3 className="text-gray-600 font-medium">
                     Loading notifications…
                   </h3>
@@ -258,49 +378,56 @@ export default function AdminNotifications() {
                   </p>
                 </div>
               ) : (
-                currentList.map((n) => (
-                  <div
-                    key={n._id}
-                    className={`flex items-start gap-4 p-5 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition-all ${
-                      !n.isRead ? "bg-blue-50/70 border-blue-200" : ""
-                    }`}
-                  >
-                    <div className="p-2 bg-gray-100 rounded-lg">
-                      {getNotificationIcon(n.type)}
-                    </div>
+                currentList.map((n) => {
+                  // Add null checks and fallbacks
+                  if (!n || !n._id) return null;
+                  
+                  return (
+                    <div
+                      key={n._id}
+                      className={`flex items-start gap-4 p-5 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition-all ${
+                        !n.isRead ? "bg-blue-50/70 border-blue-200" : ""
+                      }`}
+                    >
+                      <div className="p-2 bg-gray-100 rounded-lg">
+                        {getNotificationIcon(n.type || "default")}
+                      </div>
 
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between mb-1">
-                        <h4 className="font-semibold text-gray-900 text-sm">
-                          {n.title}
-                        </h4>
-                        {!n.isRead && (
-                          <span className="inline-block w-2 h-2 bg-blue-500 rounded-full ml-2 mt-1 flex-shrink-0" />
-                        )}
-                      </div>
-                      <p className="text-gray-600 text-sm line-clamp-2">
-                        {n.message}
-                      </p>
-                      <div className="flex items-center gap-2 mt-2 text-xs text-gray-500">
-                        <Clock className="w-3.5 h-3.5" />
-                        <span>
-                          {new Date(n.createdAt).toLocaleString(undefined, {
-                            dateStyle: "medium",
-                            timeStyle: "short",
-                          })}
-                        </span>
-                        {n.link ? (
-                          <a
-                            href={n.link}
-                            className="ml-3 text-blue-600 hover:underline"
-                          >
-                            View Details
-                          </a>
-                        ) : null}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between mb-1">
+                          <h4 className="font-semibold text-gray-900 text-sm">
+                            {n.title || "Untitled Notification"}
+                          </h4>
+                          {!n.isRead && (
+                            <span className="inline-block w-2 h-2 bg-blue-500 rounded-full ml-2 mt-1 flex-shrink-0" />
+                          )}
+                        </div>
+                        <p className="text-gray-600 text-sm line-clamp-2">
+                          {n.message || "No message available"}
+                        </p>
+                        <div className="flex items-center gap-2 mt-2 text-xs text-gray-500">
+                          <Clock className="w-3.5 h-3.5" />
+                          <span>
+                            {n.createdAt ? new Date(n.createdAt).toLocaleString(undefined, {
+                              dateStyle: "medium",
+                              timeStyle: "short",
+                            }) : "Unknown date"}
+                          </span>
+                          {n.link ? (
+                            <a
+                              href={n.link}
+                              className="ml-3 text-blue-600 hover:underline"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              View Details
+                            </a>
+                          ) : null}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           </div>

@@ -21,16 +21,13 @@ export default function AdminNavbar({
 }) {
   const navigate = useNavigate();
 
-  const adminName = "Admin"; // You can fetch this from localStorage if needed
-  const adminEmail = "admin@servespot.com"; // You can fetch this from localStorage if needed
+  const adminName = localStorage.getItem("adminName") || "Admin";
+  const adminEmail =
+    localStorage.getItem("adminEmail") || "admin@servespot.com";
 
-  const fallbackNotifs = [
-    { id: 1, title: "New organization registration pending approval", icon: <Shield size={16} /> },
-    { id: 2, title: "System backup completed successfully" },
-    { id: 3, title: "High traffic alert - 500+ active users" },
-  ];
-  const notifications = notificationsProp ?? fallbackNotifs;
-  const computedCount = typeof notifCount === "number" ? notifCount : notifications.length;
+  const notifications = notificationsProp ?? [];
+  const computedCount =
+    typeof notifCount === "number" ? notifCount : notifications?.length || 0;
 
   const [openNotif, setOpenNotif] = useState(false);
   const [openProfile, setOpenProfile] = useState(false);
@@ -148,21 +145,24 @@ export default function AdminNavbar({
                     System Notifications
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
-                    {computedCount} unread {computedCount === 1 ? 'notification' : 'notifications'}
+                    {computedCount} unread{" "}
+                    {computedCount === 1 ? "notification" : "notifications"}
                   </p>
                 </div>
                 {notifications.length ? (
                   <ul className="max-h-72 overflow-auto">
                     {notifications.map((n) => (
                       <li
-                        key={n.id}
+                        key={n.id || n._id || Math.random()}
                         className="px-4 py-3 text-sm text-gray-700 flex items-start gap-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors"
                       >
                         <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 grid place-items-center flex-shrink-0 mt-0.5">
                           {n.icon || <Bell size={16} />}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-gray-900 font-medium truncate">{n.title}</p>
+                          <p className="text-gray-900 font-medium truncate">
+                            {n.title}
+                          </p>
                           <p className="text-xs text-gray-500 mt-1">Just now</p>
                         </div>
                       </li>
@@ -171,7 +171,9 @@ export default function AdminNavbar({
                 ) : (
                   <div className="px-4 py-8 text-center">
                     <Bell className="mx-auto mb-2 text-gray-300 w-8 h-8" />
-                    <p className="text-sm text-gray-500">No new notifications</p>
+                    <p className="text-sm text-gray-500">
+                      No new notifications
+                    </p>
                   </div>
                 )}
                 <div className="border-t border-gray-100">
@@ -199,7 +201,9 @@ export default function AdminNavbar({
                 <p className="text-sm font-medium text-gray-800 leading-tight">
                   {adminName}
                 </p>
-                <p className="text-xs text-gray-500 leading-tight">Administrator</p>
+                <p className="text-xs text-gray-500 leading-tight">
+                  Administrator
+                </p>
               </div>
               <ChevronDown
                 size={16}
@@ -243,10 +247,17 @@ export default function AdminNavbar({
                             : "text-gray-700 hover:bg-gray-50"
                         }`}
                       >
-                        <item.icon size={16} className={item.danger ? "text-red-500" : "text-gray-400"} />
+                        <item.icon
+                          size={16}
+                          className={
+                            item.danger ? "text-red-500" : "text-gray-400"
+                          }
+                        />
                         <span>{item.label}</span>
                       </button>
-                      {item.divider && <div className="border-t border-gray-100 my-1" />}
+                      {item.divider && (
+                        <div className="border-t border-gray-100 my-1" />
+                      )}
                     </React.Fragment>
                   ))}
                 </div>

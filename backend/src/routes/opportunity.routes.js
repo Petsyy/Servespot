@@ -124,22 +124,6 @@ router.patch("/:id/proof/:volunteerId/review", verifyToken, reviewCompletionProo
 // Force mark opportunity complete
 router.patch("/:id/force-complete", forceCompleteOpportunity);
 
-// Test reminder notifications
-router.post("/:id/test-reminder", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const result = await triggerReminderTest(id);
-    
-    if (result.success) {
-      res.status(200).json({ message: result.message });
-    } else {
-      res.status(500).json({ message: "Failed to send test reminders", error: result.error });
-    }
-  } catch (error) {
-    console.error("Test reminder error:", error);
-    res.status(500).json({ message: "Failed to send test reminders", error: error.message });
-  }
-});
 
 /* ------------------------------------------------
    Delete specific opportunity

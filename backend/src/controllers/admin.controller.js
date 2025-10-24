@@ -105,10 +105,10 @@ export const updateOrganizationStatus = async (req, res) => {
     // --- Create in-app & email notification ---
     const notifTitle =
       status === "suspended"
-        ? " Account Suspended"
+        ? "Account Suspended"
         : status === "active"
-        ? " Account Reactivated"
-        : " Account Pending Verification";
+          ? "Account Reactivated"
+          : "Account Pending Verification";
 
     const notifMsg =
       status === "suspended"
@@ -116,8 +116,8 @@ export const updateOrganizationStatus = async (req, res) => {
             reason ? `Reason: ${reason}` : ""
           }`
         : status === "active"
-        ? "Your ServeSpot account has been reactivated. You may now continue your activities."
-        : "Your organization account status has been set to pending. Please wait for admin review.";
+          ? "Your ServeSpot account has been reactivated. You may now continue your activities."
+          : "Your organization account status has been set to pending. Please wait for admin review.";
 
     await sendNotification({
       userId: organization._id,
@@ -134,13 +134,51 @@ export const updateOrganizationStatus = async (req, res) => {
       status,
     });
 
+    // --- Create in-app notification for admins about org status change ---
+    try {
+      const admins = await Admin.find({ status: "active" });
+      const actor = req.user?.email || "Admin";
+      const adminTitle =
+        status === "active"
+          ? "Organization verified"
+          : status === "suspended"
+            ? "Organization suspended"
+            : "Organization Status Updated";
+      const adminMessage =
+        status === "active"
+          ? `${organization.orgName} was approved successfully.`
+          : status === "suspended"
+            ? `${organization.orgName} was suspended by ${actor}.`
+            : `${organization.orgName} status set to pending by ${actor}.`;
+      const adminType =
+        status === "active"
+          ? "organization_verification"
+          : status === "suspended"
+            ? "organization_suspension"
+            : "update";
+
+      for (const admin of admins) {
+        await sendNotification({
+          userId: admin._id,
+          userModel: "Admin",
+          title: adminTitle,
+          message: adminMessage,
+          type: adminType,
+          channel: "inApp",
+          link: "/admin/organizations",
+        });
+      }
+    } catch (e) {
+      console.error("❌ Failed to notify admins of org status change:", e);
+    }
+
     res.status(200).json({
       message:
         status === "suspended"
           ? "Organization suspended successfully."
           : status === "active"
-          ? "Organization reactivated successfully."
-          : "Organization set to pending.",
+            ? "Organization reactivated successfully."
+            : "Organization set to pending.",
       organization,
     });
   } catch (err) {
@@ -196,8 +234,8 @@ export const updateVolunteerStatus = async (req, res) => {
       status === "suspended"
         ? "Account Suspended"
         : status === "active"
-        ? " Account Reactivated"
-        : "Account Pending Review";
+          ? "Account Reactivated"
+          : "Account Pending Review";
 
     const notifMsg =
       status === "suspended"
@@ -205,8 +243,8 @@ export const updateVolunteerStatus = async (req, res) => {
             reason ? `Reason: ${reason}` : ""
           }`
         : status === "active"
-        ? "Your volunteer account has been reactivated. You may now access ServeSpot again."
-        : "Your account is pending review by admin. Please wait for updates.";
+          ? "Your volunteer account has been reactivated. You may now access ServeSpot again."
+          : "Your account is pending review by admin. Please wait for updates.";
 
     await sendNotification({
       userId: volunteer._id,
@@ -223,13 +261,54 @@ export const updateVolunteerStatus = async (req, res) => {
       status,
     });
 
+    // --- Create in-app notification for admins about volunteer status change ---
+    try {
+      const admins = await Admin.find({ status: "active" });
+      const actor = req.user?.email || "Admin";
+      const adminTitle =
+        status === "active"
+          ? "Volunteer reactivated"
+          : status === "suspended"
+            ? "Volunteer suspended"
+            : "Volunteer Pending Review";
+      const adminMessage =
+        status === "active"
+          ? `${volunteer.fullName} was reactivated by ${actor}.`
+          : status === "suspended"
+            ? `${volunteer.fullName} was suspended by ${actor}.`
+            : `${volunteer.fullName} status set to pending by ${actor}.`;
+      const adminType =
+        status === "active"
+          ? "volunteer_reactivation"
+          : status === "suspended"
+            ? "volunteer_suspension"
+            : "update";
+
+      for (const admin of admins) {
+        await sendNotification({
+          userId: admin._id,
+          userModel: "Admin",
+          title: adminTitle,
+          message: adminMessage,
+          type: adminType,
+          channel: "inApp",
+          link: "/admin/volunteers",
+        });
+      }
+    } catch (e) {
+      console.error(
+        "❌ Failed to notify admins of volunteer status change:",
+        e
+      );
+    }
+
     res.status(200).json({
       message:
         status === "suspended"
           ? "Volunteer suspended successfully."
           : status === "active"
-          ? "Volunteer reactivated successfully."
-          : "Volunteer set to pending.",
+            ? "Volunteer reactivated successfully."
+            : "Volunteer set to pending.",
       volunteer,
     });
   } catch (error) {
@@ -243,16 +322,22 @@ export const notifyAdminsOfNewRegistration = async (userType, userData) => {
   try {
     // Get all admins
     const admins = await Admin.find({ status: "active" });
-    
+
     for (const admin of admins) {
       await sendNotification({
         userId: admin._id,
         userModel: "Admin",
         title: `New ${userType} Registration`,
         message: `A new ${userType.toLowerCase()} "${userData.name || userData.orgName}" has registered and needs verification.`,
-        type: userType === "Organization" ? "organization_verification" : "user_registration",
+        type:
+          userType === "Organization"
+            ? "organization_verification"
+            : "user_registration",
         channel: "inApp",
-        link: userType === "Organization" ? "/admin/organizations" : "/admin/volunteers"
+        link:
+          userType === "Organization"
+            ? "/admin/organizations"
+            : "/admin/volunteers",
       });
     }
   } catch (err) {

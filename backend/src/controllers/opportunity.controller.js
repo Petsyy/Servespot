@@ -2,6 +2,7 @@ import Opportunity from "../models/Opportunity.js";
 import Organization from "../models/Organization.js";
 import Volunteer from "../models/Volunteer.js";
 import Notification from "../models/Notification.js";
+import Admin from "../models/Admin.js";
 import { awardVolunteerRewards } from "../utils/volunteer.badges.js";
 import { sendNotification } from "../utils/sendNotification.js";
 
@@ -64,11 +65,8 @@ export const createOpportunity = async (req, res) => {
       if (org) {
         // Find volunteers in the same city or with matching skills
         const volunteers = await Volunteer.find({
-          $or: [
-            { city: org.city },
-            { skills: { $in: opportunity.skills } }
-          ],
-          status: "active"
+          $or: [{ city: org.city }, { skills: { $in: opportunity.skills } }],
+          status: "active",
         }).limit(10); // Limit to avoid spam
 
         for (const volunteer of volunteers) {
@@ -87,6 +85,25 @@ export const createOpportunity = async (req, res) => {
     } catch (notifErr) {
       console.error("Failed to send new opportunity notifications:", notifErr);
       // Don't fail the main request if notification fails
+    }
+
+    // Notify admins about new opportunity posted
+    try {
+      const org = await Organization.findById(organization);
+      const admins = await Admin.find({ status: "active" });
+      for (const admin of admins) {
+        await sendNotification({
+          userId: admin._id,
+          userModel: "Admin",
+          title: "New opportunity posted",
+          message: `${org?.orgName || "An organization"} created a new opportunity: ${opportunity.title}.`,
+          type: "opportunity_posted",
+          channel: "inApp",
+          link: "/admin/reports", // could be a dedicated opportunities admin page if available
+        });
+      }
+    } catch (e) {
+      console.error("Failed to notify admins of new opportunity:", e);
     }
 
     // Return full object wrapped in a message
@@ -174,7 +191,9 @@ export const volunteerSignup = async (req, res) => {
       opportunity.volunteers.length >= opportunity.volunteersNeeded &&
       opportunity.volunteersNeeded > 0
     ) {
-      return res.status(400).json({ message: "This opportunity is already full." });
+      return res
+        .status(400)
+        .json({ message: "This opportunity is already full." });
     }
 
     // Prevent duplicate joins
@@ -198,9 +217,10 @@ export const volunteerSignup = async (req, res) => {
 
     // Notify organization about new volunteer application
     try {
-      const opportunityWithOrg = await Opportunity.findById(opportunityId).populate('organization');
+      const opportunityWithOrg =
+        await Opportunity.findById(opportunityId).populate("organization");
       const volunteer = await Volunteer.findById(volunteerId);
-      
+
       if (opportunityWithOrg?.organization && volunteer) {
         await sendNotification({
           userId: opportunityWithOrg.organization._id,
@@ -214,7 +234,10 @@ export const volunteerSignup = async (req, res) => {
         });
       }
     } catch (notifErr) {
-      console.error("Failed to send volunteer application notification:", notifErr);
+      console.error(
+        "Failed to send volunteer application notification:",
+        notifErr
+      );
       // Don't fail the main request if notification fails
     }
 
@@ -232,7 +255,6 @@ export const volunteerSignup = async (req, res) => {
     });
   }
 };
-
 
 export const getAllOpportunities = async (req, res) => {
   try {
@@ -261,7 +283,6 @@ export const getAllOpportunities = async (req, res) => {
       .json({ message: "Failed to load opportunities", error: err.message });
   }
 };
-
 
 export const markOpportunityCompleted = async (req, res) => {
   try {
@@ -322,35 +343,36 @@ export const markOpportunityCompleted = async (req, res) => {
 export const getStats = async (req, res) => {
   try {
     const { orgId } = req.params;
-    
+
     // Get all opportunities for this organization
     const opportunities = await Opportunity.find({ organization: orgId })
-      .populate('volunteers', '_id')
-      .populate('completedVolunteers', '_id')
+      .populate("volunteers", "_id")
+      .populate("completedVolunteers", "_id")
       .lean();
 
     // Calculate total opportunities created
     const totalOpportunities = opportunities.length;
-    
+
     // Calculate total volunteers recruited (unique volunteers across all opportunities)
     const allVolunteers = new Set();
-    opportunities.forEach(opp => {
+    opportunities.forEach((opp) => {
       if (opp.volunteers) {
-        opp.volunteers.forEach(vol => allVolunteers.add(vol._id.toString()));
+        opp.volunteers.forEach((vol) => allVolunteers.add(vol._id.toString()));
       }
     });
     const totalVolunteers = allVolunteers.size;
-    
+
     // Calculate total hours (estimate based on completed opportunities)
-    const completedOpportunities = opportunities.filter(opp => 
-      opp.status === 'Completed' || opp.completedVolunteers?.length > 0
+    const completedOpportunities = opportunities.filter(
+      (opp) => opp.status === "Completed" || opp.completedVolunteers?.length > 0
     );
     const totalHours = completedOpportunities.length * 4; // Estimate 4 hours per completed opportunity
-    
+
     // Calculate completion rate
-    const completionRate = totalOpportunities > 0 
-      ? Math.round((completedOpportunities.length / totalOpportunities) * 100)
-      : 0;
+    const completionRate =
+      totalOpportunities > 0
+        ? Math.round((completedOpportunities.length / totalOpportunities) * 100)
+        : 0;
 
     res.json({
       totalOpportunities,
@@ -359,8 +381,9 @@ export const getStats = async (req, res) => {
       completionRate,
       // Keep legacy fields for backward compatibility
       total: totalOpportunities,
-      active: opportunities.filter(opp => opp.status === 'Open').length,
-      inProgress: opportunities.filter(opp => opp.status === 'In Progress').length,
+      active: opportunities.filter((opp) => opp.status === "Open").length,
+      inProgress: opportunities.filter((opp) => opp.status === "In Progress")
+        .length,
       completedTasks: completedOpportunities.length,
       engagedVolunteers: totalVolunteers,
     });
@@ -464,7 +487,7 @@ export const confirmVolunteerCompletion = async (req, res) => {
     try {
       const volunteer = await Volunteer.findById(volunteerId);
       const org = await Organization.findById(opportunity.organization);
-      
+
       if (volunteer && org) {
         await sendNotification({
           userId: volunteer._id,
@@ -478,8 +501,30 @@ export const confirmVolunteerCompletion = async (req, res) => {
         });
       }
     } catch (notifErr) {
-      console.error("Failed to send completion confirmation notification:", notifErr);
+      console.error(
+        "Failed to send completion confirmation notification:",
+        notifErr
+      );
       // Don't fail the main request if notification fails
+    }
+
+    // Notify admins that a volunteer completed an opportunity
+    try {
+      const volunteer = await Volunteer.findById(volunteerId);
+      const admins = await Admin.find({ status: "active" });
+      for (const admin of admins) {
+        await sendNotification({
+          userId: admin._id,
+          userModel: "Admin",
+          title: "Volunteer completed an opportunity",
+          message: `Volunteer ${volunteer?.fullName || volunteerId} completed ${opportunity.title}.`,
+          type: "volunteer_completion",
+          channel: "inApp",
+          link: "/admin/reports",
+        });
+      }
+    } catch (e) {
+      console.error("Failed to notify admins of volunteer completion:", e);
     }
 
     res.status(200).json({
@@ -607,16 +652,17 @@ export const reviewCompletionProof = async (req, res) => {
     try {
       const volunteer = await Volunteer.findById(volunteerId);
       const org = await Organization.findById(opportunity.organization);
-      
+
       if (volunteer && org) {
         await sendNotification({
           userId: volunteer._id,
           userModel: "Volunteer",
           email: volunteer.email,
           title: action === "approve" ? "Proof Approved" : "Proof Rejected",
-          message: action === "approve" 
-            ? `Your proof for "${opportunity.title}" by ${org.orgName} has been approved.`
-            : `Your proof for "${opportunity.title}" by ${org.orgName} was rejected. You can submit a new proof.`,
+          message:
+            action === "approve"
+              ? `Your proof for "${opportunity.title}" by ${org.orgName} has been approved.`
+              : `Your proof for "${opportunity.title}" by ${org.orgName} was rejected. You can submit a new proof.`,
           type: action === "approve" ? "completion" : "update",
           channel: "both",
           link: `/volunteer/opportunities/${id}`,
@@ -669,7 +715,8 @@ export const submitProof = async (req, res) => {
 
   // After saving proof, send notifications
   const volunteer = await Volunteer.findById(volunteerId);
-  const opportunity = await Opportunity.findById(opportunityId).populate("organization");
+  const opportunity =
+    await Opportunity.findById(opportunityId).populate("organization");
 
   // Notify organization
   await sendNotification({
@@ -719,7 +766,9 @@ export const getOrgNotifications = async (req, res) => {
     res.json(notifs);
   } catch (err) {
     console.error("❌ Error fetching organization notifications:", err);
-    res.status(500).json({ message: "Failed to load organization notifications" });
+    res
+      .status(500)
+      .json({ message: "Failed to load organization notifications" });
   }
 };
 

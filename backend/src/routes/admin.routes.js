@@ -75,17 +75,17 @@ router.get("/reports", async (req, res) => {
           from: "opportunities",
           localField: "_id",
           foreignField: "organization",
-          as: "opportunities"
-        }
+          as: "opportunities",
+        },
       },
       {
         $project: {
           orgName: 1,
-          opportunitiesPosted: { $size: "$opportunities" }
-        }
+          opportunitiesPosted: { $size: "$opportunities" },
+        },
       },
       { $sort: { opportunitiesPosted: -1 } },
-      { $limit: 1 }
+      { $limit: 1 },
     ]);
 
     // Total volunteer hours (estimated from completed tasks)
@@ -94,9 +94,9 @@ router.get("/reports", async (req, res) => {
       {
         $group: {
           _id: null,
-          totalHours: { $sum: { $multiply: ["$volunteersNeeded", 2] } } // Estimate 2 hours per task
-        }
-      }
+          totalHours: { $sum: { $multiply: ["$volunteersNeeded", 2] } }, // Estimate 2 hours per task
+        },
+      },
     ]);
 
     // Monthly signups data
@@ -106,42 +106,58 @@ router.get("/reports", async (req, res) => {
           $group: {
             _id: {
               year: { $year: "$createdAt" },
-              month: { $month: "$createdAt" }
+              month: { $month: "$createdAt" },
             },
-            volunteers: { $sum: 1 }
-          }
+            volunteers: { $sum: 1 },
+          },
         },
         { $sort: { "_id.year": 1, "_id.month": 1 } },
-        { $limit: 12 }
+        { $limit: 12 },
       ]),
       Organization.aggregate([
         {
           $group: {
             _id: {
               year: { $year: "$createdAt" },
-              month: { $month: "$createdAt" }
+              month: { $month: "$createdAt" },
             },
-            organizations: { $sum: 1 }
-          }
+            organizations: { $sum: 1 },
+          },
         },
         { $sort: { "_id.year": 1, "_id.month": 1 } },
-        { $limit: 12 }
-      ])
+        { $limit: 12 },
+      ]),
     ]);
 
     // Combine monthly data
     const monthlyData = [];
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", 
-                       "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    
+    const monthNames = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+
     for (let i = 0; i < 12; i++) {
-      const volunteerData = monthlySignups[0].find(item => item._id.month === i + 1);
-      const orgData = monthlySignups[1].find(item => item._id.month === i + 1);
-      
+      const volunteerData = monthlySignups[0].find(
+        (item) => item._id.month === i + 1
+      );
+      const orgData = monthlySignups[1].find(
+        (item) => item._id.month === i + 1
+      );
+
       monthlyData.push({
         month: monthNames[i],
         volunteers: volunteerData?.volunteers || 0,
-        organizations: orgData?.organizations || 0
+        organizations: orgData?.organizations || 0,
       });
     }
 
@@ -151,19 +167,26 @@ router.get("/reports", async (req, res) => {
       {
         $group: {
           _id: "$skills",
-          value: { $sum: 1 }
-        }
+          value: { $sum: 1 },
+        },
       },
       { $sort: { value: -1 } },
-      { $limit: 6 }
+      { $limit: 6 },
     ]);
 
     // Add colors to categories
-    const colors = ["#7C3AED", "#10B981", "#F59E0B", "#EF4444", "#3B82F6", "#8B5CF6"];
+    const colors = [
+      "#7C3AED",
+      "#10B981",
+      "#F59E0B",
+      "#EF4444",
+      "#3B82F6",
+      "#8B5CF6",
+    ];
     const tasksWithColors = tasksByCategory.map((task, index) => ({
       ...task,
       name: task._id,
-      color: colors[index % colors.length]
+      color: colors[index % colors.length],
     }));
 
     // Recent activities
@@ -177,39 +200,47 @@ router.get("/reports", async (req, res) => {
         .select("orgName createdAt")
         .sort({ createdAt: -1 })
         .limit(5)
-        .lean()
+        .lean(),
     ]);
 
     const activities = [
-      ...recentActivities[0].map(vol => ({
+      ...recentActivities[0].map((vol) => ({
         id: vol._id,
         name: vol.fullName,
         role: "Volunteer",
         activity: "Joined ServeSpot",
-        date: new Date(vol.createdAt).toLocaleDateString()
+        date: new Date(vol.createdAt).toLocaleDateString(),
       })),
-      ...recentActivities[1].map(org => ({
+      ...recentActivities[1].map((org) => ({
         id: org._id,
         name: org.orgName,
         role: "Organization",
         activity: "Registered organization",
-        date: new Date(org.createdAt).toLocaleDateString()
-      }))
-    ].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 10);
+        date: new Date(org.createdAt).toLocaleDateString(),
+      })),
+    ]
+      .sort((a, b) => new Date(b.date) - new Date(a.date))
+      .slice(0, 10);
 
     res.json({
-      topVolunteer: topVolunteer ? {
-        name: topVolunteer.fullName,
-        tasksCompleted: topVolunteer.completedTasks
-      } : null,
-      topOrganization: topOrganization.length > 0 ? {
-        name: topOrganization[0].orgName,
-        opportunitiesPosted: topOrganization[0].opportunitiesPosted
-      } : null,
-      totalVolunteerHours: totalVolunteerHours.length > 0 ? totalVolunteerHours[0].totalHours : 0,
+      topVolunteer: topVolunteer
+        ? {
+            name: topVolunteer.fullName,
+            tasksCompleted: topVolunteer.completedTasks,
+          }
+        : null,
+      topOrganization:
+        topOrganization.length > 0
+          ? {
+              name: topOrganization[0].orgName,
+              opportunitiesPosted: topOrganization[0].opportunitiesPosted,
+            }
+          : null,
+      totalVolunteerHours:
+        totalVolunteerHours.length > 0 ? totalVolunteerHours[0].totalHours : 0,
       monthlySignups: monthlyData,
       tasksByCategory: tasksWithColors,
-      recentActivities: activities
+      recentActivities: activities,
     });
   } catch (err) {
     console.error("❌ Error loading reports data:", err);
@@ -244,16 +275,20 @@ router.put("/volunteers/:id/status", protectAdmin, updateVolunteerStatus);
 /* =====================================================
     ADMIN NOTIFICATIONS
 ===================================================== */
-router.get("/:adminId/notifications", async (req, res) => {
+router.get("/:adminId/notifications", protectAdmin, async (req, res) => {
   try {
     const { adminId } = req.params;
-    const notifications = await Notification.find({ 
-      user: adminId, 
-      userModel: "Admin" 
+    if (req.user?.id && String(req.user.id) !== String(adminId)) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    const notifications = await Notification.find({
+      user: adminId,
+      userModel: "Admin",
     })
-    .sort({ createdAt: -1 })
-    .limit(50);
-    
+      .sort({ createdAt: -1 })
+      .limit(50);
+
     res.json({ data: notifications });
   } catch (err) {
     console.error("❌ Error fetching admin notifications:", err);
@@ -261,14 +296,20 @@ router.get("/:adminId/notifications", async (req, res) => {
   }
 });
 
-router.put("/:adminId/notifications/read", async (req, res) => {
+
+router.put("/:adminId/notifications/read", protectAdmin, async (req, res) => {
   try {
     const { adminId } = req.params;
+
+    if (req.user?.id && String(req.user.id) !== String(adminId)) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
     await Notification.updateMany(
       { user: adminId, userModel: "Admin", isRead: false },
       { isRead: true }
     );
-    
+
     res.json({ message: "All notifications marked as read" });
   } catch (err) {
     console.error("❌ Error marking admin notifications as read:", err);
@@ -276,61 +317,5 @@ router.put("/:adminId/notifications/read", async (req, res) => {
   }
 });
 
-// Test route to create sample admin notifications
-router.post("/:adminId/notifications/test", async (req, res) => {
-  try {
-    const { adminId } = req.params;
-    
-    // Create sample notifications
-    const sampleNotifications = [
-      {
-        user: adminId,
-        userModel: "Admin",
-        title: "New Organization Registration",
-        message: "Socia organization has registered and needs verification.",
-        type: "organization_verification",
-        channel: "inApp",
-        link: "/admin/organizations"
-      },
-      {
-        user: adminId,
-        userModel: "Admin",
-        title: "New Volunteer Registration",
-        message: "Peter Arenas has registered and needs verification.",
-        type: "user_registration",
-        channel: "inApp",
-        link: "/admin/volunteers"
-      },
-      {
-        user: adminId,
-        userModel: "Admin",
-        title: "System Update Available",
-        message: "A new system update is available. Please review the changelog.",
-        type: "system",
-        channel: "inApp",
-        link: "/admin/settings"
-      },
-      {
-        user: adminId,
-        userModel: "Admin",
-        title: "Monthly Report Generated",
-        message: "The monthly analytics report has been generated and is ready for review.",
-        type: "report",
-        channel: "inApp",
-        link: "/admin/reports"
-      }
-    ];
-
-    const createdNotifications = await Notification.insertMany(sampleNotifications);
-    
-    res.json({ 
-      message: "Test notifications created successfully",
-      notifications: createdNotifications
-    });
-  } catch (err) {
-    console.error("❌ Error creating test notifications:", err);
-    res.status(500).json({ message: "Failed to create test notifications" });
-  }
-});
 
 export default router;
