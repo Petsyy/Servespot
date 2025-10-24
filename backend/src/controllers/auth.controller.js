@@ -13,7 +13,32 @@ const generateToken = (id, role) => {
 // VOLUNTEER SIGNUP
 export const registerVolunteer = async (req, res) => {
   try {
-    const { fullName, email, password } = req.body;
+    const { fullName, email, password, birthdate } = req.body;
+
+    // Validate birthdate and age (18+)
+    if (!birthdate) {
+      return res.status(400).json({ message: "Birthdate is required" });
+    }
+
+    const parsedBirthdate = new Date(birthdate);
+    if (Number.isNaN(parsedBirthdate.getTime())) {
+      return res
+        .status(400)
+        .json({ message: "Invalid birthdate. Please provide a valid date." });
+    }
+
+    const today = new Date();
+    let age = today.getFullYear() - parsedBirthdate.getFullYear();
+    const monthDiff = today.getMonth() - parsedBirthdate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < parsedBirthdate.getDate())) {
+      age -= 1;
+    }
+
+    if (age < 18) {
+      return res.status(400).json({
+        message: "You must be at least 18 years old to create a volunteer account.",
+      });
+    }
 
     // Check if email already exists
     const existing = await Volunteer.findOne({ email });
@@ -24,7 +49,12 @@ export const registerVolunteer = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create volunteer
-    const volunteer = new Volunteer({ ...req.body, password: hashedPassword });
+    const volunteer = new Volunteer({
+      ...req.body,
+      // Ensure we store a proper Date instance for birthdate
+      birthdate: parsedBirthdate,
+      password: hashedPassword,
+    });
     await volunteer.save();
 
     //  Generate token for auto-login

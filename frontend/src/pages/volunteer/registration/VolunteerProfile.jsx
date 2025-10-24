@@ -42,6 +42,18 @@ export default function ProfileStep({
   const validateForm = () => {
     let newErrors = {};
     if (!formData.birthdate) newErrors.birthdate = "Birthdate is required";
+    else {
+      const bd = new Date(formData.birthdate);
+      if (Number.isNaN(bd.getTime())) {
+        newErrors.birthdate = "Please provide a valid birthdate";
+      } else {
+        const today = new Date();
+        let age = today.getFullYear() - bd.getFullYear();
+        const m = today.getMonth() - bd.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < bd.getDate())) age -= 1;
+        if (age < 18) newErrors.birthdate = "You must be 18 or older to sign up";
+      }
+    }
     if (!formData.gender) newErrors.gender = "Gender is required";
     if (!formData.city || formData.city.trim() === "")
       newErrors.city = "City is required";
