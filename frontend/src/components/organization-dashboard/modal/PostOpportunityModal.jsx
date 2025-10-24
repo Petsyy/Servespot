@@ -5,21 +5,8 @@ import { createOpportunity } from "@/services/organization.api";
 import PreviewCard from "@/components/organization-dashboard/post/PreviewCard";
 import SkillCheckbox from "@/components/organization-dashboard/post/SkillCheckbox";
 import ImageDropzone from "@/components/organization-dashboard/post/ImageDropzone";
-
-const skillsOptions = [
-  "Tutoring",
-  "Public Speaking",
-  "Graphic Design",
-  "Elderly Care",
-  "Photography",
-  "Event Planning",
-  "Gardening",
-  "Fundraising",
-  "Communication Skills",
-  "Customer Service",
-  "Web Development",
-  "Social Media",
-];
+import { skillsOptions } from "@/constants/skills";
+import { normalizeSkills } from "@/utils/skills";
 
 export default function PostOpportunityModal({ onClose, onSuccess }) {
   const [form, setForm] = useState({
@@ -56,14 +43,17 @@ export default function PostOpportunityModal({ onClose, onSuccess }) {
     setSubmitting(true);
 
     try {
+      const normalizedSkills = normalizeSkills(form.skills);
+
       const orgId = localStorage.getItem("orgId");
       if (!orgId) {
         toast.error("Organization not found. Please log in again.");
         return;
       }
 
+      const payload = { ...form, skills: normalizedSkills };
       const formData = new FormData();
-      Object.entries(form).forEach(([key, value]) => {
+      Object.entries(payload).forEach(([key, value]) => {
         if (key === "skills")
           value.forEach((s) => formData.append("skills[]", s));
         else if (key === "file" && value) formData.append("file", value);

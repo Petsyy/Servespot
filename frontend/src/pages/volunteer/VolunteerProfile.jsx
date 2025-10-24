@@ -16,10 +16,8 @@ import {
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import {
-  getVolunteerProfile,
-  updateVolunteerProfile,
-} from "@/services/volunteer.api";
+import { getVolunteerProfile, updateVolunteerProfile } from "@/services/volunteer.api";
+import { normalizeSkills } from "@/utils/skills";
 import VolSidebar from "@/components/layout/sidebars/VolSidebar";
 import VolunteerNavbar from "@/components/layout/navbars/VolunteerNavbar";
 
@@ -89,8 +87,9 @@ export default function VolunteerProfile() {
       setSaving(true);
       const payload = {
         ...me,
-        skills:
-          typeof me.skills === "string" ? me.skills.split(",") : me.skills,
+        skills: normalizeSkills(
+          typeof me.skills === "string" ? me.skills.split(",") : me.skills
+        ),
         interests:
           typeof me.interests === "string"
             ? me.interests.split(",")

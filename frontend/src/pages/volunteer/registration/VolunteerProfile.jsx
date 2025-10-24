@@ -6,17 +6,9 @@ import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { signupVolunteer, loginVolunteer } from "../../../services/api";
 import { Users } from "lucide-react";
+import { skillsOptions } from "@/constants/skills";
+import { normalizeSkills } from "@/utils/skills";
 
-const skillsOptions = [
-  "Tutoring",
-  "First Aid",
-  "Translation",
-  "Gardening",
-  "Graphic Design",
-  "Cooking",
-  "Photography",
-  "Fundraising",
-];
 const interestsOptions = [
   "Environment",
   "Disaster Relief",
@@ -80,8 +72,11 @@ export default function ProfileStep({
   setIsSubmitting(true);
 
   try {
+    // Normalize skills before submitting
+    const payload = { ...formData, skills: normalizeSkills(formData.skills) };
+
     // 1️Sign up first
-    await signupVolunteer(formData);
+    await signupVolunteer(payload);
 
     // Automatically log in using same credentials
     const loginRes = await loginVolunteer({

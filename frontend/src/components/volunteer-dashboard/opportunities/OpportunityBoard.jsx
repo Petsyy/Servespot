@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { prepareSkillsForDisplay } from "@/utils/skills";
 import { confirmJoin, successAlert, errorAlert } from "@/utils/swalAlerts";
 import {
   Calendar,
@@ -187,6 +188,8 @@ export default function OpportunityBoard({
     }
   };
 
+  const displaySkills = prepareSkillsForDisplay(skills);
+
   return (
     <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden flex flex-col w-72 transition hover:shadow-lg">
       {/* Poster Image */}
@@ -257,11 +260,11 @@ export default function OpportunityBoard({
         </div>
 
         {/* Skills */}
-        {Array.isArray(skills) && skills.length > 0 && (
+        {displaySkills.length > 0 && (
           <div className="mt-4">
             <p className="text-sm font-semibold text-gray-800 mb-2">Skills:</p>
             <div className="flex flex-wrap gap-2">
-              {skills.map((skill, index) => (
+              {displaySkills.map((skill, index) => (
                 <span
                   key={index}
                   className="px-2 py-1 text-xs font-medium rounded-full bg-blue-50 text-blue-700 border border-blue-100"

@@ -1,4 +1,5 @@
 import React from "react";
+import { prepareSkillsForDisplay } from "@/utils/skills";
 import { Calendar, Clock, MapPin, Users as UsersIcon } from "lucide-react";
 
 export default function PreviewCard({
@@ -21,6 +22,8 @@ export default function PreviewCard({
         minute: "2-digit",
       })
     : null;
+
+  const displaySkills = prepareSkillsForDisplay(skills);
 
   return (
     <div
@@ -82,13 +85,13 @@ export default function PreviewCard({
         </div>
 
         {/* Skills Section */}
-        {skills?.length > 0 && (
+        {displaySkills.length > 0 && (
           <div className="mt-4">
             <p className="font-medium text-sm text-gray-800 mb-2">
               Required Skills:
             </p>
             <div className="flex flex-wrap gap-2">
-              {skills.map((s) => (
+              {displaySkills.map((s) => (
                 <span
                   key={s}
                   className="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-700 border border-gray-200"
