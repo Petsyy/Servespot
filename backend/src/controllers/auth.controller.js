@@ -63,16 +63,16 @@ export const registerVolunteer = async (req, res) => {
     });
     await volunteer.save();
 
-    // Notify admins about new volunteer registration
+    // Notify admins about new volunteer signup
     try {
       const admins = await Admin.find({ status: "active" });
       for (const admin of admins) {
         await sendNotification({
           userId: admin._id,
           userModel: "Admin",
-          title: "New Volunteer Registration",
-          message: `A new volunteer "${volunteer.fullName}" has registered and needs verification.`,
-          type: "user_registration",
+          title: "New volunteer signup",
+          message: `New volunteer ${volunteer.fullName} joined ServeSpot.`,
+          type: "system",
           channel: "inApp",
           link: "/admin/volunteers",
         });
@@ -125,16 +125,16 @@ export const registerOrganization = async (req, res) => {
 
     await organization.save();
 
-    // Notify admins about new organization registration
+    // Notify admins about new organization signup
     try {
       const admins = await Admin.find({ status: "active" });
       for (const admin of admins) {
         await sendNotification({
           userId: admin._id,
           userModel: "Admin",
-          title: "New Organization Registration",
-          message: `A new organization "${organization.orgName}" has registered and needs verification.`,
-          type: "organization_verification",
+          title: "New organization signup",
+          message: `New organization ${organization.orgName} registered and is awaiting approval.`,
+          type: "update",
           channel: "inApp",
           link: "/admin/organizations",
         });

@@ -21,16 +21,11 @@ export default function AdminNavbar({
 }) {
   const navigate = useNavigate();
 
-  const adminName = "Admin"; // You can fetch this from localStorage if needed
-  const adminEmail = "admin@servespot.com"; // You can fetch this from localStorage if needed
+  const adminName = localStorage.getItem("adminName") || "Admin";
+  const adminEmail = localStorage.getItem("adminEmail") || "admin@servespot.com";
 
-  const fallbackNotifs = [
-    { id: 1, title: "New organization registration pending approval", icon: <Shield size={16} /> },
-    { id: 2, title: "System backup completed successfully" },
-    { id: 3, title: "High traffic alert - 500+ active users" },
-  ];
-  const notifications = notificationsProp ?? fallbackNotifs;
-  const computedCount = typeof notifCount === "number" ? notifCount : notifications.length;
+  const notifications = notificationsProp ?? [];
+  const computedCount = typeof notifCount === "number" ? notifCount : (notifications?.length || 0);
 
   const [openNotif, setOpenNotif] = useState(false);
   const [openProfile, setOpenProfile] = useState(false);
@@ -155,7 +150,7 @@ export default function AdminNavbar({
                   <ul className="max-h-72 overflow-auto">
                     {notifications.map((n) => (
                       <li
-                        key={n.id}
+                        key={n.id || n._id || Math.random()}
                         className="px-4 py-3 text-sm text-gray-700 flex items-start gap-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors"
                       >
                         <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 grid place-items-center flex-shrink-0 mt-0.5">

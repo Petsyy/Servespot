@@ -297,7 +297,6 @@ export default function AdminReports() {
       <div className="flex-1 flex flex-col overflow-hidden">
         <AdminNavbar
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-          notifCount={3}
         />
 
         <main className="flex-1 overflow-y-auto p-6">

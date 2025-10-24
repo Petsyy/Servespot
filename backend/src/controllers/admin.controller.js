@@ -134,6 +134,39 @@ export const updateOrganizationStatus = async (req, res) => {
       status,
     });
 
+    // --- Create in-app notification for admins about org status change ---
+    try {
+      const admins = await Admin.find({ status: "active" });
+      const actor = req.user?.email || "Admin";
+      const adminTitle =
+        status === "active"
+          ? "Organization Verified"
+          : status === "suspended"
+          ? "Organization Suspended"
+          : "Organization Status Updated";
+      const adminMessage =
+        status === "active"
+          ? `${organization.orgName} was approved successfully.`
+          : status === "suspended"
+          ? `${organization.orgName} was suspended by ${actor}.`
+          : `${organization.orgName} status set to pending by ${actor}.`;
+      const adminType = status === "active" ? "system" : status === "suspended" ? "status" : "update";
+
+      for (const admin of admins) {
+        await sendNotification({
+          userId: admin._id,
+          userModel: "Admin",
+          title: adminTitle,
+          message: adminMessage,
+          type: adminType,
+          channel: "inApp",
+          link: "/admin/organizations",
+        });
+      }
+    } catch (e) {
+      console.error("❌ Failed to notify admins of org status change:", e);
+    }
+
     res.status(200).json({
       message:
         status === "suspended"
@@ -222,6 +255,39 @@ export const updateVolunteerStatus = async (req, res) => {
       userId: id,
       status,
     });
+
+    // --- Create in-app notification for admins about volunteer status change ---
+    try {
+      const admins = await Admin.find({ status: "active" });
+      const actor = req.user?.email || "Admin";
+      const adminTitle =
+        status === "active"
+          ? "Volunteer Reactivated"
+          : status === "suspended"
+          ? "Volunteer Suspended"
+          : "Volunteer Pending Review";
+      const adminMessage =
+        status === "active"
+          ? `${volunteer.fullName} was reactivated by ${actor}.`
+          : status === "suspended"
+          ? `${volunteer.fullName} was suspended by ${actor}.`
+          : `${volunteer.fullName} status set to pending by ${actor}.`;
+      const adminType = status === "suspended" || status === "active" ? "status" : "update";
+
+      for (const admin of admins) {
+        await sendNotification({
+          userId: admin._id,
+          userModel: "Admin",
+          title: adminTitle,
+          message: adminMessage,
+          type: adminType,
+          channel: "inApp",
+          link: "/admin/volunteers",
+        });
+      }
+    } catch (e) {
+      console.error("❌ Failed to notify admins of volunteer status change:", e);
+    }
 
     res.status(200).json({
       message:

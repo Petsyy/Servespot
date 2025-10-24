@@ -4,6 +4,7 @@ import Volunteer from "../models/Volunteer.js";
 import Notification from "../models/Notification.js";
 import { awardVolunteerRewards } from "../utils/volunteer.badges.js";
 import { sendNotification } from "../utils/sendNotification.js";
+import Admin from "../models/Admin.js";
 
 // Fetch all opportunities for an organization
 export const getOpportunities = async (req, res) => {
@@ -87,6 +88,25 @@ export const createOpportunity = async (req, res) => {
     } catch (notifErr) {
       console.error("Failed to send new opportunity notifications:", notifErr);
       // Don't fail the main request if notification fails
+    }
+
+    // Notify admins about new opportunity posted
+    try {
+      const org = await Organization.findById(organization);
+      const admins = await Admin.find({ status: "active" });
+      for (const admin of admins) {
+        await sendNotification({
+          userId: admin._id,
+          userModel: "Admin",
+          title: "New opportunity posted",
+          message: `${org?.orgName || "An organization"} created a new opportunity: ${opportunity.title}.`,
+          type: "update",
+          channel: "inApp",
+          link: "/admin/reports", // could be a dedicated opportunities admin page if available
+        });
+      }
+    } catch (e) {
+      console.error("Failed to notify admins of new opportunity:", e);
     }
 
     // Return full object wrapped in a message
@@ -480,6 +500,24 @@ export const confirmVolunteerCompletion = async (req, res) => {
     } catch (notifErr) {
       console.error("Failed to send completion confirmation notification:", notifErr);
       // Don't fail the main request if notification fails
+    }
+
+    // Notify admins that a volunteer completed an opportunity
+    try {
+      const admins = await Admin.find({ status: "active" });
+      for (const admin of admins) {
+        await sendNotification({
+          userId: admin._id,
+          userModel: "Admin",
+          title: "Volunteer completed an opportunity",
+          message: `Volunteer ${volunteerId} completed ${opportunity.title}.`,
+          type: "update",
+          channel: "inApp",
+          link: "/admin/reports",
+        });
+      }
+    } catch (e) {
+      console.error("Failed to notify admins of volunteer completion:", e);
     }
 
     res.status(200).json({

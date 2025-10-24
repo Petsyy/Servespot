@@ -276,61 +276,6 @@ router.put("/:adminId/notifications/read", async (req, res) => {
   }
 });
 
-// Test route to create sample admin notifications
-router.post("/:adminId/notifications/test", async (req, res) => {
-  try {
-    const { adminId } = req.params;
-    
-    // Create sample notifications
-    const sampleNotifications = [
-      {
-        user: adminId,
-        userModel: "Admin",
-        title: "New Organization Registration",
-        message: "Socia organization has registered and needs verification.",
-        type: "organization_verification",
-        channel: "inApp",
-        link: "/admin/organizations"
-      },
-      {
-        user: adminId,
-        userModel: "Admin",
-        title: "New Volunteer Registration",
-        message: "Peter Arenas has registered and needs verification.",
-        type: "user_registration",
-        channel: "inApp",
-        link: "/admin/volunteers"
-      },
-      {
-        user: adminId,
-        userModel: "Admin",
-        title: "System Update Available",
-        message: "A new system update is available. Please review the changelog.",
-        type: "system",
-        channel: "inApp",
-        link: "/admin/settings"
-      },
-      {
-        user: adminId,
-        userModel: "Admin",
-        title: "Monthly Report Generated",
-        message: "The monthly analytics report has been generated and is ready for review.",
-        type: "report",
-        channel: "inApp",
-        link: "/admin/reports"
-      }
-    ];
-
-    const createdNotifications = await Notification.insertMany(sampleNotifications);
-    
-    res.json({ 
-      message: "Test notifications created successfully",
-      notifications: createdNotifications
-    });
-  } catch (err) {
-    console.error("❌ Error creating test notifications:", err);
-    res.status(500).json({ message: "Failed to create test notifications" });
-  }
-});
+// (Removed) Test route to create sample admin notifications
 
 export default router;
