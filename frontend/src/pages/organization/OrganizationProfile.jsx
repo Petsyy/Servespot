@@ -129,7 +129,7 @@ export default function OrganizationProfile() {
               {!isEditing ? (
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                  className="flex items-center gap-2 px-4 py-2  text-white rounded-lg hover:bg-green-700 transition shadow-sm hover:shadow-md"
                 >
                   <Pencil size={18} /> Edit Profile
                 </button>
@@ -138,13 +138,13 @@ export default function OrganizationProfile() {
                   <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-60"
+                    className="flex items-center gap-2 px-4 py-2  text-white rounded-lg hover:bg-green-700 disabled:opacity-60 shadow-sm hover:shadow-md transition"
                   >
                     <Check size={18} /> {saving ? "Saving..." : "Save"}
                   </button>
                   <button
                     onClick={() => setIsEditing(false)}
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                    className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
                   >
                     <X size={18} /> Cancel
                   </button>
@@ -153,9 +153,9 @@ export default function OrganizationProfile() {
             </div>
 
             {/* 🔹 Organization Profile Card */}
-            <div className="bg-white rounded-xl border border-gray-200 p-6 flex items-center gap-5 mb-8 shadow-sm">
+            <div className="bg-white rounded-xl border border-green-200 p-6 flex items-center gap-5 mb-8 shadow-sm hover:shadow-md transition-shadow">
               {/* Logo / Avatar */}
-              <div className="w-20 h-20 flex items-center justify-center rounded-full bg-blue-100 text-blue-700 text-2xl font-bold shadow-sm">
+              <div className="w-20 h-20 flex items-center justify-center rounded-full bg-gradient-to-r from-green-500 to-emerald-500 text-white text-2xl font-bold shadow-md">
                 {initials}
               </div>
 
@@ -163,7 +163,7 @@ export default function OrganizationProfile() {
               <div className="flex flex-col gap-1">
                 {/* Company Name */}
                 <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-                  <Building2 size={18} className="text-blue-600" />
+                  <Building2 size={18} className="text-green-600" />
                   {org.orgName || "—"}
                 </h2>
                 <p className="text-sm text-gray-600">
@@ -174,19 +174,19 @@ export default function OrganizationProfile() {
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-3 text-gray-700 text-sm">
                   {org.city && (
                     <div className="flex items-center gap-1">
-                      <MapPin size={16} className="text-blue-600" />
+                      <MapPin size={16} className="text-green-600" />
                       <span>{org.city}</span>
                     </div>
                   )}
                   {org.contactPerson && (
                     <div className="flex items-center gap-1">
-                      <User size={16} className="text-blue-600" />
+                      <User size={16} className="text-green-600" />
                       <span>{org.contactPerson}</span>
                     </div>
                   )}
                   {org.email && (
                     <div className="flex items-center gap-1">
-                      <Mail size={16} className="text-blue-600" />
+                      <Mail size={16} className="text-green-600" />
                       <span>{org.email}</span>
                     </div>
                   )}
@@ -281,8 +281,8 @@ export default function OrganizationProfile() {
 /* 🔹 Components */
 function Section({ title, icon, children }) {
   return (
-    <section className="rounded-2xl border border-gray-200 overflow-hidden">
-      <div className="bg-blue-50 px-5 py-3 border-b border-gray-200 flex items-center gap-2">
+    <section className="rounded-2xl border border-green-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+      <div className="bg-gradient-to-r from-green-50 to-emerald-50 px-5 py-3 border-b border-green-200 flex items-center gap-2">
         {icon}
         <h3 className="font-semibold text-gray-900">{title}</h3>
       </div>
@@ -311,10 +311,10 @@ function Field({
           type={type}
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full h-10 px-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+          className="w-full h-10 px-3 rounded-lg border border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition"
         />
       ) : (
-        <div className="w-full h-10 px-3 flex items-center rounded-lg bg-gray-50 border border-gray-200 text-gray-800">
+        <div className="w-full h-10 px-3 flex items-center rounded-lg  border border-green-200 text-gray-800">
           {value || "—"}
         </div>
       )}
@@ -331,10 +331,10 @@ function TextArea({ label, value, onChange, editable }) {
           rows={4}
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 p-3"
+          className="w-full rounded-lg border border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 p-3 transition"
         />
       ) : (
-        <div className="rounded-lg bg-gray-50 border border-gray-200 p-3 text-gray-800 min-h-[84px]">
+        <div className="rounded-lg  border border-green-200 p-3 text-gray-800 min-h-[84px]">
           {value || "—"}
         </div>
       )}
@@ -350,7 +350,7 @@ function SelectField({ label, value, onChange, editable, options }) {
         <select
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full h-10 px-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+          className="w-full h-10 px-3 rounded-lg border border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition"
         >
           <option value="" disabled>
             Select...
@@ -362,7 +362,7 @@ function SelectField({ label, value, onChange, editable, options }) {
           ))}
         </select>
       ) : (
-        <div className="w-full h-10 px-3 flex items-center rounded-lg bg-gray-50 border border-gray-200 text-gray-800">
+        <div className="w-full h-10 px-3 flex items-center rounded-lg border border-green-200 text-gray-800">
           {value || "—"}
         </div>
       )}

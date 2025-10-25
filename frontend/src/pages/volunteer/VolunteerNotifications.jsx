@@ -157,7 +157,7 @@ export default function VolunteerNotifications() {
               <div className="relative flex items-center gap-3">
                 <button
                   onClick={markAllAsRead}
-                  className="px-3 py-2 rounded-lg text-sm bg-white border border-gray-300 hover:bg-gray-50"
+                  className="px-3 py-2 rounded-lg text-sm bg-white border border-gray-300 hover:bg-green-50 hover:border-green-200 text-gray-700 hover:text-green-700 transition-colors"
                 >
                   Mark all read
                 </button>
@@ -166,7 +166,7 @@ export default function VolunteerNotifications() {
                   <select
                     value={filter}
                     onChange={(e) => setFilter(e.target.value)}
-                    className="appearance-none border border-gray-300 rounded-lg px-4 py-2.5 pr-10 bg-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="appearance-none border border-gray-300 rounded-lg px-4 py-2.5 pr-10 bg-white text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent hover:border-green-300 transition-colors"
                   >
                     <option>All</option>
                     <option>System</option>
@@ -181,20 +181,20 @@ export default function VolunteerNotifications() {
             <div className="flex gap-3 mb-6 border-b border-gray-200">
               <button
                 onClick={() => setActiveTab("inApp")}
-                className={`px-4 py-2 font-medium text-sm rounded-t-lg ${
+                className={`px-4 py-2 font-medium text-sm rounded-t-lg transition-colors ${
                   activeTab === "inApp"
-                    ? "text-blue-600 border-b-2 border-blue-600"
-                    : "text-gray-500 hover:text-gray-700"
+                    ? "text-green-600 border-b-2 border-green-600"
+                    : "text-gray-500 hover:text-green-700"
                 }`}
               >
                 In-App Notifications
               </button>
               <button
                 onClick={() => setActiveTab("email")}
-                className={`px-4 py-2 font-medium text-sm rounded-t-lg ${
+                className={`px-4 py-2 font-medium text-sm rounded-t-lg transition-colors ${
                   activeTab === "email"
-                    ? "text-blue-600 border-b-2 border-blue-600"
-                    : "text-gray-500 hover:text-gray-700"
+                    ? "text-green-600 border-b-2 border-green-600"
+                    : "text-gray-500 hover:text-green-700"
                 }`}
               >
                 Email Notifications
@@ -222,18 +222,20 @@ export default function VolunteerNotifications() {
                   <div
                     key={n._id}
                     className={`flex items-start gap-4 p-5 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition-all ${
-                      !n.isRead ? "bg-blue-50/70" : ""
+                      !n.isRead ? "bg-green-50/70 border-green-200" : ""
                     }`}
                   >
-                    <div className="p-2 bg-gray-100 rounded-lg">
+                    <div className={`p-2 rounded-lg ${
+                      !n.isRead ? "bg-green-100" : "bg-gray-100"
+                    }`}>
                       {n.type === "email" ? (
-                        <Mail className="text-blue-600 w-5 h-5" />
+                        <Mail className="text-green-600 w-5 h-5" />
                       ) : n.type === "completion" ? (
                         <CheckCircle className="text-green-500 w-5 h-5" />
                       ) : n.type === "status" ? (
-                        <AlertCircle className="text-orange-500 w-5 h-5" />
+                        <AlertCircle className="text-green-500 w-5 h-5" />
                       ) : (
-                        <Bell className="text-blue-500 w-5 h-5" />
+                        <Bell className="text-green-500 w-5 h-5" />
                       )}
                     </div>
 
@@ -255,7 +257,7 @@ export default function VolunteerNotifications() {
                         {n.link ? (
                           <a
                             href={n.link}
-                            className="ml-3 text-blue-600 hover:underline"
+                            className="ml-3 text-green-600 hover:text-green-700 hover:underline transition-colors"
                           >
                             View
                           </a>

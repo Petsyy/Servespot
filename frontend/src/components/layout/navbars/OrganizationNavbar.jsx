@@ -173,7 +173,7 @@ export default function OrganizationNavbar({
           <div className="relative" ref={notifRef}>
             <button
               onClick={() => setOpenNotif((v) => !v)}
-              className="relative p-2 rounded-xl hover:bg-gray-100 text-gray-600 hover:text-blue-600 outline-none focus:ring-2 focus:ring-blue-300 transition-colors"
+              className="relative p-2 rounded-xl hover:bg-gray-100 text-gray-600 hover:text-green-600 outline-none focus:ring-2 focus:ring-green-300 transition-colors"
             >
               <Bell size={20} />
               {computedUnreadCount > 0 && (
@@ -186,11 +186,11 @@ export default function OrganizationNavbar({
             {openNotif && (
               <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-50 animate-in fade-in zoom-in-95">
                 {/* Notification Header */}
-                <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/80">
+                <div className="px-4 py-3 border-b border-gray-100 bg-green-50/80">
                   <p className="text-sm font-semibold text-gray-800">
                     Notifications
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-green-600 mt-1">
                     {computedUnreadCount} unread {computedUnreadCount === 1 ? 'notification' : 'notifications'}
                   </p>
                 </div>
@@ -202,10 +202,10 @@ export default function OrganizationNavbar({
                       <li
                         key={n.id}
                         className={`px-4 py-3 text-sm flex items-start gap-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors ${
-                          !n.isRead ? "bg-blue-50/70" : ""
+                          !n.isRead ? "bg-green-50/70" : ""
                         }`}
                       >
-                        <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 grid place-items-center flex-shrink-0 mt-0.5">
+                        <div className="w-8 h-8 rounded-lg bg-green-50 text-green-600 grid place-items-center flex-shrink-0 mt-0.5">
                           {n.icon || <Bell size={16} />}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -237,7 +237,7 @@ export default function OrganizationNavbar({
                       setOpenNotif(false);
                       navigate("/organization/notifications");
                     }}
-                    className="w-full px-4 py-3 text-sm text-blue-600 hover:bg-blue-50 font-medium transition-colors"
+                    className="w-full px-4 py-3 text-sm text-green-600 hover:bg-green-50 font-medium transition-colors"
                   >
                     View all notifications
                   </button>
@@ -250,9 +250,9 @@ export default function OrganizationNavbar({
           <div className="relative" ref={profileRef}>
             <button
               onClick={() => setOpenProfile((v) => !v)}
-              className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-xl hover:bg-gray-100 outline-none focus:ring-2 focus:ring-blue-300 transition-colors group"
+              className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-xl hover:bg-gray-100 outline-none focus:ring-2 focus:ring-green-300 transition-colors group"
             >
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-xs font-bold grid place-items-center shadow-sm group-hover:shadow transition-shadow">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 text-white text-xs font-bold grid place-items-center shadow-sm group-hover:shadow transition-shadow">
                 {initials}
               </div>
               <div className="hidden sm:block text-left">
@@ -272,9 +272,9 @@ export default function OrganizationNavbar({
             {openProfile && (
               <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-50 animate-in fade-in zoom-in-95">
                 {/* Profile Header */}
-                <div className="px-4 py-3 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50">
+                <div className="px-4 py-3 border-b border-gray-100 bg-gradient-to-r from-green-50 to-emerald-50">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-sm font-bold grid place-items-center shadow">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 text-white text-sm font-bold grid place-items-center shadow">
                       {initials}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -321,7 +321,7 @@ export default function OrganizationNavbar({
         </div>
       </div>
 
-      <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-blue-300 to-transparent" />
+      <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-green-300 to-transparent" />
     </header>
   );
 }

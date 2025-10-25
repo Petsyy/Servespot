@@ -194,7 +194,7 @@ export default function OpportunityCard({
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div 
-                  className="h-2 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-500"
+                  className="h-2 rounded-full bg-gradient-to-r from-green-500 to-green-600 transition-all duration-500"
                   style={{ width: `${progressPercentage}%` }}
                 ></div>
               </div>
@@ -241,7 +241,7 @@ export default function OpportunityCard({
         <div className="flex flex-wrap items-center gap-4 mb-4 p-3 bg-gray-50 rounded-xl">
           {date && (
             <div className="flex items-center gap-2 text-gray-700">
-              <Calendar size={16} className="text-blue-500 flex-shrink-0" />
+              <Calendar size={16} className="text-green-500 flex-shrink-0" />
               <span className="text-sm font-medium">
                 {cardData.date ? new Date(cardData.date).toLocaleDateString("en-US", {
                   month: 'short',
@@ -254,14 +254,14 @@ export default function OpportunityCard({
           
           {cardData.duration && (
             <div className="flex items-center gap-2 text-gray-700">
-              <Clock size={16} className="text-blue-500 flex-shrink-0" />
+              <Clock size={16} className="text-green-500 flex-shrink-0" />
               <span className="text-sm font-medium">{cardData.duration}</span>
             </div>
           )}
           
           {cardData.location && (
             <div className="flex items-center gap-2 text-gray-700">
-              <MapPin size={16} className="text-blue-500 flex-shrink-0" />
+              <MapPin size={16} className="text-green-500 flex-shrink-0" />
               <span className="text-sm font-medium">{cardData.location}</span>
             </div>
           )}

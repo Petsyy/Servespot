@@ -22,6 +22,7 @@ import {
   submitCompletionProof,
   reviewCompletionProof,
   forceCompleteOpportunity,
+  getOpportunityById,
 } from "../controllers/opportunity.controller.js";
 
 import { triggerReminderTest } from "../utils/reminderNotifications.js";
@@ -124,6 +125,8 @@ router.patch("/:id/proof/:volunteerId/review", verifyToken, reviewCompletionProo
 // Force mark opportunity complete
 router.patch("/:id/force-complete", forceCompleteOpportunity);
 
+
+router.get("/:id", getOpportunityById);
 
 /* ------------------------------------------------
    Delete specific opportunity

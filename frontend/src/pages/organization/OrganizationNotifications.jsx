@@ -159,7 +159,7 @@ export default function OrganizationNotifications() {
               <div className="relative flex items-center gap-3">
                 <button
                   onClick={markAllAsRead}
-                  className="px-3 py-2 rounded-lg text-sm bg-white border border-gray-300 hover:bg-gray-50"
+                  className="px-4 py-2.5 rounded-lg text-sm bg-green-600 text-white hover:bg-green-700 transition-colors duration-200 font-medium"
                 >
                   Mark all read
                 </button>
@@ -168,7 +168,7 @@ export default function OrganizationNotifications() {
                   <select
                     value={filter}
                     onChange={(e) => setFilter(e.target.value)}
-                    className="appearance-none border border-gray-300 rounded-lg px-4 py-2.5 pr-10 bg-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="appearance-none border border-gray-300 rounded-lg px-4 py-2.5 pr-10 bg-white text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   >
                     <option>All</option>
                     <option>System</option>
@@ -183,9 +183,9 @@ export default function OrganizationNotifications() {
             <div className="flex gap-3 mb-6 border-b border-gray-200">
               <button
                 onClick={() => setActiveTab("inApp")}
-                className={`px-4 py-2 font-medium text-sm rounded-t-lg ${
+                className={`px-4 py-2 font-medium text-sm rounded-t-lg transition-colors duration-200 ${
                   activeTab === "inApp"
-                    ? "text-blue-600 border-b-2 border-blue-600"
+                    ? "text-green-600 border-b-2 border-green-600"
                     : "text-gray-500 hover:text-gray-700"
                 }`}
               >
@@ -193,9 +193,9 @@ export default function OrganizationNotifications() {
               </button>
               <button
                 onClick={() => setActiveTab("email")}
-                className={`px-4 py-2 font-medium text-sm rounded-t-lg ${
+                className={`px-4 py-2 font-medium text-sm rounded-t-lg transition-colors duration-200 ${
                   activeTab === "email"
-                    ? "text-blue-600 border-b-2 border-blue-600"
+                    ? "text-green-600 border-b-2 border-green-600"
                     : "text-gray-500 hover:text-gray-700"
                 }`}
               >
@@ -224,25 +224,35 @@ export default function OrganizationNotifications() {
                   <div
                     key={n._id}
                     className={`flex items-start gap-4 p-5 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition-all ${
-                      !n.isRead ? "bg-blue-50/70" : ""
+                      !n.isRead ? "bg-green-50/70 border-green-200" : ""
                     }`}
                   >
-                    <div className="p-2 bg-gray-100 rounded-lg">
+                    <div className={`p-2 rounded-lg ${
+                      !n.isRead ? "bg-green-100" : "bg-gray-100"
+                    }`}>
                       {n.type === "email" ? (
-                        <Mail className="text-blue-600 w-5 h-5" />
+                        <Mail className="text-green-600 w-5 h-5" />
                       ) : n.type === "completion" ? (
                         <CheckCircle className="text-green-500 w-5 h-5" />
                       ) : n.type === "status" ? (
-                        <AlertCircle className="text-orange-500 w-5 h-5" />
+                        <AlertCircle className="text-green-500 w-5 h-5" />
                       ) : (
-                        <Bell className="text-blue-500 w-5 h-5" />
+                        <Bell className="text-green-500 w-5 h-5" />
                       )}
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold text-gray-900 text-sm mb-1">
-                        {n.title}
-                      </h4>
+                      <div className="flex items-start justify-between mb-1">
+                        <h4 className="font-semibold text-gray-900 text-sm">
+                          {n.title}
+                        </h4>
+                        {!n.isRead && (
+                          <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
+                            <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                            New
+                          </span>
+                        )}
+                      </div>
                       <p className="text-gray-600 text-sm line-clamp-2">
                         {n.message}
                       </p>
@@ -257,7 +267,7 @@ export default function OrganizationNotifications() {
                         {n.link ? (
                           <a
                             href={n.link}
-                            className="ml-3 text-blue-600 hover:underline"
+                            className="ml-3 text-green-600 hover:text-green-700 hover:underline font-medium"
                           >
                             View
                           </a>

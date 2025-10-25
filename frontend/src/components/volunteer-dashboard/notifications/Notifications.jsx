@@ -13,10 +13,10 @@ export default function Notifications({ items = [], loading, onMarkAllRead, onMa
 
   const getNotificationIcon = (type) => {
     switch (type?.toLowerCase()) {
-      case 'success': return <CheckCircle size={16} className="text-green-500" />;
-      case 'warning': return <AlertCircle size={16} className="text-amber-500" />;
-      case 'error': return <AlertCircle size={16} className="text-red-500" />;
-      default: return <Info size={16} className="text-blue-500" />;
+      case 'success': return <CheckCircle size={18} className="text-green-500" />;
+      case 'warning': return <AlertCircle size={18} className="text-amber-500" />;
+      case 'error': return <AlertCircle size={18} className="text-red-500" />;
+      default: return <Info size={18} className="text-green-500" />; // Changed to green
     }
   };
 
@@ -24,16 +24,16 @@ export default function Notifications({ items = [], loading, onMarkAllRead, onMa
   const unreadCount = items.filter(n => !n.isRead).length;
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-5">
+    <div className="bg-white rounded-xl border border-green-200 shadow-sm p-5">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-            <Bell size={18} className="text-green-600" /> 
+            <Bell size={20} className="text-green-600" /> 
             Notifications
           </h3>
           {unreadCount > 0 && (
-            <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">
+            <span className="bg-green-500 text-white text-xs font-medium px-2.5 py-1 rounded-full shadow-sm">
               {unreadCount} new
             </span>
           )}
@@ -41,7 +41,7 @@ export default function Notifications({ items = [], loading, onMarkAllRead, onMa
         {items.length > 0 && (
           <button
             onClick={handleMarkAll}
-            className="text-sm text-gray-500 hover:text-green-600 transition font-medium"
+            className="text-sm text-green-600 hover:text-green-700 hover:bg-green-50 px-3 py-1.5 rounded-lg transition-all font-medium"
           >
             Mark all read
           </button>
@@ -53,11 +53,11 @@ export default function Notifications({ items = [], loading, onMarkAllRead, onMa
         <div className="space-y-3">
           {[...Array(3)].map((_, i) => (
             <div key={i} className="flex items-start gap-3 p-3 animate-pulse">
-              <div className="w-8 h-8 bg-gray-200 rounded-full mt-0.5"></div>
+              <div className="w-10 h-10 bg-green-100 rounded-full mt-0.5"></div>
               <div className="flex-1 space-y-2">
-                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                <div className="h-3 bg-gray-200 rounded w-full"></div>
-                <div className="h-2 bg-gray-200 rounded w-1/2"></div>
+                <div className="h-4 bg-green-100 rounded w-3/4"></div>
+                <div className="h-3 bg-green-100 rounded w-full"></div>
+                <div className="h-2 bg-green-100 rounded w-1/2"></div>
               </div>
             </div>
           ))}
@@ -73,35 +73,41 @@ export default function Notifications({ items = [], loading, onMarkAllRead, onMa
                 <div
                   key={n._id || i}
                   onClick={() => handleMarkRead(n._id)}
-                  className={`flex items-start gap-3 p-3 rounded-lg border transition-all duration-200 cursor-pointer group ${
+                  className={`flex items-start gap-3 p-4 rounded-xl border-2 transition-all duration-200 cursor-pointer group ${
                     n.isRead 
-                      ? "bg-white border-gray-200 hover:border-green-300" 
-                      : "bg-green-50 border-green-200 hover:border-green-400"
+                      ? "bg-white border-green-100 hover:border-green-300 hover:bg-green-50" 
+                      : "bg-green-50 border-green-300 hover:border-green-400 hover:bg-green-100"
                   }`}
                 >
                   {/* Icon */}
-                  <div className={`flex-shrink-0 mt-0.5 ${
-                    n.isRead ? "text-gray-400" : "text-green-500"
+                  <div className={`flex-shrink-0 p-2 rounded-lg ${
+                    n.isRead 
+                      ? "bg-green-100 text-green-600" 
+                      : "bg-green-200 text-green-700"
                   }`}>
                     {getNotificationIcon(n.type)}
                   </div>
 
                   {/* Content */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <p className={`text-sm font-medium ${
-                        n.isRead ? "text-gray-700" : "text-gray-900"
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <p className={`text-sm font-semibold ${
+                        n.isRead ? "text-gray-700" : "text-green-900"
                       }`}>
                         {n.title}
                       </p>
                       {!n.isRead && (
-                        <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0 mt-1.5"></div>
+                        <div className="w-3 h-3 bg-green-500 rounded-full flex-shrink-0 mt-1 shadow-sm"></div>
                       )}
                     </div>
-                    <p className="text-sm text-gray-600 mt-1 leading-relaxed">
+                    <p className={`text-sm leading-relaxed ${
+                      n.isRead ? "text-gray-600" : "text-gray-700"
+                    }`}>
                       {n.message}
                     </p>
-                    <p className="text-xs text-gray-400 mt-2">
+                    <p className={`text-xs mt-2 ${
+                      n.isRead ? "text-gray-400" : "text-green-600 font-medium"
+                    }`}>
                       {n.createdAt
                         ? formatDistanceToNow(new Date(n.createdAt), { addSuffix: true })
                         : "Just now"}
@@ -111,8 +117,10 @@ export default function Notifications({ items = [], loading, onMarkAllRead, onMa
               ))}
             </>
           ) : (
-            <div className="text-center py-6">
-              <Bell size={32} className="mx-auto mb-2 text-gray-300" />
+            <div className="text-center py-8">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Bell size={24} className="text-green-400" />
+              </div>
               <p className="text-sm text-gray-500 font-medium">You're all caught up</p>
               <p className="text-xs text-gray-400 mt-1">No new notifications</p>
             </div>
@@ -120,16 +128,16 @@ export default function Notifications({ items = [], loading, onMarkAllRead, onMa
 
           {/* View All Footer */}
           {items.length > maxItems && (
-            <div className="pt-3 border-t border-gray-200">
+            <div className="pt-4 border-t border-green-100">
               <div className="flex items-center justify-between">
                 <p className="text-xs text-gray-500">
                   Showing {displayItems.length} of {items.length}
                 </p>
                 <button 
                   onClick={() => window.location.href = '/volunteer/notifications'}
-                  className="flex items-center gap-1 text-xs text-green-600 hover:text-green-700 font-medium px-3 py-1.5 rounded-md hover:bg-green-50 transition-colors border border-green-200 hover:border-green-300"
+                  className="flex items-center gap-2 text-xs text-green-600 hover:text-green-700 font-medium px-4 py-2 rounded-lg hover:bg-green-50 transition-all border border-green-200 hover:border-green-300 shadow-sm"
                 >
-                  View All <ExternalLink size={12} />
+                  View All <ExternalLink size={14} />
                 </button>
               </div>
             </div>

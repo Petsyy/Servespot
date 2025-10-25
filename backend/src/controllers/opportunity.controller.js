@@ -263,11 +263,6 @@ export const getAllOpportunities = async (req, res) => {
     // Show only opportunities that are NOT completed or closed
     const filter = { status: { $nin: ["Completed", "Closed"] } };
 
-    // Optionally exclude those the volunteer already joined
-    if (userId) {
-      filter.volunteers = { $ne: userId };
-    }
-
     const opportunities = await Opportunity.find(filter)
       .populate("organization", "orgName") // Only get orgName field
       .select(
@@ -424,6 +419,30 @@ export const getOpportunityVolunteers = async (req, res) => {
   } catch (err) {
     console.error("Error fetching volunteers for opportunity:", err);
     res.status(500).json({ message: "Failed to load volunteers" });
+  }
+};
+
+// ✅ Get specific opportunity by ID (for volunteer view modal)
+export const getOpportunityById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const opportunity = await Opportunity.findById(id)
+      .populate("organization", "orgName email")
+      .populate("completionProofs.volunteer", "fullName email")
+      .lean();
+
+    if (!opportunity) {
+      return res.status(404).json({ message: "Opportunity not found" });
+    }
+
+    return res.status(200).json(opportunity);
+  } catch (err) {
+    console.error("❌ Error fetching opportunity by ID:", err);
+    return res.status(500).json({
+      message: "Failed to load opportunity details",
+      error: err.message,
+    });
   }
 };
 

@@ -137,11 +137,11 @@ export default function EditOpportunityModal({
 
         {/* Header */}
         <div className="mb-6">
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-orange-500 text-transparent bg-clip-text">
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 text-transparent bg-clip-text">
             Edit Opportunity
           </h2>
           <p className="text-gray-600 mt-1">
-            Update the details below and click “Save Changes.”
+            Update the details below and click "Save Changes."
           </p>
         </div>
 
@@ -158,7 +158,7 @@ export default function EditOpportunityModal({
               </label>
               <input
                 type="text"
-                className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-500 outline-none"
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
                 required
@@ -172,7 +172,7 @@ export default function EditOpportunityModal({
               </label>
               <textarea
                 rows={3}
-                className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-500 outline-none"
                 value={form.description}
                 onChange={(e) =>
                   setForm({ ...form, description: e.target.value })
@@ -189,7 +189,7 @@ export default function EditOpportunityModal({
                 </label>
                 <input
                   type="date"
-                  className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-500 outline-none"
                   value={form.date}
                   onChange={(e) => setForm({ ...form, date: e.target.value })}
                 />
@@ -200,7 +200,7 @@ export default function EditOpportunityModal({
                 </label>
                 <input
                   type="text"
-                  className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-500 outline-none"
                   value={form.duration}
                   onChange={(e) =>
                     setForm({ ...form, duration: e.target.value })
@@ -216,7 +216,7 @@ export default function EditOpportunityModal({
               </label>
               <input
                 type="text"
-                className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-500 outline-none"
                 value={form.location}
                 onChange={(e) => setForm({ ...form, location: e.target.value })}
               />
@@ -247,7 +247,7 @@ export default function EditOpportunityModal({
               <input
                 type="number"
                 min="1"
-                className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-green-500 outline-none"
                 value={form.volunteersNeeded}
                 onChange={(e) =>
                   setForm({
@@ -271,7 +271,7 @@ export default function EditOpportunityModal({
               <button
                 type="submit"
                 disabled={saving}
-                className="px-6 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-sm hover:shadow-md transition-all duration-200 disabled:opacity-60"
+                className="px-6 py-2.5 rounded-lg bg-green-600 hover:bg-green-700 text-white font-semibold shadow-sm hover:shadow-md transition-all duration-200 disabled:opacity-60"
               >
                 {saving ? "Saving..." : "Save Changes"}
               </button>

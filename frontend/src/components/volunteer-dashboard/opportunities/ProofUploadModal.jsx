@@ -1,11 +1,15 @@
 import React, { useState } from "react";
-import { X, UploadCloud, CheckCircle, AlertCircle } from "lucide-react";
+import { X, UploadCloud, CheckCircle } from "lucide-react";
 import { toast } from "react-toastify";
 import axios from "axios";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000";
 
-export default function ProofUploadModal({ opportunityId, onClose, onProofSubmitted }) {
+export default function ProofUploadModal({
+  opportunityId,
+  onClose,
+  onProofSubmitted,
+}) {
   const [file, setFile] = useState(null);
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -20,20 +24,21 @@ export default function ProofUploadModal({ opportunityId, onClose, onProofSubmit
       formData.append("file", file);
       formData.append("message", message);
 
-      const token = localStorage.getItem("volToken"); // assuming token from login
+      const token = localStorage.getItem("volToken");
 
-      const res = await axios.post(`${API_BASE}/api/opportunities/${opportunityId}/proof`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const res = await axios.post(
+        `${API_BASE}/api/opportunities/${opportunityId}/proof`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       toast.success(res.data.message || "Proof submitted!");
-      // Trigger parent component to refresh proof status
-      if (onProofSubmitted) {
-        onProofSubmitted();
-      }
+      if (onProofSubmitted) onProofSubmitted();
       onClose();
     } catch (err) {
       console.error("❌ Proof upload failed:", err);
@@ -44,8 +49,8 @@ export default function ProofUploadModal({ opportunityId, onClose, onProofSubmit
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
-      <div className="bg-white rounded-2xl shadow-lg w-full max-w-md p-6 relative">
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50 animate-fadeIn">
+      <div className="bg-white rounded-2xl shadow-lg w-full max-w-md p-6 relative animate-slideUp">
         <button
           onClick={onClose}
           className="absolute right-4 top-4 text-gray-400 hover:text-gray-700"
@@ -61,19 +66,20 @@ export default function ProofUploadModal({ opportunityId, onClose, onProofSubmit
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* File Upload */}
           <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
             <label className="cursor-pointer">
               <input
                 type="file"
-                accept="image/*"
+                accept="image/*,application/pdf"
                 className="hidden"
                 onChange={(e) => setFile(e.target.files[0])}
               />
-              <UploadCloud size={32} className="mx-auto text-blue-500 mb-2" />
+              <UploadCloud size={32} className="mx-auto text-green-600 mb-2" />
               <p className="text-sm text-gray-600">
                 {file ? (
-                  <span className="font-medium text-green-600">{file.name}</span>
+                  <span className="font-medium text-green-700">
+                    {file.name}
+                  </span>
                 ) : (
                   "Click to upload or drag file here"
                 )}
@@ -81,7 +87,6 @@ export default function ProofUploadModal({ opportunityId, onClose, onProofSubmit
             </label>
           </div>
 
-          {/* Message */}
           <textarea
             placeholder="Add a note (optional)"
             className="w-full border border-gray-300 rounded-lg p-2 text-sm resize-none"
@@ -90,7 +95,6 @@ export default function ProofUploadModal({ opportunityId, onClose, onProofSubmit
             onChange={(e) => setMessage(e.target.value)}
           />
 
-          {/* Buttons */}
           <div className="flex justify-end gap-2">
             <button
               type="button"

@@ -133,14 +133,6 @@ export default function PostedOpportunities() {
                   Manage and track all volunteer opportunities posted by your organization
                 </p>
               </div>
-              
-              <button
-                onClick={() => navigate("/organization/dashboard")}
-                className="flex items-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors shadow-sm hover:shadow-md"
-              >
-                
-                <span>Go to dashboard</span>
-              </button>
             </div>
           </div>
 

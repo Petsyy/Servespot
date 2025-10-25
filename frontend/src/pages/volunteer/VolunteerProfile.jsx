@@ -199,7 +199,7 @@ export default function VolunteerProfile() {
             <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6 shadow-sm">
               <div className="flex items-start gap-6">
                 {/* Avatar */}
-                <div className="w-20 h-20 flex items-center justify-center rounded-full bg-gradient-to-br from-green-100 to-emerald-100 text-green-700 text-xl font-bold shadow-md">
+                <div className="w-20 h-20 flex items-center justify-center rounded-full bg-gradient-to-r from-green-500 to-emerald-500 text-white text-2xl font-bold shadow-md">
                   {initials}
                 </div>
 

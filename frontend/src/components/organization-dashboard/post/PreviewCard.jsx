@@ -53,25 +53,25 @@ export default function PreviewCard({
         <div className="space-y-2 text-sm text-gray-700">
           {formattedDate && (
             <div className="flex items-center gap-2">
-              <Calendar size={16} className="text-blue-600 shrink-0" />
+              <Calendar size={16} className="text-green-600 shrink-0" />
               <span>{formattedDate}</span>
             </div>
           )}
           {duration && (
             <div className="flex items-center gap-2">
-              <Clock size={16} className="text-blue-600 shrink-0" />
+              <Clock size={16} className="text-green-600 shrink-0" />
               <span>{duration}</span>
             </div>
           )}
           {location && (
             <div className="flex items-center gap-2">
-              <MapPin size={16} className="text-blue-600 shrink-0" />
+              <MapPin size={16} className="text-green-600 shrink-0" />
               <span>{location}</span>
             </div>
           )}
           {volunteersNeeded !== undefined && (
             <div className="flex items-center gap-2">
-              <UsersIcon size={16} className="text-blue-600 shrink-0" />
+              <UsersIcon size={16} className="text-green-600 shrink-0" />
               <span>
                 {volunteersNeeded === 1
                   ? "1 volunteer needed"
@@ -91,7 +91,7 @@ export default function PreviewCard({
               {skills.map((s) => (
                 <span
                   key={s}
-                  className="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-700 border border-gray-200"
+                  className="text-xs px-3 py-1 rounded-full bg-green-50 text-green-700 border border-green-200"
                 >
                   {s}
                 </span>

@@ -1,19 +1,19 @@
 import React from "react";
 
-export default function StatCard({ icon, title, value, delta, color = "blue" }) {
+export default function StatCard({ icon, title, value, delta, color = "green" }) {
   // 🎨 Define gradient themes per color
   const getGradient = (color) => {
     switch (color) {
       case "green":
-        return "linear-gradient(135deg, #22c55e, #86efac)";
-      case "blue":
-        return "linear-gradient(135deg, #3b82f6, #60a5fa)";
-      case "purple":
-        return "linear-gradient(135deg, #6366f1, #a5b4fc)";
-      case "orange":
-        return "linear-gradient(135deg, #f97316, #fb923c)";
+        return "linear-gradient(135deg, #22c55e, #16a34a)";
+      case "emerald":
+        return "linear-gradient(135deg, #10b981, #059669)";
+      case "teal":
+        return "linear-gradient(135deg, #14b8a6, #0d9488)";
+      case "lime":
+        return "linear-gradient(135deg, #84cc16, #65a30d)";
       default:
-        return "linear-gradient(135deg, #3b82f6, #60a5fa)";
+        return "linear-gradient(135deg, #22c55e, #16a34a)";
     }
   };
 

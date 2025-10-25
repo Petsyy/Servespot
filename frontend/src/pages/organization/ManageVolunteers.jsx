@@ -85,7 +85,7 @@ export default function ManageVolunteers() {
       case "Pending":
         return "bg-amber-50 text-amber-700 border-amber-200";
       case "Completed":
-        return "bg-blue-50 text-blue-700 border-blue-200";
+        return "bg-green-50 text-green-700 border-green-200";
       case "Rejected":
         return "bg-red-50 text-red-700 border-red-200";
       default:
@@ -173,7 +173,7 @@ export default function ManageVolunteers() {
                       placeholder="Search volunteers by name, email, or opportunity..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                      className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
                     />
                   </div>
                 </div>
@@ -187,7 +187,7 @@ export default function ManageVolunteers() {
                     <select
                       value={statusFilter}
                       onChange={(e) => setStatusFilter(e.target.value)}
-                      className="w-full md:w-40 appearance-none bg-white border border-gray-300 rounded-lg px-3 py-2.5 pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                      className="w-full md:w-40 appearance-none bg-white border border-gray-300 rounded-lg px-3 py-2.5 pr-8 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
                     >
                       <option>All Status</option>
                       <option>Approved</option>
@@ -208,7 +208,7 @@ export default function ManageVolunteers() {
                     <select
                       value={opportunityFilter}
                       onChange={(e) => setOpportunityFilter(e.target.value)}
-                      className="w-full md:w-48 appearance-none bg-white border border-gray-300 rounded-lg px-3 py-2.5 pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                      className="w-full md:w-48 appearance-none bg-white border border-gray-300 rounded-lg px-3 py-2.5 pr-8 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
                     >
                       <option>All Opportunities</option>
                       {opportunities.map((opp, index) => (
@@ -274,7 +274,7 @@ export default function ManageVolunteers() {
                         >
                           <td className="px-4 py-3">
                             <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-xs">
+                              <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center text-white font-semibold text-xs">
                                 {v.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                               </div>
                               <div className="font-medium text-gray-900 text-sm">
@@ -295,7 +295,7 @@ export default function ManageVolunteers() {
                             </div>
                           </td>
                           <td className="px-4 py-3">
-                            <div className="flex items-center gap-2 text-blue-600 font-medium text-sm">
+                            <div className="flex items-center gap-2 text-green-600 font-medium text-sm">
                               <Briefcase className="w-3 h-3" />
                               {v.opportunity}
                             </div>
@@ -319,7 +319,7 @@ export default function ManageVolunteers() {
                                 setSelectedVolunteer(v);
                                 setShowModal(true);
                               }}
-                              className="px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded-lg text-xs font-medium hover:bg-gray-50 hover:border-gray-400 flex items-center gap-1 transition-colors"
+                              className="px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded-lg text-xs font-medium hover:bg-green-50 hover:border-green-300 flex items-center gap-1 transition-colors"
                             >
                               <Eye className="w-3 h-3" />
                               View
@@ -343,7 +343,7 @@ export default function ManageVolunteers() {
               onClick={(e) => e.stopPropagation()}
             >
               {/* Modal Header */}
-              <div className="bg-blue-600 p-4 text-white">
+              <div className="bg-green-600 p-4 text-white">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
@@ -351,7 +351,7 @@ export default function ManageVolunteers() {
                     </div>
                     <div>
                       <h2 className="text-lg font-bold">{selectedVolunteer.name}</h2>
-                      <p className="text-blue-100 text-xs">Volunteer Profile</p>
+                      <p className="text-green-100 text-xs">Volunteer Profile</p>
                     </div>
                   </div>
                   <button
@@ -378,7 +378,7 @@ export default function ManageVolunteers() {
                 {/* Details Grid */}
                 <div className="grid grid-cols-1 gap-3">
                   <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <Mail className="w-4 h-4 text-blue-600" />
+                    <Mail className="w-4 h-4 text-green-600" />
                     <div>
                       <p className="text-xs text-gray-600">Email</p>
                       <p className="font-medium text-gray-900 text-sm">{selectedVolunteer.email}</p>
@@ -386,7 +386,7 @@ export default function ManageVolunteers() {
                   </div>
 
                   <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <Phone className="w-4 h-4 text-blue-600" />
+                    <Phone className="w-4 h-4 text-green-600" />
                     <div>
                       <p className="text-xs text-gray-600">Contact Number</p>
                       <p className="font-medium text-gray-900 text-sm">{selectedVolunteer.phone}</p>
@@ -394,7 +394,7 @@ export default function ManageVolunteers() {
                   </div>
 
                   <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <Briefcase className="w-4 h-4 text-blue-600" />
+                    <Briefcase className="w-4 h-4 text-green-600" />
                     <div>
                       <p className="text-xs text-gray-600">Opportunity</p>
                       <p className="font-medium text-gray-900 text-sm">{selectedVolunteer.opportunity}</p>
@@ -402,7 +402,7 @@ export default function ManageVolunteers() {
                   </div>
 
                   <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <Calendar className="w-4 h-4 text-blue-600" />
+                    <Calendar className="w-4 h-4 text-green-600" />
                     <div>
                       <p className="text-xs text-gray-600">Applied Date</p>
                       <p className="font-medium text-gray-900 text-sm">{selectedVolunteer.appliedDate}</p>
@@ -443,7 +443,7 @@ export default function ManageVolunteers() {
                     <button
                       onClick={() => handleAction("Completed")}
                       disabled={loadingAction}
-                      className="w-full px-3 py-2 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-1 transition-colors"
+                      className="w-full px-3 py-2 bg-green-600 text-white text-xs font-medium rounded-lg hover:bg-green-700 disabled:opacity-50 flex items-center justify-center gap-1 transition-colors"
                     >
                       {loadingAction ? (
                         <Loader2 className="w-3 h-3 animate-spin" />
