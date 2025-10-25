@@ -395,34 +395,36 @@ export default function VolunteerDashboard() {
     <div className="min-h-screen bg-gray-50 flex">
       <VolSidebar isOpen={sidebarOpen} onClose={closeSidebar} />
 
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0">
         <VolunteerNavbar
           onToggleSidebar={toggleSidebar}
           notifCount={notifications.filter((n) => !n.isRead).length}
           notifications={notifications}
         />
 
-        <main className="flex-1 p-6">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+        <main className="flex-1 p-4 sm:p-6">
+          {/* Header - Improved alignment */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <div className="text-center sm:text-left">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
                 Welcome back,{" "}
                 <span className="text-green-700 font-semibold">
                   {volunteerName}
                 </span>
                 !
               </h1>
-              <p className="text-gray-600">Ready to make a difference today?</p>
+              <p className="text-gray-600 text-sm sm:text-base mt-1">
+                Ready to make a difference today?
+              </p>
             </div>
           </div>
 
-          {/* Top metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+          {/* Top metrics - Improved grid alignment */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
             <MetricCard
               title="Total Points"
               value={overview?.points}
-              gradient="from-indigo-500 to-blue-500"
+              gradient="from-green-500 to-emerald-500"
               icon="trending"
               loading={loading}
             />
@@ -436,304 +438,291 @@ export default function VolunteerDashboard() {
             <MetricCard
               title="Badges Earned"
               value={overview?.badgesCount}
-              gradient="from-orange-400 to-amber-400"
+              gradient="from-amber-400 to-orange-400"
               icon="badge"
               loading={loading}
             />
           </div>
 
-          {/* Main grid */}
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-8">
-            <div className="xl:col-span-2 space-y-4">
-              {/* Tabs */}
-              <div className="flex space-x-2 border-b border-gray-200">
-                {[
-                  { id: "active", label: "Active Tasks" },
-                  { id: "completed", label: "Completed Tasks" },
-                  { id: "badges", label: "Badges & Points" },
-                ].map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`px-4 py-2 text-sm font-medium rounded-t-lg ${
-                      activeTab === tab.id
-                        ? "bg-white border-x border-t border-gray-200 text-blue-600"
-                        : "text-gray-600 hover:text-gray-800"
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
+          {/* Main grid - Improved responsive layout */}
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            {/* Left Column - Main Content */}
+            <div className="xl:col-span-2 space-y-6">
+              {/* Tabs - Improved alignment */}
+              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                <div className="flex space-x-1 p-2 border-b border-gray-200 bg-gray-50">
+                  {[
+                    { id: "active", label: "Active Tasks" },
+                    { id: "completed", label: "Completed Tasks" },
+                    { id: "badges", label: "Badges & Points" },
+                  ].map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`flex-1 px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+                        activeTab === tab.id
+                          ? "bg-white text-green-600 shadow-sm border border-gray-200"
+                          : "text-gray-600 hover:text-gray-800 hover:bg-gray-100"
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
 
-              <div className="rounded-xl border border-gray-200 p-4 bg-white mt-2 space-y-4">
-                {/* ✅ Active Tasks */}
-                {activeTab === "active" && (
-                  <>
-                    {!loading && tasks.active.length === 0 && (
-                      <div className="flex items-start gap-3 p-5 border border-blue-100 bg-blue-50/40 rounded-xl shadow-sm">
-                        {/* Icon */}
-                        <div className="flex-shrink-0 mt-0.5">
-                          <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                            <Info size={18} className="text-blue-600" />
+                <div className="p-4 sm:p-6">
+                  {/* ✅ Active Tasks */}
+                  {activeTab === "active" && (
+                    <div className="space-y-4">
+                      {!loading && tasks.active.length === 0 && (
+                        <div className="flex items-start gap-3 p-4 border border-green-100 bg-green-50 rounded-xl">
+                          <div className="flex-shrink-0">
+                            <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                              <Info size={18} className="text-green-600" />
+                            </div>
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold text-gray-800">
+                              You haven't joined any active opportunities yet
+                            </p>
+                            <p className="text-sm text-gray-600 mt-1">
+                              Join an opportunity from the{" "}
+                              <span className="font-medium text-green-600">
+                                Browse
+                              </span>{" "}
+                              page to see it here.
+                            </p>
                           </div>
                         </div>
+                      )}
+                      {loading && (
+                        <div className="h-24 bg-gray-100 rounded animate-pulse" />
+                      )}
 
-                        {/* Message */}
-                        <div>
-                          <p className="text-sm sm:text-base font-semibold text-gray-800">
-                            You haven’t joined any active opportunities yet
+                      {tasks.active.map((t) => (
+                        <div
+                          key={t._id}
+                          className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-all bg-white"
+                        >
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+                            <h3 className="text-lg font-semibold text-gray-900">
+                              {t.title}
+                            </h3>
+                            <span
+                              className={`px-3 py-1 text-xs font-medium rounded-full self-start sm:self-auto ${
+                                t.status === "Open"
+                                  ? "bg-green-100 text-green-700"
+                                  : t.status === "In Progress"
+                                    ? "bg-orange-100 text-orange-700"
+                                    : "bg-gray-100 text-gray-600"
+                              }`}
+                            >
+                              {t.status}
+                            </span>
+                          </div>
+
+                          <p className="text-sm text-gray-700 mb-3">
+                            <span className="font-medium">Organization:</span>{" "}
+                            {t.organization?.orgName || "Community Partner"}
                           </p>
-                          <p className="text-sm text-gray-600 mt-1">
-                            Join an opportunity from the{" "}
-                            <span className="font-medium text-blue-600">
-                              Browse
-                            </span>{" "}
-                            page to see it here.
+
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-4 text-sm text-gray-600 mb-4">
+                            {t.date && (
+                              <span className="flex items-center gap-2">
+                                <Calendar size={16} className="text-green-600" />
+                                {new Date(t.date).toLocaleDateString()}
+                              </span>
+                            )}
+                            {t.duration && (
+                              <span className="flex items-center gap-2">
+                                <Clock size={16} className="text-green-600" />
+                                {t.duration}
+                              </span>
+                            )}
+                            {t.location && (
+                              <span className="flex items-center gap-2">
+                                <MapPin size={16} className="text-green-600" />
+                                {t.location}
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="flex flex-wrap gap-2">
+                            <button
+                              onClick={() =>
+                                navigate(`/volunteer/opportunity/${t._id}`)
+                              }
+                              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-green-700 bg-green-100 hover:bg-green-200 rounded-lg transition flex-1 sm:flex-none justify-center"
+                            >
+                              <Eye size={16} /> View
+                            </button>
+                            <button
+                              onClick={() => handleSubmitProof(t._id)}
+                              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-orange-700 bg-orange-100 hover:bg-orange-200 rounded-lg transition flex-1 sm:flex-none justify-center"
+                            >
+                              <UploadCloud size={16} /> Submit Proof
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Completed Tasks */}
+                  {activeTab === "completed" && (
+                    <div className="space-y-4">
+                      {!loading && tasks.completed.length === 0 && (
+                        <div className="flex items-start gap-3 p-4 border border-amber-100 bg-amber-50 rounded-xl">
+                          <div className="flex-shrink-0">
+                            <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center">
+                              <Trophy size={18} className="text-amber-600" />
+                            </div>
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold text-gray-800">
+                              You haven't completed any tasks yet
+                            </p>
+                            <p className="text-sm text-gray-600 mt-1">
+                              Keep going! Once you finish your first activity, it
+                              will appear here with your earned points and badges.
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                      {loading && (
+                        <div className="h-24 bg-gray-100 rounded animate-pulse" />
+                      )}
+
+                      {tasks.completed.map((t) => (
+                        <div
+                          key={t._id}
+                          className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-all bg-white"
+                        >
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+                            <h3 className="text-lg font-semibold text-gray-900">
+                              {t.title}
+                            </h3>
+                            <span className="px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700 self-start sm:self-auto">
+                              Completed
+                            </span>
+                          </div>
+
+                          <p className="text-sm text-gray-700 mb-3">
+                            <span className="font-medium">Organization:</span>{" "}
+                            {t.organization?.orgName || "Community Partner"}
                           </p>
-                        </div>
-                      </div>
-                    )}
-                    {loading && (
-                      <div className="h-24 bg-gray-100 rounded animate-pulse" />
-                    )}
 
-                    {tasks.active.map((t) => (
-                      <div
-                        key={t._id}
-                        className="border border-gray-200 rounded-xl shadow-sm p-5 hover:shadow-md transition"
-                      >
-                        <div className="flex items-center justify-between mb-1">
-                          <h3 className="text-lg font-semibold text-gray-900">
-                            {t.title}
-                          </h3>
-                          <span
-                            className={`px-3 py-1 text-xs font-medium rounded-full ${
-                              t.status === "Open"
-                                ? "bg-green-100 text-green-700"
-                                : t.status === "In Progress"
-                                  ? "bg-orange-100 text-orange-700"
-                                  : "bg-gray-100 text-gray-600"
-                            }`}
-                          >
-                            {t.status}
-                          </span>
-                        </div>
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-4 text-sm text-gray-600 mb-4 font-medium">
+                            {t.date && (
+                              <span className="flex items-center gap-2">
+                                <Calendar size={16} className="text-green-600" />
+                                {new Date(t.date).toLocaleDateString()}
+                              </span>
+                            )}
+                            {t.duration && (
+                              <span className="flex items-center gap-2">
+                                <Clock size={16} className="text-green-600" />
+                                {t.duration}
+                              </span>
+                            )}
+                            {t.location && (
+                              <span className="flex items-center gap-2">
+                                <MapPin size={16} className="text-green-600" />
+                                {t.location}
+                              </span>
+                            )}
+                          </div>
 
-                        <p className="text-sm text-gray-700 mb-3">
-                          <span className="font-medium">Organization:</span>{" "}
-                          {t.organization?.orgName || "Community Partner"}
-                        </p>
-
-                        <div className="flex flex-wrap items-center gap-x-6 text-sm text-gray-600 mb-4">
-                          {t.date && (
-                            <span className="flex items-center gap-1">
-                              <Calendar size={16} className="text-blue-600" />{" "}
-                              {new Date(t.date).toLocaleDateString()}
-                            </span>
-                          )}
-                          {t.duration && (
-                            <span className="flex items-center gap-1">
-                              <Clock size={16} className="text-blue-600" />{" "}
-                              {t.duration}
-                            </span>
-                          )}
-                          {t.location && (
-                            <span className="flex items-center gap-1">
-                              <MapPin size={16} className="text-blue-600" />{" "}
-                              {t.location}
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="flex flex-wrap gap-2 mt-2">
                           <button
                             onClick={() =>
                               navigate(`/volunteer/opportunity/${t._id}`)
                             }
-                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-700 bg-blue-100 hover:bg-blue-200 rounded-md transition"
+                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-green-700 bg-green-100 hover:bg-green-200 rounded-lg transition w-full justify-center sm:w-auto"
                           >
-                            <Eye size={16} /> View
-                          </button>
-                          <button
-                            onClick={() => handleSubmitProof(t._id)}
-                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-orange-700 bg-orange-100 hover:bg-orange-200 rounded-md transition"
-                          >
-                            <UploadCloud size={16} /> Submit Proof
+                            <Eye size={16} /> View Proof
                           </button>
                         </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* 🏅 Badges & Points Tab */}
+                  {activeTab === "badges" && (
+                    <div className="space-y-6">
+                      <div className="text-center sm:text-left">
+                        <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2 justify-center sm:justify-start">
+                          <Medal size={22} className="text-green-600" />
+                          Your Achievements
+                        </h3>
                       </div>
-                    ))}
-                  </>
-                )}
-                {/* Completed Tasks */}
-                {activeTab === "completed" && (
-                  <>
-                    {!loading && tasks.completed.length === 0 && (
-                      <div className="flex items-start gap-3 p-5 border border-yellow-100 bg-yellow-50/50 rounded-xl shadow-sm">
-                        {/* Icon */}
-                        <div className="flex-shrink-0 mt-0.5">
-                          <div className="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center">
-                            <Trophy size={18} className="text-yellow-600" />
+
+                      {/* Summary Cards */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl p-4 text-center shadow-md">
+                          <p className="text-sm opacity-90">Total Points</p>
+                          <p className="text-3xl font-bold mt-1">
+                            {overview?.points || 0}
+                          </p>
+                        </div>
+                        <div className="bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-xl p-4 text-center shadow-md">
+                          <p className="text-sm opacity-90">Completed Tasks</p>
+                          <p className="text-3xl font-bold mt-1">
+                            {overview?.completedTasks || 0}
+                          </p>
+                        </div>
+                        <div className="bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-xl p-4 text-center shadow-md">
+                          <p className="text-sm opacity-90">Badges Earned</p>
+                          <p className="text-3xl font-bold mt-1">
+                            {overview?.badgesCount || badges?.length || 0}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Earned Badges Section */}
+                      <div>
+                        <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2 justify-center sm:justify-start">
+                          <Award size={22} className="text-amber-500" />
+                          Earned Badges
+                        </h4>
+
+                        {badges.length === 0 ? (
+                          <div className="bg-gray-50 border border-dashed border-gray-300 rounded-xl p-6 text-center">
+                            <p className="text-gray-600 italic">
+                              You haven't earned any badges yet.
+                            </p>
+                            <p className="text-sm text-gray-500 mt-1">
+                              Complete more volunteering opportunities to earn
+                              your first one!
+                            </p>
                           </div>
-                        </div>
-
-                        {/* Message */}
-                        <div>
-                          <p className="text-sm sm:text-base font-semibold text-gray-800">
-                            You haven’t completed any tasks yet
-                          </p>
-                          <p className="text-sm text-gray-600 mt-1">
-                            Keep going! Once you finish your first activity, it
-                            will appear here with your earned points and badges.
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                    {loading && (
-                      <div className="h-24 bg-gray-100 rounded animate-pulse" />
-                    )}
-
-                    {tasks.completed.map((t) => (
-                      <div
-                        key={t._id}
-                        className="border border-gray-200 rounded-xl shadow-sm p-5 hover:shadow-md transition"
-                      >
-                        <div className="flex items-center justify-between mb-1">
-                          <h3 className="text-lg font-semibold text-gray-900">
-                            {t.title}
-                          </h3>
-                          <span className="px-3 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
-                            Completed
-                          </span>
-                        </div>
-
-                        <p className="text-sm text-gray-700 mb-3">
-                          <span className="font-medium">Organization:</span>{" "}
-                          {t.organization?.orgName || "Community Partner"}
-                        </p>
-
-                        <div className="flex flex-wrap items-center gap-x-6 text-sm text-gray-600 mb-4 font-semibold">
-                          {t.date && (
-                            <span className="flex items-center gap-1">
-                              <Calendar size={16} className="text-blue-600" />{" "}
-                              {new Date(t.date).toLocaleDateString()}
-                            </span>
-                          )}
-                          {t.duration && (
-                            <span className="flex items-center gap-1">
-                              <Clock size={16} className="text-blue-600" />{" "}
-                              {t.duration}
-                            </span>
-                          )}
-                          {t.location && (
-                            <span className="flex items-center gap-1">
-                              <MapPin size={16} className="text-blue-600" />{" "}
-                              {t.location}
-                            </span>
-                          )}
-                        </div>
-
-                        <button
-                          onClick={() =>
-                            navigate(`/volunteer/opportunity/${t._id}`)
-                          }
-                          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-700 bg-blue-100 hover:bg-blue-200 rounded-md transition"
-                        >
-                          <Eye size={16} /> View Proof
-                        </button>
-                      </div>
-                    ))}
-                  </>
-                )}
-
-                {/* 🏅 Badges & Points Tab */}
-                {activeTab === "badges" && (
-                  <div className="space-y-8">
-                    {/* Header */}
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                        <Medal size={22} className="text-blue-600" />
-                        Your Achievements
-                      </h3>
-                    </div>
-
-                    {/* Summary Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="bg-gradient-to-r from-indigo-500 to-blue-500 text-white rounded-2xl p-5 shadow-md text-center">
-                        <p className="text-sm opacity-90">Total Points</p>
-                        <p className="text-4xl font-extrabold mt-1">
-                          {overview?.points || 0}
-                        </p>
-                      </div>
-
-                      <div className="bg-gradient-to-r from-orange-400 to-amber-500 text-white rounded-2xl p-5 shadow-md text-center">
-                        <p className="text-sm opacity-90">Completed Tasks</p>
-                        <p className="text-4xl font-extrabold mt-1">
-                          {overview?.completedTasks || 0}
-                        </p>
-                      </div>
-
-                      <div className="bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-2xl p-5 shadow-md text-center">
-                        <p className="text-sm opacity-90">Badges Earned</p>
-                        <p className="text-4xl font-extrabold mt-1">
-                          {overview?.badgesCount || badges?.length || 0}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Earned Badges Section */}
-                    <div>
-                      <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                        <Award size={22} className="text-amber-500" />
-                        Earned Badges
-                      </h4>
-
-                      {badges.length === 0 ? (
-                        <div className="bg-gray-50 border border-dashed border-gray-300 rounded-xl p-8 text-center">
-                          <p className="text-gray-600 italic">
-                            You haven’t earned any badges yet.
-                          </p>
-                          <p className="text-sm text-gray-500 mt-1">
-                            Complete more volunteering opportunities to earn
-                            your first one!
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-                          {badges.map((b) => (
-                            <div
-                              key={b._id || b.name}
-                              className="flex flex-col items-center justify-center p-5 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md transition"
-                            >
-                              <div className="text-4xl mb-2">
-                                {b.icon || "🏅"}
+                        ) : (
+                          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                            {badges.map((b) => (
+                              <div
+                                key={b._id || b.name}
+                                className="flex flex-col items-center justify-center p-4 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md transition text-center"
+                              >
+                                <div className="text-3xl mb-2">
+                                  {b.icon || "🏅"}
+                                </div>
+                                <p className="font-semibold text-gray-900 text-sm">
+                                  {b.name}
+                                </p>
+                                <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                                  {b.description}
+                                </p>
                               </div>
-                              <p className="font-semibold text-gray-900 text-center">
-                                {b.name}
-                              </p>
-                              <p className="text-xs text-gray-600 text-center mt-1">
-                                {b.description}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Recent Activity */}
-              <div className="bg-white rounded-xl shadow-sm p-5">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  Recent Activity
-                </h3>
-                <ul className="divide-y divide-gray-100"></ul>
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* Sidebar widgets */}
+            {/* Right Column - Sidebar widgets */}
             <div className="space-y-6">
               <Notifications
                 items={notifications}
@@ -746,12 +735,6 @@ export default function VolunteerDashboard() {
                 onMarkRead={markNotificationRead}
                 maxItems={3}
               />
-              {/* Debug: Log what we're passing to Notifications (remove in production) */}
-              {/* {console.log(`📊 Dashboard passing to Notifications:`, {
-                notificationsCount: notifications.length,
-                maxItems: 3,
-                notifications: notifications.slice(0, 5).map(n => ({ id: n._id, title: n.title }))
-              })} */}
 
               <ProgressCard progress={progress} loading={loading} />
               <RecentBadges badges={badges} loading={loading} />

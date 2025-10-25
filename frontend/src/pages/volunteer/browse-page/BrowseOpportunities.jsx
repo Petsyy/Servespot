@@ -14,22 +14,15 @@ export default function BrowseOpportunities() {
   const [skillFilter, setSkillFilter] = useState("");
   const [dateFilter, setDateFilter] = useState("");
 
-  // Toggle sidebar function
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
-
-  // Close sidebar function
-  const closeSidebar = () => {
-    setSidebarOpen(false);
-  };
+  const toggleSidebar = () => setSidebarOpen((s) => !s);
+  const closeSidebar = () => setSidebarOpen(false);
 
   useEffect(() => {
     (async () => {
       try {
         const res = await getAllOpportunities();
-        console.log("Fetched opportunities:", res.data);
-        setOpportunities(res.data || []);
+        const list = Array.isArray(res?.data) ? res.data : [];
+        setOpportunities(list);
       } catch (err) {
         console.error("❌ Failed to load opportunities:", err);
       } finally {
@@ -38,21 +31,40 @@ export default function BrowseOpportunities() {
     })();
   }, []);
 
-  // 🔎 Combined search + filter logic
+  // Helper: normalize to "YYYY-MM-DD" for reliable comparisons
+  const toYMD = (d) => {
+    if (!d) return "";
+    const dt = new Date(d);
+    return isNaN(dt) ? "" : dt.toISOString().slice(0, 10);
+  };
+
+  // 🔎 Combined search + filter logic (null-safe)
   const filtered = opportunities.filter((o) => {
-    const title = o.title?.toLowerCase() || "";
-    const org =
-      typeof o.organization === "object"
-        ? o.organization.orgName?.toLowerCase() || ""
-        : o.organization?.toLowerCase() || "";
-    const location = o.location?.toLowerCase() || "";
-    const skills = o.skills?.map((s) => s.toLowerCase()) || [];
-    const date = o.date ? new Date(o.date).toLocaleDateString() : "";
+    const title = (o?.title ?? "").toString().toLowerCase();
+
+    // organization might be an object, string, null, or undefined
+    const orgNameRaw =
+      typeof o?.organization === "object" && o?.organization !== null
+        ? o?.organization?.orgName ??
+          o?.organization?.name ??
+          o?.organization?.title ??
+          ""
+        : o?.organization ?? "";
+
+    const org = orgNameRaw.toString().toLowerCase();
+
+    const location = (o?.location ?? "").toString().toLowerCase();
+
+    const skills = Array.isArray(o?.skills)
+      ? o.skills.map((s) => (s ?? "").toString().toLowerCase())
+      : [];
+
+    const dateYMD = toYMD(o?.date);
+
+    const q = search.toLowerCase();
 
     const matchesSearch =
-      title.includes(search.toLowerCase()) ||
-      org.includes(search.toLowerCase()) ||
-      location.includes(search.toLowerCase());
+      !q || title.includes(q) || org.includes(q) || location.includes(q);
 
     const matchesLocation = locationFilter
       ? location.includes(locationFilter.toLowerCase())
@@ -62,10 +74,7 @@ export default function BrowseOpportunities() {
       ? skills.some((s) => s.includes(skillFilter.toLowerCase()))
       : true;
 
-    const matchesDate = dateFilter
-      ? new Date(o.date).toLocaleDateString() ===
-        new Date(dateFilter).toLocaleDateString()
-      : true;
+    const matchesDate = dateFilter ? dateYMD === dateFilter : true;
 
     return matchesSearch && matchesLocation && matchesSkill && matchesDate;
   });
@@ -81,24 +90,17 @@ export default function BrowseOpportunities() {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar with responsive controls */}
-      <VolSidebar 
-        isOpen={sidebarOpen} 
-        onClose={closeSidebar} 
-      />
+      <VolSidebar isOpen={sidebarOpen} onClose={closeSidebar} />
 
       {/* Main Layout */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Navbar with sidebar toggle */}
-        <VolunteerNavbar 
-          onToggleSidebar={toggleSidebar}
-        />
+        <VolunteerNavbar onToggleSidebar={toggleSidebar} />
 
         <main className="flex-1 p-6">
           {/* Page Header */}
           <div className="mb-4">
-            <h1 className="text-2xl font-bold text-gray-900">
-              Opportunity Board
-            </h1>
+            <h1 className="text-2xl font-bold text-gray-900">Opportunity Board</h1>
             <p className="text-gray-600 text-sm">
               Browse and filter volunteer opportunities.
             </p>
@@ -178,10 +180,7 @@ export default function BrowseOpportunities() {
             {loading && (
               <>
                 {[1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className="h-48 bg-gray-100 rounded-lg animate-pulse w-72"
-                  />
+                  <div key={i} className="h-48 bg-gray-100 rounded-lg animate-pulse w-72" />
                 ))}
               </>
             )}
@@ -195,22 +194,18 @@ export default function BrowseOpportunities() {
             {!loading &&
               filtered.map((opp) => (
                 <OpportunityBoard
-                  key={opp._id}
-                  _id={opp._id}
-                  title={opp.title}
-                  description={opp.description}
-                  organization={opp.organization}
-                  location={opp.location}
-                  date={
-                    opp.date
-                      ? new Date(opp.date).toLocaleDateString()
-                      : "TBA"
-                  }
-                  duration={opp.duration}
-                  points={opp.points}
-                  status={opp.status}
-                  fileUrl={opp.fileUrl}
-                  skills={opp.skills}
+                  key={opp?._id}
+                  _id={opp?._id}
+                  title={opp?.title}
+                  description={opp?.description}
+                  organization={opp?.organization}
+                  location={opp?.location}
+                  date={opp?.date ? new Date(opp.date).toLocaleDateString() : "TBA"}
+                  duration={opp?.duration}
+                  points={opp?.points}
+                  status={opp?.status}
+                  fileUrl={opp?.fileUrl}
+                  skills={opp?.skills}
                 />
               ))}
           </div>

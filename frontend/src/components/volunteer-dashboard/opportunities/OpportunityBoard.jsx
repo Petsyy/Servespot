@@ -3,6 +3,8 @@ import {
   confirmJoin,
   successAlert,
   errorAlert,
+  cancelledAlert,
+  warningAlert,
 } from "@/utils/swalAlerts";
 import {
   Calendar,
@@ -247,8 +249,9 @@ export default function OpportunityBoard({
       );
     } catch (err) {
       console.error("Sign-up error:", err);
-      const msg = response?.message || "Failed to sign up.";
-      
+      const msg =
+        err?.response?.data?.message || err?.message || "Failed to sign up.";
+
       // Handle other errors
       await errorAlert("Sign-Up Failed", msg);
     } finally {
@@ -495,11 +498,21 @@ export default function OpportunityBoard({
         {/* Details Modal */}
         {showDetailsModal && (
           <div
-            className={`fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4 ${isClosingModal ? "animate-fadeOut" : "animate-fadeIn"}`}
-            onClick={handleCloseModal}
+            className={`fixed inset-0 z-50 flex items-center justify-center p-4 ${
+              isClosingModal ? "animate-fadeOut" : ""
+            }`}
           >
+            {/* Background overlay with blur + dim */}
             <div
-              className={`bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto ${isClosingModal ? "animate-slideDown" : "animate-slideUp"}`}
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300"
+              onClick={handleCloseModal}
+            ></div>
+
+            {/* Modal content */}
+            <div
+              className={`relative bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto ${
+                isClosingModal ? "animate-slideDown" : ""
+              }`}
               onClick={(e) => e.stopPropagation()}
             >
               <div className="p-6">

@@ -36,51 +36,51 @@ export const awardVolunteerRewards = async (volunteerId) => {
         points: 20,
       },
       {
-        count: 3,
+        count: 2,
         name: "Active Helper",
-        description: "Completed 3 volunteering tasks — consistency matters!",
+        description: "Completed 2 volunteering tasks — consistency matters!",
         icon: "💪",
         points: 30,
       },
       {
-        count: 5,
+        count: 3,
         name: "Helping Hand",
-        description: "Completed 5 volunteering tasks — you're making an impact!",
+        description: "Completed 3 volunteering tasks — you're making an impact!",
         icon: "🖐️",
         points: 50,
       },
       {
-        count: 10,
+        count: 4,
         name: "Community Hero",
-        description: "Completed 10 volunteering tasks — outstanding dedication!",
+        description: "Completed 4 volunteering tasks — outstanding dedication!",
         icon: "🏅",
         points: 100,
       },
       {
-        count: 15,
+        count: 5,
         name: "Neighborhood Legend",
-        description: "Completed 15 volunteering tasks — your passion inspires others!",
+        description: "Completed 5 volunteering tasks — your passion inspires others!",
         icon: "🔥",
         points: 150,
       },
       {
-        count: 25,
+        count: 6,
         name: "Volunteer Champion",
-        description: "Completed 25 volunteering tasks — a true force for good!",
+        description: "Completed 6 volunteering tasks — a true force for good!",
         icon: "🏆",
         points: 250,
       },
       {
-        count: 50,
+        count: 7,
         name: "Volunteer Master",
-        description: "Completed 50 volunteering tasks — you're a legend!",
+        description: "Completed 7 volunteering tasks — you're a legend!",
         icon: "👑",
         points: 500,
       },
       {
-        count: 100,
+        count: 8,
         name: "Volunteer Legend",
-        description: "Completed 100 volunteering tasks — you're an inspiration!",
+        description: "Completed 8 volunteering tasks — you're an inspiration!",
         icon: "🌟",
         points: 1000,
       },
@@ -143,11 +143,11 @@ export const awardVolunteerRewards = async (volunteerId) => {
  * Get volunteer's current level based on points
  */
 export const getVolunteerLevel = (points) => {
-  if (points >= 1000) return { level: "Legend", color: "purple", icon: "🌟" };
+  if (points >= 800) return { level: "Legend", color: "purple", icon: "🌟" };
   if (points >= 500) return { level: "Master", color: "gold", icon: "👑" };
-  if (points >= 250) return { level: "Champion", color: "blue", icon: "🏆" };
-  if (points >= 100) return { level: "Hero", color: "green", icon: "🏅" };
-  if (points >= 50) return { level: "Helper", color: "orange", icon: "💪" };
+  if (points >= 600) return { level: "Champion", color: "blue", icon: "🏆" };
+  if (points >= 400) return { level: "Hero", color: "green", icon: "🏅" };
+  if (points >= 200) return { level: "Helper", color: "orange", icon: "💪" };
   return { level: "Beginner", color: "gray", icon: "✨" };
 };
 
@@ -155,7 +155,7 @@ export const getVolunteerLevel = (points) => {
  * Calculate next milestone progress
  */
 export const getNextMilestone = (completedTasks) => {
-  const milestones = [1, 3, 5, 10, 15, 25, 50, 100];
+  const milestones = [1, 2, 3, 4, 5, 6, 7, 8];
   const nextMilestone = milestones.find(milestone => milestone > completedTasks);
   
   if (!nextMilestone) {
