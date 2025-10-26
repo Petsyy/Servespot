@@ -4,6 +4,7 @@ import Admin from "../models/Admin.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
+import { sendEmail } from "../utils/sendEmail.js";
 import { sendNotification } from "../utils/sendNotification.js";
 
 const generateToken = (id, role) => {
