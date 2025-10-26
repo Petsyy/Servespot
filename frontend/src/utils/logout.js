@@ -19,12 +19,12 @@ export function logout(role) {
     localStorage.removeItem("volUser");
     localStorage.removeItem("earnedBadges");
     localStorage.removeItem("earnedBadgeNames");
-    // 🚫 DO NOT remove shownBadgeIds — we want it permanent
+    // DO NOT remove shownBadgeIds — we want it permanent
     sessionStorage.removeItem("firstDashboardLoad");
     sessionStorage.removeItem("hasVisitedDashboard");
     sessionStorage.removeItem("hasShownBadgePopup");
 
-    console.log("✅ Volunteer logout: all data cleared except shownBadgeIds");
+    console.log("Volunteer logout: all data cleared except shownBadgeIds");
   }
 
   if (currentRole === "organization") {

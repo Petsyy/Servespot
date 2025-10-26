@@ -1,19 +1,19 @@
 import Opportunity from "../models/Opportunity.js";
 import Volunteer from "../models/Volunteer.js";
 
-// ✅ get volunteer profile + stats + total hours
+// get volunteer profile + stats + total hours
 export const getMyProfile = async (req, res) => {
   try {
     const vol = await Volunteer.findById(req.user.id).lean();
     if (!vol) return res.status(404).json({ message: "Volunteer not found" });
 
-    // 🕒 Fetch all completed opportunities for this volunteer
+    // Fetch all completed opportunities for this volunteer
     const completedOps = await Opportunity.find({
       "completionProofs.volunteer": req.user.id,
       status: "Completed",
     }).lean();
 
-    // ✅ Parse numeric hours from duration strings like "3", "3 hours", "2h", "1.5 hrs"
+    // Parse numeric hours from duration strings like "3", "3 hours", "2h", "1.5 hrs"
     const totalHours = completedOps.reduce((sum, opp) => {
       const match = String(opp.duration || "").match(/(\d+(\.\d+)?)/);
       const hours = match ? parseFloat(match[1]) : 0;

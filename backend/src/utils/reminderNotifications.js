@@ -66,7 +66,7 @@ export const sendUpcomingOpportunityReminders = async () => {
       }
     }
 
-    console.log("✅ Upcoming opportunity reminders sent successfully");
+    console.log("Upcoming opportunity reminders sent successfully");
     return { success: true, count: upcomingOpportunities.length };
   } catch (error) {
     console.error("❌ Error sending upcoming opportunity reminders:", error);

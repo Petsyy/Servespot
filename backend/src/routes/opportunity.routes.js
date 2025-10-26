@@ -2,7 +2,7 @@ import express from "express";
 import mongoose from "mongoose";
 import Opportunity from "../models/Opportunity.js";
 
-// ✅ Use the new separated upload logic
+// Use the new separated upload logic
 import { uploadImages } from "../middlewares/upload.middleware.js";
 import { verifyToken } from "../middlewares/auth.middleware.js";
 

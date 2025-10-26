@@ -13,7 +13,6 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { socket } from "@/utils/socket";
 import { getOrganizationProfile } from "@/services/organization.api";
 
-
 export default function OrganizationNavbar({
   onToggleSidebar,
   notifCount,
@@ -22,25 +21,18 @@ export default function OrganizationNavbar({
   const navigate = useNavigate();
   const [isConnected, setIsConnected] = useState(socket.connected);
 
-  const fallbackNotifs = [
-    {
-      id: 1,
-      title: "New Volunteer Application",
-      icon: <UserCircle size={16} />,
-    },
-    { id: 2, title: "Opportunity Approved" },
-  ];
-  const notifications = notificationsProp ?? fallbackNotifs;
+  // Remove fallback dummy notifications
+  const notifications = notificationsProp ?? [];
   const computedCount =
     typeof notifCount === "number" ? notifCount : notifications.length;
 
-    const [openNotif, setOpenNotif] = useState(false);
-    const [openProfile, setOpenProfile] = useState(false);
-    const notifRef = useRef(null);
-    const profileRef = useRef(null);
-    
-    useEffect(() => {
-      const onClick = (e) => {
+  const [openNotif, setOpenNotif] = useState(false);
+  const [openProfile, setOpenProfile] = useState(false);
+  const notifRef = useRef(null);
+  const profileRef = useRef(null);
+
+  useEffect(() => {
+    const onClick = (e) => {
       if (notifRef.current && !notifRef.current.contains(e.target))
         setOpenNotif(false);
       if (profileRef.current && !profileRef.current.contains(e.target))
@@ -59,12 +51,12 @@ export default function OrganizationNavbar({
       document.removeEventListener("keydown", onEsc);
     };
   }, []);
-  
+
   const [organizationName, setOrganizationName] = useState("Organization");
   const [organizationEmail, setOrganizationEmail] = useState(
     "organization@servespot.com"
   );
-  
+
   useEffect(() => {
     const fetchOrgProfile = async () => {
       try {
@@ -238,7 +230,7 @@ export default function OrganizationNavbar({
                             {n.title}
                           </p>
                           <p className="text-xs text-gray-500 mt-1">
-                            {n.message || "New update for your organization"}
+                            {n.message || ""}
                           </p>
                           <p className="text-xs text-gray-400 mt-1">
                             {new Date().toLocaleString(undefined, {

@@ -126,7 +126,7 @@ export default function Notifications({ items = [], loading, onMarkAllRead, onMa
             </div>
           )}
 
-          {/* ✅ ADDED: View All Footer - This was missing! */}
+          {/* ADDED: View All Footer - This was missing! */}
           {items.length > 0 && (
             <div className="pt-4 border-t border-green-100">
               <div className="flex items-center justify-between">

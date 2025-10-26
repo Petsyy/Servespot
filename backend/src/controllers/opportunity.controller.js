@@ -156,7 +156,7 @@ export const updateOpportunity = async (req, res) => {
       opportunity.fileUrl = `/uploads/${req.file.filename}`;
     }
 
-    // ✅ Save first — return success fast
+    // Save first — return success fast
     await opportunity.save();
 
     res.status(200).json({
@@ -164,7 +164,7 @@ export const updateOpportunity = async (req, res) => {
       opportunity,
     });
 
-    // ✅ Background notifications (non-blocking)
+    // Background notifications (non-blocking)
     process.nextTick(async () => {
       try {
         const org = await Organization.findById(opportunity.organization);

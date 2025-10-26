@@ -18,7 +18,7 @@ export const protect = async (req, res, next) => {
         role: decoded.role, // volunteer or organization
       };
 
-      // ✅ Extra security: check if the user is suspended
+      //  Extra security: check if the user is suspended
       if (req.user.role === "volunteer") {
         const volunteer = await Volunteer.findById(req.user.id);
         if (!volunteer)

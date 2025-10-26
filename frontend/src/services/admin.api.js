@@ -45,7 +45,7 @@ export const getAllVolunteers = () =>
     headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
   });
 
-// ✅ Update volunteer status (supports reason)
+// Update volunteer status (supports reason)
 export const updateVolunteerStatus = (id, status, data = {}) =>
   API.put(
     `/admin/volunteers/${id}/status`,

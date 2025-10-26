@@ -24,7 +24,7 @@ import OrganizationNavbar from "@/components/layout/navbars/OrganizationNavbar";
 import StatCard from "@/components/organization-dashboard/metrics/StatCard";
 import OpportunityCard from "@/components/organization-dashboard/opportunities/OpportunityCard";
 import Notifications from "@/components/organization-dashboard/notifications/Notifications";
-import ImpactSummary from "@/components/organization-dashboard/metrics/ImpactSummary";
+// import ImpactSummary from "@/components/organization-dashboard/metrics/ImpactSummary";
 import PostOpportunityModal from "@/components/organization-dashboard/modal/PostOpportunityModal";
 import { socket, registerUserSocket } from "@/utils/socket";
 
@@ -399,7 +399,7 @@ export default function OrganizationDashboard() {
                 onMarkRead={handleMarkRead}
                 maxItems={3}
               />
-              <ImpactSummary stats={stats} />
+              {/* <ImpactSummary stats={stats} /> */}
             </div>
           </div>
         </main>
