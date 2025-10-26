@@ -8,18 +8,23 @@ import SkillCheckbox from "@/components/organization-dashboard/post/SkillCheckbo
 import ImageDropzone from "@/components/organization-dashboard/post/ImageDropzone";
 
 const skillsOptions = [
-  "Tutoring",
+  "Event Organizing",
+  "Community Outreach",
   "Public Speaking",
+  "Teaching & Tutoring",
+  "Health Assistance",
+  "Disaster Response",
+  "Environmental Cleanup",
   "Graphic Design",
-  "Elderly Care",
-  "Photography",
-  "Event Planning",
-  "Marketing",
-  "Fundraising",
-  "Communication Skills",
-  "Customer Service",
-  "Web Development",
-  "Social Media",
+  "Social Media Management",
+  "Cooking & Meal Prep",
+  "First Aid & CPR",
+  "Construction & Repair",
+  "Child Care",
+  "Animal Care",
+  "Translation & Interpretation",
+  "Photography & Documentation",
+  "Data Entry & Tech Support",
 ];
 
 export default function EditOpportunityModal({

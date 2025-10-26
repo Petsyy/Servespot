@@ -11,6 +11,7 @@ import Volunteer from "../models/Volunteer.js";
 import Organization from "../models/Organization.js";
 import Opportunity from "../models/Opportunity.js";
 import Notification from "../models/Notification.js";
+import Admin from "../models/Admin.js";
 
 const router = express.Router();
 
@@ -25,26 +26,30 @@ router.get("/dashboard", async (req, res) => {
       status: "Completed",
     });
 
-    // Simulate weekly data (replace with aggregation if you have timestamps)
-    const weeklyActivity = [
-      { day: "Mon", hours: 6, tasks: 4 },
-      { day: "Tue", hours: 8, tasks: 6 },
-      { day: "Wed", hours: 4, tasks: 3 },
-      { day: "Thu", hours: 7, tasks: 5 },
-      { day: "Fri", hours: 5, tasks: 2 },
-      { day: "Sat", hours: 9, tasks: 7 },
-      { day: "Sun", hours: 4, tasks: 3 },
-    ];
+    // Generate weekly volunteer activity dynamically from Opportunity data
+    const opportunities = await Opportunity.find().lean();
 
-    const weeklyTasks = [
-      { day: "Mon", completed: 5 },
-      { day: "Tue", completed: 7 },
-      { day: "Wed", completed: 3 },
-      { day: "Thu", completed: 6 },
-      { day: "Fri", completed: 4 },
-      { day: "Sat", completed: 8 },
-      { day: "Sun", completed: 2 },
-    ];
+    // Group by day (last 7 days)
+    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const weekData = dayNames.map((day) => ({
+      day,
+      hours: 0,
+      tasks: 0,
+    }));
+
+    opportunities.forEach((opp) => {
+      if (opp.createdAt) {
+        const dayIndex = new Date(opp.createdAt).getDay();
+        weekData[dayIndex].hours += opp.volunteersNeeded * 2; // rough hour estimate
+        weekData[dayIndex].tasks += 1;
+      }
+    });
+
+    const weeklyActivity = weekData;
+    const weeklyTasks = weekData.map((d) => ({
+      day: d.day,
+      completed: d.tasks,
+    }));
 
     res.json({
       totalVolunteers,
@@ -253,6 +258,18 @@ router.get("/reports", async (req, res) => {
 ===================================================== */
 router.post("/login", loginAdmin);
 
+// Get admin profile (for navbar info)
+router.get("/profile/:id", protectAdmin, async (req, res) => {
+  try {
+    const admin = await Admin.findById(req.params.id).select("name email role");
+    if (!admin) return res.status(404).json({ message: "Admin not found" });
+    res.json({ data: admin });
+  } catch (err) {
+    console.error("❌ Error fetching admin profile:", err);
+    res.status(500).json({ message: "Failed to fetch admin profile" });
+  }
+});
+
 /* =====================================================
     ADMIN DASHBOARD (Example Protected)
 ===================================================== */
@@ -296,7 +313,6 @@ router.get("/:adminId/notifications", protectAdmin, async (req, res) => {
   }
 });
 
-
 router.put("/:adminId/notifications/read", protectAdmin, async (req, res) => {
   try {
     const { adminId } = req.params;
@@ -316,6 +332,5 @@ router.put("/:adminId/notifications/read", protectAdmin, async (req, res) => {
     res.status(500).json({ message: "Failed to mark notifications as read" });
   }
 });
-
 
 export default router;

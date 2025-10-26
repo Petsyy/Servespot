@@ -14,6 +14,13 @@ export const getAdminDashboard = () =>
     headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
   });
 
+  // Fetch the name of the admin in navbar
+export const getAdminProfile = async (adminId) => {
+  return API.get(`/admin/profile/${adminId}`, {
+    headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
+  });
+};
+
 // Get all organizations
 export const getAllOrganizations = () =>
   API.get("/admin/organizations", {
@@ -53,7 +60,9 @@ export const updateVolunteerStatus = (id, status, data = {}) =>
 export const getAdminNotifications = async (adminId) => {
   try {
     const response = await API.get(`/admin/${adminId}/notifications`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      },
     });
     return response;
   } catch (error) {
@@ -63,9 +72,13 @@ export const getAdminNotifications = async (adminId) => {
 };
 
 export const markAdminNotificationsRead = (adminId) => {
-  return API.put(`/admin/${adminId}/notifications/read`, {}, {
-    headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
-  });
+  return API.put(
+    `/admin/${adminId}/notifications/read`,
+    {},
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      },
+    }
+  );
 };
-
-

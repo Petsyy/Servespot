@@ -62,7 +62,7 @@ const StatusBadge = ({ status }) => {
 const ActionButton = ({ icon: Icon, label, onClick, variant = "default" }) => {
   const variantStyles = {
     default: "bg-gray-50 text-gray-700 hover:bg-gray-100",
-    view: "bg-blue-50 text-blue-700 hover:bg-blue-100",
+    view: "bg-green-50 text-green-700 hover:bg-green-100",
     verify: "bg-green-50 text-green-700 hover:bg-green-100",
     suspend: "bg-red-50 text-red-700 hover:bg-red-100",
     reactivate: "bg-green-50 text-green-700 hover:bg-green-100",
@@ -486,7 +486,7 @@ export default function UserManagement() {
                   <thead className="bg-gray-50 border-b border-gray-200">
                     <tr>
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                        Name / Organization
+                        Volunteer / Organization
                       </th>
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                         Role

@@ -149,12 +149,8 @@ export default function AdminDashboard() {
                 <h3 className="text-2xl font-bold text-gray-800">
                   {formatStat(stats?.totalVolunteers)}
                 </h3>
-                <p className="text-xs text-green-600 mt-1">
-                  {loading
-                    ? "..."
-                    : stats
-                      ? "↑ 12% from last month"
-                      : "No data available"}
+                <p className="text-xs text-gray-500 mt-1">
+                  {loading ? "Loading..." : "Live count"}
                 </p>
               </div>
               <Users className="h-10 w-10 text-green-600" />
@@ -273,9 +269,9 @@ export default function AdminDashboard() {
               <div className="mt-4 text-center">
                 <p className="text-sm text-gray-600">
                   {loading
-                    ? "Calculating..."
+                    ? "Loading..."
                     : chartData?.weeklyActivity
-                      ? `Total hours this week: ${chartData.weeklyActivity.reduce((sum, day) => sum + day.hours, 0)}`
+                      ? `Total hours this week: ${chartData.weeklyActivity.reduce((sum, d) => sum + d.hours, 0)}`
                       : "Connect data source to see totals"}
                 </p>
               </div>
@@ -349,7 +345,7 @@ export default function AdminDashboard() {
                   {loading
                     ? "Loading insights..."
                     : stats
-                      ? `${stats.totalVolunteers?.toLocaleString()} registered volunteers with steady 12% monthly growth.`
+                      ? `${stats.totalVolunteers?.toLocaleString()} registered volunteers on the platform.`
                       : "No volunteer data available"}
                 </p>
               </div>

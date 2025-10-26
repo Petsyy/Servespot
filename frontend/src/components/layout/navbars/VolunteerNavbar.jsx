@@ -18,6 +18,7 @@ import { toast } from "react-toastify";
 import { getVolunteerNotifications, markVolunteerNotificationsRead } from "@/services/volunteer.api";
 import API from "@/services/api";
 import { socket } from "@/utils/socket";
+import { getVolunteerProfile } from "@/services/volunteer.api";
 
 export default function VolunteerNavbar({ onToggleSidebar }) {
   const navigate = useNavigate();
@@ -28,9 +29,11 @@ export default function VolunteerNavbar({ onToggleSidebar }) {
   const [openNotif, setOpenNotif] = useState(false);
   const [openProfile, setOpenProfile] = useState(false);
   const [isConnected, setIsConnected] = useState(socket.connected);
+  
 
   const notifRef = useRef(null);
   const profileRef = useRef(null);
+  
 
   // 🧩 Get volunteer name (same logic you had)
   const getVolunteerName = () => {
@@ -54,8 +57,35 @@ export default function VolunteerNavbar({ onToggleSidebar }) {
     return directName?.trim() || "Volunteer";
   };
 
-  const volunteerName = getVolunteerName();
-  const volunteerEmail = localStorage.getItem("volunteerEmail") || "volunteer@servespot.com";
+const [volunteerName, setVolunteerFullName] = useState("Volunteer");
+const [volunteerEmail, setVolunteerEmail] = useState("volunteer@servespot.com");
+
+  useEffect(() => {
+  const fetchVolunteerProfile = async () => {
+    try {
+      const token = localStorage.getItem("volToken");
+      if (!token) return;
+
+      const res = await getVolunteerProfile();
+      const data = res.data;
+
+      if (data) {
+        // Assuming your backend sends { data: { firstName, lastName, email } }
+        const user = data.data || data;
+        const fullName =
+          user.fullName ||
+          `${user.firstName || ""} ${user.lastName || ""}`.trim();
+
+        if (fullName) setVolunteerFullName(fullName);
+        if (user.email) setVolunteerEmail(user.email);
+      }
+    } catch (err) {
+      console.error("❌ Failed to fetch volunteer profile:", err);
+    }
+  };
+
+  fetchVolunteerProfile();
+}, []);
 
   // 🧩 Socket connection only - NO TOASTS in navbar
   useEffect(() => {
@@ -88,6 +118,7 @@ export default function VolunteerNavbar({ onToggleSidebar }) {
 
     return () => socket.off("newNotification");
   }, []);
+  
 
   useEffect(() => {
     // Update state when socket connects/disconnects

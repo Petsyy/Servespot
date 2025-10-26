@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { socket } from "@/utils/socket";
+import { getOrganizationProfile } from "@/services/organization.api";
+
 
 export default function OrganizationNavbar({
   onToggleSidebar,
@@ -19,13 +21,6 @@ export default function OrganizationNavbar({
 }) {
   const navigate = useNavigate();
   const [isConnected, setIsConnected] = useState(socket.connected);
-
-  const organizationName =
-    (typeof window !== "undefined" &&
-      localStorage.getItem("orgName")?.trim()) ||
-    "Organization";
-
-  const organizationEmail = localStorage.getItem("orgEmail") || "organization@servespot.com";
 
   const fallbackNotifs = [
     {
@@ -39,13 +34,13 @@ export default function OrganizationNavbar({
   const computedCount =
     typeof notifCount === "number" ? notifCount : notifications.length;
 
-  const [openNotif, setOpenNotif] = useState(false);
-  const [openProfile, setOpenProfile] = useState(false);
-  const notifRef = useRef(null);
-  const profileRef = useRef(null);
-
-  useEffect(() => {
-    const onClick = (e) => {
+    const [openNotif, setOpenNotif] = useState(false);
+    const [openProfile, setOpenProfile] = useState(false);
+    const notifRef = useRef(null);
+    const profileRef = useRef(null);
+    
+    useEffect(() => {
+      const onClick = (e) => {
       if (notifRef.current && !notifRef.current.contains(e.target))
         setOpenNotif(false);
       if (profileRef.current && !profileRef.current.contains(e.target))
@@ -63,6 +58,33 @@ export default function OrganizationNavbar({
       document.removeEventListener("mousedown", onClick);
       document.removeEventListener("keydown", onEsc);
     };
+  }, []);
+  
+  const [organizationName, setOrganizationName] = useState("Organization");
+  const [organizationEmail, setOrganizationEmail] = useState(
+    "organization@servespot.com"
+  );
+  
+  useEffect(() => {
+    const fetchOrgProfile = async () => {
+      try {
+        const orgId = localStorage.getItem("orgId");
+        const token = localStorage.getItem("orgToken");
+        if (!orgId || !token) return;
+
+        const res = await getOrganizationProfile(orgId);
+        const data = res.data?.data || res.data;
+
+        if (data) {
+          if (data.orgName) setOrganizationName(data.orgName);
+          if (data.email) setOrganizationEmail(data.email);
+        }
+      } catch (err) {
+        console.error("❌ Failed to fetch organization profile:", err);
+      }
+    };
+
+    fetchOrgProfile();
   }, []);
 
   useEffect(() => {
@@ -126,7 +148,7 @@ export default function OrganizationNavbar({
   ];
 
   // Calculate unread count for notification badge
-  const computedUnreadCount = notifications.filter(n => !n.isRead).length;
+  const computedUnreadCount = notifications.filter((n) => !n.isRead).length;
 
   return (
     <header className="sticky top-0 z-30 backdrop-blur bg-white/70 border-b border-gray-200">
@@ -191,7 +213,10 @@ export default function OrganizationNavbar({
                     Notifications
                   </p>
                   <p className="text-xs text-green-600 mt-1">
-                    {computedUnreadCount} unread {computedUnreadCount === 1 ? 'notification' : 'notifications'}
+                    {computedUnreadCount} unread{" "}
+                    {computedUnreadCount === 1
+                      ? "notification"
+                      : "notifications"}
                   </p>
                 </div>
 
@@ -209,7 +234,9 @@ export default function OrganizationNavbar({
                           {n.icon || <Bell size={16} />}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-gray-900 font-medium truncate">{n.title}</p>
+                          <p className="text-gray-900 font-medium truncate">
+                            {n.title}
+                          </p>
                           <p className="text-xs text-gray-500 mt-1">
                             {n.message || "New update for your organization"}
                           </p>
@@ -226,7 +253,9 @@ export default function OrganizationNavbar({
                 ) : (
                   <div className="px-4 py-8 text-center">
                     <Bell className="mx-auto mb-2 text-gray-300 w-8 h-8" />
-                    <p className="text-sm text-gray-500">No new notifications</p>
+                    <p className="text-sm text-gray-500">
+                      No new notifications
+                    </p>
                   </div>
                 )}
 
@@ -259,7 +288,9 @@ export default function OrganizationNavbar({
                 <p className="text-sm font-medium text-gray-800 leading-tight">
                   {organizationName}
                 </p>
-                <p className="text-xs text-gray-500 leading-tight">Organization</p>
+                <p className="text-xs text-gray-500 leading-tight">
+                  Organization
+                </p>
               </div>
               <ChevronDown
                 size={16}
@@ -303,7 +334,12 @@ export default function OrganizationNavbar({
                           : "text-gray-700 hover:bg-gray-50"
                       }`}
                     >
-                      <item.icon size={16} className={item.danger ? "text-red-500" : "text-gray-400"} />
+                      <item.icon
+                        size={16}
+                        className={
+                          item.danger ? "text-red-500" : "text-gray-400"
+                        }
+                      />
                       <span>{item.label}</span>
                     </button>
                   ))}

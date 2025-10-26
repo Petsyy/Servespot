@@ -13,6 +13,12 @@ import {
   UserCog,
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
+import {
+  getAdminNotifications,
+  markAdminNotificationsRead,
+  getAdminProfile,
+} from "@/services/admin.api";
+import { toast } from "react-toastify";
 
 export default function AdminNavbar({
   onToggleSidebar,
@@ -21,13 +27,56 @@ export default function AdminNavbar({
 }) {
   const navigate = useNavigate();
 
-  const adminName = localStorage.getItem("adminName") || "Admin";
-  const adminEmail =
-    localStorage.getItem("adminEmail") || "admin@servespot.com";
+  const [adminName, setAdminName] = useState("Admin");
+  const [adminEmail, setAdminEmail] = useState("admin@servespot.com");
+  const adminId = localStorage.getItem("adminId");
+  const token = localStorage.getItem("adminToken");
 
-  const notifications = notificationsProp ?? [];
-  const computedCount =
-    typeof notifCount === "number" ? notifCount : notifications?.length || 0;
+  // ✅ Fetch admin profile
+  useEffect(() => {
+    const fetchAdminProfile = async () => {
+      try {
+        if (!adminId || !token) return;
+        const res = await getAdminProfile(adminId);
+        const data = res.data.data;
+        if (data) {
+          setAdminName(data.name || "Admin");
+          setAdminEmail(data.email || "admin@servespot.com");
+        }
+      } catch (err) {
+        console.error("❌ Failed to fetch admin profile:", err);
+      }
+    };
+    fetchAdminProfile();
+  }, [adminId, token]);
+
+  const [notifications, setNotifications] = useState([]);
+  const [loadingNotif, setLoadingNotif] = useState(false);
+
+  // Fetch notifications
+  useEffect(() => {
+    const fetchAdminNotifs = async () => {
+      try {
+        if (!adminId || !token) return;
+        setLoadingNotif(true);
+        const res = await getAdminNotifications(adminId);
+        setNotifications(res.data.data || []);
+      } catch (err) {
+        console.error("❌ Failed to fetch admin notifications:", err);
+        toast.error("Failed to load notifications");
+      } finally {
+        setLoadingNotif(false);
+      }
+    };
+
+    fetchAdminNotifs();
+
+    // Optional: refresh every 30s
+    const interval = setInterval(fetchAdminNotifs, 30000);
+    return () => clearInterval(interval);
+  }, [adminId, token]);
+
+  const computedCount = notifications.filter((n) => !n.isRead).length;
 
   const [openNotif, setOpenNotif] = useState(false);
   const [openProfile, setOpenProfile] = useState(false);
@@ -131,21 +180,28 @@ export default function AdminNavbar({
                     {computedCount === 1 ? "notification" : "notifications"}
                   </p>
                 </div>
-                {notifications.length ? (
+                {loadingNotif ? (
+                  <div className="px-4 py-8 text-center text-sm text-gray-500">
+                    Loading notifications...
+                  </div>
+                ) : notifications.length ? (
                   <ul className="max-h-72 overflow-auto">
                     {notifications.map((n) => (
                       <li
-                        key={n.id || n._id || Math.random()}
-                        className="px-4 py-3 text-sm text-gray-700 flex items-start gap-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors"
+                        key={n._id}
+                        className={`px-4 py-3 text-sm flex items-start gap-3 border-b border-gray-100 last:border-b-0 transition-colors ${
+                          n.isRead ? "bg-white" : "bg-green-50"
+                        }`}
                       >
-                        <div className="w-8 h-8 rounded-lg bg-green-50 text-green-600 grid place-items-center flex-shrink-0 mt-0.5">
-                          {n.icon || <Bell size={16} />}
+                        <div className="w-8 h-8 rounded-lg bg-green-100 text-green-600 grid place-items-center flex-shrink-0 mt-0.5">
+                          <Bell size={16} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-gray-900 font-medium truncate">
-                            {n.title}
+                          <p className="text-gray-900 font-medium">{n.title}</p>
+                          <p className="text-xs text-gray-600">{n.message}</p>
+                          <p className="text-[11px] text-gray-400 mt-1">
+                            {new Date(n.createdAt).toLocaleString()}
                           </p>
-                          <p className="text-xs text-gray-500 mt-1">Just now</p>
                         </div>
                       </li>
                     ))}
@@ -158,12 +214,25 @@ export default function AdminNavbar({
                     </p>
                   </div>
                 )}
+
                 <div className="border-t border-gray-100">
                   <button
                     className="w-full px-4 py-3 text-sm text-green-600 hover:bg-green-50 font-medium transition-colors"
-                    onClick={() => setOpenNotif(false)}
+                    onClick={async () => {
+                      try {
+                        await markAdminNotificationsRead(adminId);
+                        setNotifications((prev) =>
+                          prev.map((n) => ({ ...n, isRead: true }))
+                        );
+                        toast.success("All notifications marked as read");
+                      } catch {
+                        toast.error("Failed to mark notifications as read");
+                      } finally {
+                        setOpenNotif(false);
+                      }
+                    }}
                   >
-                    View all notifications
+                    Mark all as read
                   </button>
                 </div>
               </div>

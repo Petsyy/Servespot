@@ -235,11 +235,11 @@ export default function AdminNotifications() {
   const getNotificationIcon = (type) => {
     switch (type) {
       case "email":
-        return <Mail className="text-blue-600 w-5 h-5" />;
+        return <Mail className="text-green-600 w-5 h-5" />;
       
       // Organization Events
       case "organization_signup":
-        return <Building2 className="text-blue-500 w-5 h-5" />;
+        return <Building2 className="text-green-500 w-5 h-5" />;
       case "organization_verification":
         return <CheckCircle className="text-green-500 w-5 h-5" />;
       case "organization_suspension":
@@ -340,7 +340,7 @@ export default function AdminNotifications() {
                 onClick={() => setActiveTab("inApp")}
                 className={`px-4 py-2 font-medium text-sm rounded-t-lg ${
                   activeTab === "inApp"
-                    ? "text-blue-600 border-b-2 border-blue-600"
+                    ? "text-green-600 border-b-2 border-green-600"
                     : "text-gray-500 hover:text-gray-700"
                 }`}
               >
@@ -350,7 +350,7 @@ export default function AdminNotifications() {
                 onClick={() => setActiveTab("email")}
                 className={`px-4 py-2 font-medium text-sm rounded-t-lg ${
                   activeTab === "email"
-                    ? "text-blue-600 border-b-2 border-blue-600"
+                    ? "text-green-600 border-b-2 border-green-600"
                     : "text-gray-500 hover:text-gray-700"
                 }`}
               >
@@ -416,7 +416,7 @@ export default function AdminNotifications() {
                           {n.link ? (
                             <a
                               href={n.link}
-                              className="ml-3 text-blue-600 hover:underline"
+                              className="ml-3 text-green-600 hover:underline"
                               target="_blank"
                               rel="noopener noreferrer"
                             >
