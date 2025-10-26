@@ -7,18 +7,21 @@ import SkillCheckbox from "@/components/organization-dashboard/post/SkillCheckbo
 import ImageDropzone from "@/components/organization-dashboard/post/ImageDropzone";
 
 const skillsOptions = [
-  "Tutoring",
+  "Tutoring & Mentoring",
   "Public Speaking",
   "Graphic Design",
-  "Elderly Care",
-  "Photography",
-  "Event Planning",
+  "Photography & Documentation",
+  "Event Planning & Coordination",
+  "Gardening & Environmental Work",
+  "Community Outreach",
+  "Teaching Assistance",
+  "Health & Safety Support",
+  "Social Media Management",
   "Gardening",
-  "Fundraising",
-  "Communication Skills",
-  "Customer Service",
-  "Web Development",
-  "Social Media",
+  "Team Leadership",
+  "First Aid & Emergency Response",
+  "Translation & Interpretation",
+  "Data Entry & Digital Literacy",
 ];
 
 export default function PostOpportunityModal({ onClose, onSuccess }) {

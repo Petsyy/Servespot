@@ -57,15 +57,16 @@ export default function VolunteerNavbar({ onToggleSidebar }) {
   const volunteerName = getVolunteerName();
   const volunteerEmail = localStorage.getItem("volunteerEmail") || "volunteer@servespot.com";
 
-  // 🧩 Real-time socket notifications
+  // 🧩 Socket connection only - NO TOASTS in navbar
   useEffect(() => {
     const volunteerId = localStorage.getItem("volunteerId");
     if (!volunteerId) return;
 
     socket.emit("registerVolunteer", volunteerId);
 
+    // Notification listener WITHOUT toasts - let dashboard handle them
     socket.on("newNotification", (notif) => {
-      toast.info(`🔔 ${notif.title}: ${notif.message}`, { autoClose: 5000 });
+      // NO TOAST HERE - Dashboard handles all toast notifications
       
       setNotifications((prev) => {
         // Check if notification already exists to prevent duplicates
@@ -85,7 +86,7 @@ export default function VolunteerNavbar({ onToggleSidebar }) {
       setUnreadCount((c) => c + 1);
     });
 
-    return () => socket.disconnect();
+    return () => socket.off("newNotification");
   }, []);
 
   useEffect(() => {
@@ -134,9 +135,6 @@ export default function VolunteerNavbar({ onToggleSidebar }) {
       )
     );
     setUnreadCount((c) => Math.max(0, c - 1));
-    
-    // Optional: Show subtle feedback for individual marking
-    // toast.info("Notification marked as read", { autoClose: 2000 });
   };
 
   // 🧩 Clean up old notifications (older than 30 days)

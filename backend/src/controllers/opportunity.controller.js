@@ -18,7 +18,7 @@ export const getOpportunities = async (req, res) => {
   }
 };
 
-// Create a new opportunity with file upload
+// Create a new opportunity with file upload (optimized version)
 export const createOpportunity = async (req, res) => {
   try {
     const {
@@ -56,63 +56,65 @@ export const createOpportunity = async (req, res) => {
       volunteers: [],
     });
 
+    // Save opportunity first (fast)
     await opportunity.save();
-    console.log("Saved opportunity for org:", organization);
+    console.log("✅ Opportunity saved for org:", organization);
 
-    // Notify nearby volunteers about new opportunity (optional)
-    try {
-      const org = await Organization.findById(organization);
-      if (org) {
-        // Find volunteers in the same city or with matching skills
-        const volunteers = await Volunteer.find({
-          $or: [{ city: org.city }, { skills: { $in: opportunity.skills } }],
-          status: "active",
-        }).limit(10); // Limit to avoid spam
-
-        for (const volunteer of volunteers) {
-          await sendNotification({
-            userId: volunteer._id,
-            userModel: "Volunteer",
-            email: volunteer.email,
-            title: "New Opportunity Available",
-            message: `"${opportunity.title}" by ${org.orgName} is now available in ${opportunity.location || org.city}.`,
-            type: "update",
-            channel: "both",
-            link: `/volunteer/opportunities/${opportunity._id}`,
-          });
-        }
-      }
-    } catch (notifErr) {
-      console.error("Failed to send new opportunity notifications:", notifErr);
-      // Don't fail the main request if notification fails
-    }
-
-    // Notify admins about new opportunity posted
-    try {
-      const org = await Organization.findById(organization);
-      const admins = await Admin.find({ status: "active" });
-      for (const admin of admins) {
-        await sendNotification({
-          userId: admin._id,
-          userModel: "Admin",
-          title: "New opportunity posted",
-          message: `${org?.orgName || "An organization"} created a new opportunity: ${opportunity.title}.`,
-          type: "opportunity_posted",
-          channel: "inApp",
-          link: "/admin/reports", // could be a dedicated opportunities admin page if available
-        });
-      }
-    } catch (e) {
-      console.error("Failed to notify admins of new opportunity:", e);
-    }
-
-    // Return full object wrapped in a message
-    return res.status(201).json({
+    // Respond to frontend immediately (non-blocking)
+    res.status(201).json({
       message: "Opportunity created successfully!",
       opportunity,
     });
+
+    // Do background tasks AFTER response
+    process.nextTick(async () => {
+      try {
+        const org = await Organization.findById(organization);
+
+        // Notify volunteers (parallel)
+        const volunteers = await Volunteer.find({
+          $or: [{ city: org.city }, { skills: { $in: opportunity.skills } }],
+          status: "active",
+        })
+          .select("_id email")
+          .limit(10);
+
+        await Promise.all(
+          volunteers.map((vol) =>
+            sendNotification({
+              userId: vol._id,
+              userModel: "Volunteer",
+              email: vol.email,
+              title: "New Opportunity Available",
+              message: `"${opportunity.title}" by ${org.orgName} is now open in ${opportunity.location || org.city}.`,
+              type: "update",
+              channel: "both",
+              link: `/volunteer/opportunities/${opportunity._id}`,
+            })
+          )
+        );
+
+        // Notify admins (parallel)
+        const admins = await Admin.find({ status: "active" }).select("_id");
+        await Promise.all(
+          admins.map((admin) =>
+            sendNotification({
+              userId: admin._id,
+              userModel: "Admin",
+              title: "New opportunity posted",
+              message: `${org?.orgName || "An organization"} created a new opportunity: ${opportunity.title}.`,
+              type: "opportunity_posted",
+              channel: "inApp",
+              link: "/admin/reports",
+            })
+          )
+        );
+      } catch (notifErr) {
+        console.error("⚠️ Background notification error:", notifErr.message);
+      }
+    });
   } catch (err) {
-    console.error("Error creating opportunity:", err);
+    console.error("❌ Error creating opportunity:", err);
     res.status(500).json({
       message: "Error creating opportunity",
       error: err.message,
@@ -131,7 +133,7 @@ export const updateOpportunity = async (req, res) => {
       return res.status(404).json({ message: "Opportunity not found" });
     }
 
-    // update fields
+    // Update core fields
     opportunity.title = title || opportunity.title;
     opportunity.description = description || opportunity.description;
     opportunity.date = date ? new Date(date) : opportunity.date;
@@ -140,22 +142,74 @@ export const updateOpportunity = async (req, res) => {
     opportunity.volunteersNeeded =
       Number(volunteersNeeded) || opportunity.volunteersNeeded;
 
-    // update skills
+    // Update skills
     let skills = req.body.skills || req.body["skills[]"] || [];
     if (!Array.isArray(skills)) skills = [skills];
     opportunity.skills = skills;
 
-    // if new file uploaded
+    // If new file uploaded
     if (req.file) {
-      // optionally remove old file
+      const fs = await import("fs");
       if (opportunity.fileUrl && fs.existsSync(`.${opportunity.fileUrl}`)) {
         fs.unlinkSync(`.${opportunity.fileUrl}`);
       }
       opportunity.fileUrl = `/uploads/${req.file.filename}`;
     }
 
+    // ✅ Save first — return success fast
     await opportunity.save();
-    res.status(200).json({ message: "Opportunity updated", opportunity });
+
+    res.status(200).json({
+      message: "Opportunity updated successfully!",
+      opportunity,
+    });
+
+    // ✅ Background notifications (non-blocking)
+    process.nextTick(async () => {
+      try {
+        const org = await Organization.findById(opportunity.organization);
+        const admins = await Admin.find({ status: "active" }).select("_id");
+
+        // Notify admins in parallel
+        await Promise.all(
+          admins.map((admin) =>
+            sendNotification({
+              userId: admin._id,
+              userModel: "Admin",
+              title: "Opportunity Updated",
+              message: `${org?.orgName || "An organization"} updated "${opportunity.title}".`,
+              type: "opportunity_updated",
+              channel: "inApp",
+              link: "/admin/reports",
+            })
+          )
+        );
+
+        // Optional: Notify volunteers currently joined in parallel
+        const joinedVolunteers = await Volunteer.find({
+          _id: { $in: opportunity.volunteers },
+        })
+          .select("_id email")
+          .limit(20);
+
+        await Promise.all(
+          joinedVolunteers.map((vol) =>
+            sendNotification({
+              userId: vol._id,
+              userModel: "Volunteer",
+              email: vol.email,
+              title: "Opportunity Updated",
+              message: `Details for "${opportunity.title}" have been updated by ${org?.orgName || "the organization"}.`,
+              type: "update",
+              channel: "both",
+              link: `/volunteer/opportunities/${opportunity._id}`,
+            })
+          )
+        );
+      } catch (notifErr) {
+        console.error("⚠️ Background update notification error:", notifErr);
+      }
+    });
   } catch (err) {
     console.error("❌ Error updating opportunity:", err);
     res.status(500).json({ message: "Failed to update opportunity" });

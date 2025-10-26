@@ -141,7 +141,7 @@ export default function AdminDashboard() {
 
           {/* Summary Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white shadow-sm rounded-xl p-5 flex items-center justify-between border-l-4 border-blue-500 hover:shadow-md transition-all duration-200">
+            <div className="bg-white shadow-sm rounded-xl p-5 flex items-center justify-between border-l-4 border-green-500 hover:shadow-md transition-all duration-200">
               <div>
                 <p className="text-sm text-gray-500 font-medium">
                   Total Volunteers
@@ -157,7 +157,7 @@ export default function AdminDashboard() {
                       : "No data available"}
                 </p>
               </div>
-              <Users className="h-10 w-10 text-blue-600" />
+              <Users className="h-10 w-10 text-green-600" />
             </div>
 
             <div className="bg-white shadow-sm rounded-xl p-5 flex items-center justify-between border-l-4 border-indigo-500 hover:shadow-md transition-all duration-200">
@@ -343,7 +343,7 @@ export default function AdminDashboard() {
                   <h3 className="font-medium text-gray-900">
                     Volunteer Engagement
                   </h3>
-                  <Users className="w-4 h-4 text-blue-600" />
+                  <Users className="w-4 h-4 text-green-600" />
                 </div>
                 <p className="text-sm text-gray-600">
                   {loading
@@ -359,7 +359,7 @@ export default function AdminDashboard() {
                   <h3 className="font-medium text-gray-900">
                     Organization Activity
                   </h3>
-                  <Building className="w-4 h-4 text-indigo-600" />
+                  <Building className="w-4 h-4 text-green-600" />
                 </div>
                 <p className="text-sm text-gray-600">
                   {loading

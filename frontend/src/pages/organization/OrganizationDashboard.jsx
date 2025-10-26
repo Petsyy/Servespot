@@ -71,19 +71,12 @@ export default function OrganizationDashboard() {
       });
     });
 
-    // ✅ Listen for suspension/reactivation
-    socket.on("suspended", (data) => {
+    // --- Suspension listener (no toast, just redirect) ---
+    socket.off("suspended").on("suspended", (data) => {
       const reason = data.reason || "No reason provided.";
-      toast.error(
-        `Your organization account has been suspended.\nReason: ${reason}`,
-        {
-          autoClose: 6000,
-        }
-      );
-      setTimeout(() => {
-        localStorage.clear();
-        window.location.href = "/organization-suspended";
-      }, 3000);
+      console.warn(`Account suspended. Reason: ${reason}`);
+      localStorage.clear();
+      window.location.href = "/suspended";
     });
 
     socket.on("reactivated", () => {

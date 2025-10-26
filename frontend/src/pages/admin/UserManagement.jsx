@@ -257,19 +257,26 @@ export default function UserManagement() {
     const adminId = localStorage.getItem("adminId") || "defaultAdmin";
     registerUserSocket(adminId, "admin");
 
+    // Volunteer status updates
     socket.on("volunteerStatusUpdated", ({ userId, status }) => {
       setVolunteers((prev) =>
         prev.map((v) => (v._id === userId ? { ...v, status } : v))
       );
+
+      const toastId = `vol-status-${userId}-${status}`;
+      if (!toast.isActive(toastId)) {
+        toast.info(`Volunteer status updated: ${status}`, { toastId });
+      }
     });
 
+    // Organization status updates
     socket.on("organizationStatusUpdated", ({ orgId, status }) => {
       setOrganizations((prev) =>
         prev.map((o) => (o._id === orgId ? { ...o, status } : o))
       );
-      toast.info(`Organization status updated: ${status}`);
     });
 
+    // ✅ Cleanup to avoid duplicate listeners
     return () => {
       socket.off("volunteerStatusUpdated");
       socket.off("organizationStatusUpdated");
@@ -281,12 +288,17 @@ export default function UserManagement() {
   ----------------------------- */
   const handleVerifyOrganization = async (user) => {
     const confirmed = await confirmVerification(user.orgName);
-
     if (!confirmed) return;
 
     try {
       await updateOrganizationStatus(user._id, "active");
-      toast.success(`${user.orgName} has been verified successfully!`);
+
+      const toastId = `verify-${user._id}`;
+      if (!toast.isActive(toastId)) {
+        toast.success(`${user.orgName} has been verified successfully!`, {
+          toastId,
+        });
+      }
 
       // Refresh organizations data
       const updated = await getAllOrganizations();
@@ -308,17 +320,18 @@ export default function UserManagement() {
       user.role === "organization" ? "Organization" : "Volunteer";
     const userName = user.orgName || user.fullName;
 
-    // Ask first — no loader yet
     const confirmed = await confirmSuspension(userType, userName);
     if (!confirmed) return;
 
-    // Show loader only AFTER clicking "Yes"
     setLoadingUserId(user._id);
 
     try {
       if (user.role === "organization") {
         await updateOrganizationStatus(user._id, "suspended");
-        toast.info(`${user.orgName} has been suspended.`);
+        const toastId = `suspend-org-${user._id}`;
+        if (!toast.isActive(toastId)) {
+          toast.info(`${user.orgName} has been suspended.`, { toastId });
+        }
         setOrganizations((prev) =>
           prev.map((o) =>
             o._id === user._id ? { ...o, status: "suspended" } : o
@@ -326,7 +339,10 @@ export default function UserManagement() {
         );
       } else {
         await updateVolunteerStatus(user._id, "suspended");
-        toast.info(`${user.fullName} has been suspended.`);
+        const toastId = `suspend-vol-${user._id}`;
+        if (!toast.isActive(toastId)) {
+          toast.info(`${user.fullName} has been suspended.`, { toastId });
+        }
         setVolunteers((prev) =>
           prev.map((v) =>
             v._id === user._id ? { ...v, status: "suspended" } : v
@@ -348,23 +364,31 @@ export default function UserManagement() {
       user.role === "organization" ? "Organization" : "Volunteer";
     const userName = user.orgName || user.fullName;
 
-    // Ask first — no loader yet
     const confirmed = await confirmReactivation(userType, userName);
     if (!confirmed) return;
 
-    // Loader appears only after confirmation
     setLoadingUserId(user._id);
 
     try {
       if (user.role === "organization") {
         await updateOrganizationStatus(user._id, "active");
-        toast.success(`${user.orgName} has been reactivated successfully!`);
+        const toastId = `reactivate-org-${user._id}`;
+        if (!toast.isActive(toastId)) {
+          toast.success(`${user.orgName} has been reactivated successfully!`, {
+            toastId,
+          });
+        }
         setOrganizations((prev) =>
           prev.map((o) => (o._id === user._id ? { ...o, status: "active" } : o))
         );
       } else {
         await updateVolunteerStatus(user._id, "active");
-        toast.success(`${user.fullName} has been reactivated successfully!`);
+        const toastId = `reactivate-vol-${user._id}`;
+        if (!toast.isActive(toastId)) {
+          toast.success(`${user.fullName} has been reactivated successfully!`, {
+            toastId,
+          });
+        }
         setVolunteers((prev) =>
           prev.map((v) => (v._id === user._id ? { ...v, status: "active" } : v))
         );
@@ -376,7 +400,6 @@ export default function UserManagement() {
       setLoadingUserId(null);
     }
   };
-
   /* -----------------------------
      FILTERED VIEW
   ----------------------------- */
@@ -441,7 +464,7 @@ export default function UserManagement() {
                 onClick={() => setActiveTab(tab.key)}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border transition-all font-medium ${
                   activeTab === tab.key
-                    ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                    ? "bg-green-600 text-white border-green-600 shadow-sm"
                     : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
                 }`}
               >

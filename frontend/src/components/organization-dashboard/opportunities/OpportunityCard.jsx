@@ -238,7 +238,7 @@ export default function OpportunityCard({
         </div>
 
         {/* Details Section - Horizontal Layout */}
-        <div className="flex flex-wrap items-center gap-4 mb-4 p-3 bg-gray-50 rounded-xl">
+        <div className="flex flex-wrap items-center gap-4 mb-4 p-3 bg-green-50 rounded-xl">
           {date && (
             <div className="flex items-center gap-2 text-gray-700">
               <Calendar size={16} className="text-green-500 flex-shrink-0" />

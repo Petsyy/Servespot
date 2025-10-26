@@ -16,8 +16,8 @@ const linkCls = ({ isActive }) =>
   `flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 group
    ${
      isActive
-       ? "bg-white text-blue-600 shadow-md border border-blue-200"
-       : "text-blue-100 hover:bg-blue-500 hover:text-white hover:shadow-sm"
+       ? "bg-white text-green-600 shadow-md border border-green-200"
+       : "text-green-100 hover:bg-green-500 hover:text-white hover:shadow-sm"
    }`;
 
 export default function AdminSidebar({ isOpen, onClose }) {
@@ -49,7 +49,7 @@ export default function AdminSidebar({ isOpen, onClose }) {
       {/* Sidebar */}
       <aside
         className={`fixed md:sticky z-50
-        w-64 bg-gradient-to-b from-blue-600 to-blue-700 text-white flex flex-col
+        w-64 bg-gradient-to-b from-green-600 to-green-700 text-white flex flex-col
         transition-all duration-300 ease-in-out shadow-xl
         ${isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
         h-screen top-0 left-0
@@ -65,7 +65,7 @@ export default function AdminSidebar({ isOpen, onClose }) {
                 </div>
                 <div>
                   <p className="font-bold text-white text-lg">ServeSpot</p>
-                  <p className="text-xs text-blue-100 opacity-90">
+                  <p className="text-xs text-green-100 opacity-90">
                     Admin Portal
                   </p>
                 </div>
@@ -95,13 +95,13 @@ export default function AdminSidebar({ isOpen, onClose }) {
                   onClick={onClose}
                 >
                   <div
-                    className={`p-1.5 rounded-lg transition-colors ${isActive ? "bg-blue-600 text-white" : "group-hover:bg-white/20"}`}
+                    className={`p-1.5 rounded-lg transition-colors ${isActive ? "bg-green-600 text-white" : "group-hover:bg-white/20"}`}
                   >
                     <Icon size={18} />
                   </div>
                   <span className="font-medium">{item.label}</span>
                   {isActive && (
-                    <div className="ml-auto w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
+                    <div className="ml-auto w-2 h-2 bg-green-400 rounded-full animate-pulse" />
                   )}
                 </NavLink>
               );
@@ -113,7 +113,7 @@ export default function AdminSidebar({ isOpen, onClose }) {
             {/* Logout Button */}
             <button
               onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-3 py-3 text-blue-100 hover:text-white hover:bg-red-500/20 rounded-lg transition-all duration-200 group border border-transparent hover:border-red-400/30"
+              className="w-full flex items-center gap-3 px-3 py-3 text-green-100 hover:text-white hover:bg-red-500/20 rounded-lg transition-all duration-200 group border border-transparent hover:border-red-400/30"
             >
               <div className="p-1.5 rounded-lg bg-red-500/20 group-hover:bg-red-500/30 transition-colors">
                 <LogOut size={18} />

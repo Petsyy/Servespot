@@ -8,24 +8,37 @@ import { signupVolunteer, loginVolunteer } from "../../../services/api";
 import { Users } from "lucide-react";
 
 const skillsOptions = [
-  "Tutoring",
-  "First Aid",
-  "Translation",
-  "Gardening",
+  "Event Organizing",
+  "Community Outreach",
+  "Public Speaking",
+  "Teaching & Tutoring",
+  "Health Assistance",
+  "Disaster Response",
+  "Environmental Cleanup",
   "Graphic Design",
-  "Cooking",
-  "Photography",
-  "Fundraising",
+  "Social Media Management",
+  "Cooking & Meal Prep",
+  "First Aid & CPR",
+  "Construction & Repair",
+  "Child Care",
+  "Animal Care",
+  "Translation & Interpretation",
+  "Photography & Documentation",
+  "Data Entry & Tech Support",
 ];
+
 const interestsOptions = [
-  "Environment",
+  "Environmental Conservation",
   "Disaster Relief",
-  "Children & Youth",
   "Health & Wellness",
-  "Education",
-  "Elderly Care",
+  "Education & Literacy",
+  "Child & Youth Development",
   "Animal Welfare",
   "Community Development",
+  "Arts & Culture",
+  "Human Rights",
+  "Mental Health Advocacy",
+  "Public Safety & Awareness",
 ];
 
 export default function ProfileStep({

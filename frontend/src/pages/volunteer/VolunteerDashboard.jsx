@@ -117,60 +117,23 @@ export default function VolunteerDashboard() {
   useEffect(() => {
     const volunteerId = localStorage.getItem("volunteerId");
     const role = "volunteer";
-    if (volunteerId) registerUserSocket(volunteerId, role);
-
-    socket.on("newNotification", (notif) => {
-      toast.info(`🔔 ${notif.title}: ${notif.message}`, { autoClose: 5000 });
-
-      setNotifications((prev) => {
-        // Check if notification already exists to prevent duplicates
-        const exists = prev.some((n) => n._id === notif._id);
-        if (exists) {
-          return prev;
-        }
-
-        // Add new notification and limit to 50 for dashboard
-        const updated = [notif, ...prev]
-          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-          .slice(0, 50);
-
-        return updated;
-      });
-    });
-
-    return () => socket.off("newNotification");
-  }, []);
-
-  useEffect(() => {
-    socket.on("connect", () => {
-      console.log("Socket reconnected, refreshing dashboard...");
-      const volunteerId = localStorage.getItem("volunteerId");
-      if (volunteerId) registerUserSocket(volunteerId, "volunteer");
-    });
-    return () => socket.off("connect");
-  }, []);
-
-  // Unified socket setup for volunteer notifications & suspension/reactivation
-  useEffect(() => {
-    const volunteerId = localStorage.getItem("volunteerId");
-    const role = "volunteer";
     if (!volunteerId) return;
 
-    // Register this volunteer socket
+    // Register volunteer socket once
     registerUserSocket(volunteerId, role);
 
-    // Notification listener
-    socket.on("newNotification", (notif) => {
-      toast.info(`${notif.title}: ${notif.message}`, { autoClose: 5000 });
+    // --- 🔔 Notification listener ---
+    socket.off("newNotification").on("newNotification", (notif) => {
+      if (!window._shownNotifs) window._shownNotifs = new Set();
+      if (window._shownNotifs.has(notif._id)) return;
+      window._shownNotifs.add(notif._id);
+
+      toast.info(`${notif.title}: ${notif.message}`, { autoClose: 4000 });
 
       setNotifications((prev) => {
-        // Check if notification already exists to prevent duplicates
         const exists = prev.some((n) => n._id === notif._id);
-        if (exists) {
-          return prev;
-        }
+        if (exists) return prev;
 
-        // Add new notification and limit to 50 for dashboard
         const updated = [notif, ...prev]
           .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
           .slice(0, 50);
@@ -179,31 +142,34 @@ export default function VolunteerDashboard() {
       });
     });
 
-    // Suspension listener
-    socket.on("suspended", (data) => {
+    // --- 🚫 Suspension listener (no toast, just redirect) ---
+    socket.off("suspended").on("suspended", (data) => {
       const reason = data.reason || "No reason provided.";
-      toast.error(` Your account has been suspended.\nReason: ${reason}`, {
-        autoClose: 6000,
-      });
-
-      setTimeout(() => {
-        localStorage.clear();
-        window.location.href = "/suspended";
-      }, 3000);
+      console.warn(`Account suspended. Reason: ${reason}`);
+      localStorage.clear();
+      window.location.href = "/suspended";
     });
 
-    // Reactivation listener
-    socket.on("reactivated", () => {
+    // --- Reactivation listener ---
+    socket.off("reactivated").on("reactivated", () => {
       toast.success("✅ Your account has been reactivated!", {
         autoClose: 5000,
       });
       localStorage.setItem("justReactivated", "true");
     });
 
+    // --- Reconnect listener ---
+    socket.off("connect").on("connect", () => {
+      console.log("🔄 Socket reconnected, refreshing dashboard...");
+      if (volunteerId) registerUserSocket(volunteerId, role);
+    });
+
+    // Cleanup
     return () => {
       socket.off("newNotification");
       socket.off("suspended");
       socket.off("reactivated");
+      socket.off("connect");
     };
   }, []);
 
