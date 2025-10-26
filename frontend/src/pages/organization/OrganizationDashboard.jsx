@@ -252,7 +252,7 @@ export default function OrganizationDashboard() {
             <div className="text-center sm:text-left">
               <h1 className="text-3xl font-bold text-gray-900">
                 Welcome back,{" "}
-                <span className="text-green-700 font-semibold">{orgName}</span>!
+                <span className="text-green-700 font-semibold">{orgName}!</span>
               </h1>
               <p className="text-gray-600 mt-2">
                 Here's what's happening with your opportunities today

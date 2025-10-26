@@ -440,9 +440,8 @@ export default function VolunteerDashboard() {
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
                 Welcome back,{" "}
                 <span className="text-green-700 font-semibold">
-                  {volunteerName}
+                  {volunteerName}!
                 </span>
-                !
               </h1>
               <p className="text-gray-600 text-sm sm:text-base mt-1">
                 Ready to make a difference today?
