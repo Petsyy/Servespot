@@ -20,8 +20,8 @@ import VolunteerNavbar from "@/components/layout/navbars/VolunteerNavbar";
 import MetricCard from "@/components/volunteer-dashboard/metrics/MetricCard";
 import Notifications from "@/components/volunteer-dashboard/notifications/Notifications";
 import ProgressCard from "@/components/volunteer-dashboard/metrics/ProgressCard";
-import RecentBadges from "@/components/volunteer-dashboard/community/RecentBadges";
-import TopVolunteers from "@/components/volunteer-dashboard/community/TopVolunteers";
+// import RecentBadges from "@/components/volunteer-dashboard/community/RecentBadges";
+// import TopVolunteers from "@/components/volunteer-dashboard/community/TopVolunteers";
 import ProofUploadModal from "@/components/volunteer-dashboard/opportunities/ProofUploadModal";
 import { getOpportunityById } from "@/services/api";
 import { socket, registerUserSocket } from "@/utils/socket";
@@ -785,8 +785,8 @@ export default function VolunteerDashboard() {
               />
 
               <ProgressCard progress={progress} loading={loading} />
-              <RecentBadges badges={badges} loading={loading} />
-              <TopVolunteers items={top} loading={loading} />
+              {/* <RecentBadges badges={badges} loading={loading} /> */}
+              {/* <TopVolunteers items={top} loading={loading} /> */}
             </div>
           </div>
         </main>

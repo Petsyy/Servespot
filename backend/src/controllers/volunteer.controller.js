@@ -1,11 +1,24 @@
 import Opportunity from "../models/Opportunity.js";
 import Volunteer from "../models/Volunteer.js";
 
-// get volunteer profile + stats
+// ✅ get volunteer profile + stats + total hours
 export const getMyProfile = async (req, res) => {
   try {
     const vol = await Volunteer.findById(req.user.id).lean();
     if (!vol) return res.status(404).json({ message: "Volunteer not found" });
+
+    // 🕒 Fetch all completed opportunities for this volunteer
+    const completedOps = await Opportunity.find({
+      "completionProofs.volunteer": req.user.id,
+      status: "Completed",
+    }).lean();
+
+    // ✅ Parse numeric hours from duration strings like "3", "3 hours", "2h", "1.5 hrs"
+    const totalHours = completedOps.reduce((sum, opp) => {
+      const match = String(opp.duration || "").match(/(\d+(\.\d+)?)/);
+      const hours = match ? parseFloat(match[1]) : 0;
+      return sum + hours;
+    }, 0);
 
     // send safe + gamification fields
     const {
@@ -45,6 +58,7 @@ export const getMyProfile = async (req, res) => {
       completedTasks,
       badges,
       badgesCount: badges.length,
+      hours: totalHours,
       createdAt,
       updatedAt,
     });
@@ -54,12 +68,19 @@ export const getMyProfile = async (req, res) => {
   }
 };
 
-
 export const updateMyProfile = async (req, res) => {
   try {
     const allowed = [
-      "fullName","birthdate","gender","contactNumber",
-      "city","address","skills","interests","availability","bio"
+      "fullName",
+      "birthdate",
+      "gender",
+      "contactNumber",
+      "city",
+      "address",
+      "skills",
+      "interests",
+      "availability",
+      "bio",
     ];
 
     // build $set from allowed fields only
@@ -70,10 +91,16 @@ export const updateMyProfile = async (req, res) => {
 
     // normalize arrays if they arrive as comma string
     if (typeof updates.skills === "string") {
-      updates.skills = updates.skills.split(",").map(s => s.trim()).filter(Boolean);
+      updates.skills = updates.skills
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
     }
     if (typeof updates.interests === "string") {
-      updates.interests = updates.interests.split(",").map(s => s.trim()).filter(Boolean);
+      updates.interests = updates.interests
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
     }
 
     const vol = await Volunteer.findByIdAndUpdate(
@@ -114,8 +141,10 @@ export const getMyBadges = async (req, res) => {
       return res.status(404).json({ message: "Volunteer not found" });
 
     // Import helper functions
-    const { getVolunteerLevel, getNextMilestone } = await import("../utils/volunteer.badges.js");
-    
+    const { getVolunteerLevel, getNextMilestone } = await import(
+      "../utils/volunteer.badges.js"
+    );
+
     const level = getVolunteerLevel(volunteer.points || 0);
     const milestone = getNextMilestone(volunteer.completedTasks || 0);
 
@@ -141,10 +170,10 @@ export const getVolunteerLeaderboard = async (req, res) => {
       .limit(10);
 
     const { getVolunteerLevel } = await import("../utils/volunteer.badges.js");
-    
+
     const leaderboard = volunteers.map((volunteer, index) => {
       const level = getVolunteerLevel(volunteer.points || 0);
-      
+
       return {
         rank: index + 1,
         name: volunteer.fullName,
@@ -207,7 +236,9 @@ function computeLevelProgress(points) {
 // GET /volunteer/me/progress
 export const getMyProgress = async (req, res) => {
   try {
-    const me = await Volunteer.findById(req.user.id).select("points badges").lean();
+    const me = await Volunteer.findById(req.user.id)
+      .select("points badges")
+      .lean();
     if (!me) return res.status(404).json({ message: "Volunteer not found" });
 
     const points = me.points || 0;
@@ -252,5 +283,3 @@ export const getTopVolunteers = async (req, res) => {
     res.status(500).json({ message: "Failed to load leaderboard" });
   }
 };
-
-
