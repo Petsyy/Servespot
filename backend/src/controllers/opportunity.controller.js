@@ -337,7 +337,7 @@ export const markOpportunityCompleted = async (req, res) => {
   try {
     const { id } = req.params;
     const opportunity = await Opportunity.findById(id)
-      .populate("completionProofs.volunteer")
+      .populate("completionProofs.volunteer", "email fullName")
       .populate("volunteers");
 
     if (!opportunity) {
@@ -354,7 +354,7 @@ export const markOpportunityCompleted = async (req, res) => {
       });
     }
 
-    // Mark opportunity completed
+    // Mark as completed
     opportunity.status = "Completed";
     opportunity.completedVolunteers = approvedProofs.map(
       (p) => p.volunteer._id || p.volunteer.toString()
@@ -362,20 +362,30 @@ export const markOpportunityCompleted = async (req, res) => {
 
     const allNewBadges = [];
 
-    // Award each volunteer (points + badge milestones)
+    // Notify and reward volunteers
     for (const proof of approvedProofs) {
       const volunteerId = proof.volunteer._id || proof.volunteer;
       const newBadges = await awardVolunteerRewards(volunteerId);
-
-      if (newBadges.length > 0) {
+      if (newBadges?.length > 0) {
         allNewBadges.push({ volunteerId, badges: newBadges });
       }
+
+      // Send real-time + email notification
+      await sendNotification({
+        userId: volunteerId,
+        userModel: "Volunteer",
+        title: "Opportunity Completed",
+        message: `The opportunity "${opportunity.title}" has been marked as completed by the organization.`,
+        type: "completion",
+        channel: "both",
+        email: proof.volunteer.email,
+      });
     }
 
     await opportunity.save();
 
     res.status(200).json({
-      message: `Opportunity marked as completed. ${approvedProofs.length} volunteer(s) rewarded.`,
+      message: `Opportunity marked as completed. ${approvedProofs.length} volunteer(s) rewarded and notified.`,
       completedCount: approvedProofs.length,
       status: "Completed",
       newBadges: allNewBadges,
@@ -388,6 +398,7 @@ export const markOpportunityCompleted = async (req, res) => {
     });
   }
 };
+
 
 export const getStats = async (req, res) => {
   try {

@@ -68,7 +68,7 @@ export const updateOrganization = (id, data) =>
     headers: { "Content-Type": "application/json" },
   });
 
-// ✅ Mark all organization notifications as read
+// Mark all organization notifications as read
 export const markOrgNotificationsRead = (orgId) =>
   API.put(`/notifications/organization/${orgId}/read-all`);
 

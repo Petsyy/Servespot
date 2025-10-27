@@ -1,8 +1,9 @@
+import { useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
-import { ToastContainer } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-// General Pages
+// General
 import LandingPage from "@/pages/LandingPage";
 import NotFound from "@/pages/NotFound";
 import Suspended from "@/pages/Suspend";
@@ -11,8 +12,7 @@ import Suspended from "@/pages/Suspend";
 import RoleLogin from "@/pages/user-selection/RoleLogin";
 import RoleSignup from "@/pages/user-selection/RoleSignup";
 
-
-// Volunteer Pages
+// Volunteer
 import VolunteerLogin from "@/pages/volunteer/auth/VolunteerLogin";
 import VolunteerSignup from "@/pages/volunteer/auth/VolunteerSignup";
 import VolunteerLanding from "@/pages/volunteer/VolunteerLanding";
@@ -21,30 +21,31 @@ import BrowseOpportunities from "@/pages/volunteer/browse-page/BrowseOpportuniti
 import VolunteerProfile from "@/pages/volunteer/VolunteerProfile";
 import VolunteerBadges from "@/pages/volunteer/VolunteerBadges";
 import VolunteerNotifications from "@/pages/volunteer/VolunteerNotifications";
+import MyTasks from "@/pages/volunteer/MyTasks";
 
-// Organization Pages
+// Organization
 import OrganizationLogin from "@/pages/organization/auth/OrganizationLogin";
 import OrganizationSignup from "@/pages/organization/auth/OrganizationSignup";
 import OrganizationLanding from "@/pages/organization/OrganizationLanding";
 import OrganizationDashboard from "@/pages/organization/OrganizationDashboard";
 import MyOpportunity from "@/pages/organization/posted-page/PostedOpportunity";
 import OrganizationProfile from "@/pages/organization/OrganizationProfile";
-import OrganizationReports from "@/pages/organization/OrganizationReports"
+import OrganizationReports from "@/pages/organization/OrganizationReports";
+import ManageVolunteers from "@/pages/organization/ManageVolunteers";
 import OrganizationNotifications from "@/pages/organization/OrganizationNotifications";
 
-// Auth (Shared)
-import ForgotPassword from "@/pages/auth/ForgotPassword";
-import MyTasks from "@/pages/volunteer/MyTasks";
-import ManageVolunteers from "@/pages/organization/ManageVolunteers";
-
-// Admin Pages
-import AdminLogin from '@/components/auth/AdminLogin';
+// Admin
+import AdminLogin from "@/components/auth/AdminLogin";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import UserManagement from "@/pages/admin/UserManagement";
 import AdminReports from "@/pages/admin/AdminReports";
 import AdminNotifications from "@/pages/admin/AdminNotifications";
 
+// Shared
+import ForgotPassword from "@/pages/auth/ForgotPassword";
+
 export default function App() {
+
   return (
     <>
       <Routes>
@@ -58,9 +59,9 @@ export default function App() {
         <Route path="/role/signup" element={<RoleSignup />} />
 
         {/* Admin */}
-        <Route path="/admin/login" element={<AdminLogin />} /> 
+        <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        <Route path="/admin/management" element={<UserManagement /> } />
+        <Route path="/admin/management" element={<UserManagement />} />
         <Route path="/admin/reports" element={<AdminReports />} />
         <Route path="/admin/notifications" element={<AdminNotifications />} />
 
@@ -75,7 +76,7 @@ export default function App() {
         <Route path="/volunteer/profile" element={<VolunteerProfile />} />
         <Route path="/volunteer/badges" element={<VolunteerBadges />} />
         <Route path="/volunteer/notifications" element={<VolunteerNotifications />} />
-         
+
         {/* Organization */}
         <Route path="/organization/login" element={<OrganizationLogin />} />
         <Route path="/organization/signup" element={<OrganizationSignup />} />
@@ -83,11 +84,10 @@ export default function App() {
         <Route path="/organization/dashboard" element={<OrganizationDashboard />} />
         <Route path="/organization/opportunities" element={<MyOpportunity />} />
         <Route path="/organization/forgot-password" element={<ForgotPassword />} />
-        <Route path="/organization/profile" element={<OrganizationProfile/>} />
-        <Route path="/organization/manage" element={< ManageVolunteers/>} />
-        <Route path="/organization/reports" element={<OrganizationReports/>} />
+        <Route path="/organization/profile" element={<OrganizationProfile />} />
+        <Route path="/organization/manage" element={<ManageVolunteers />} />
+        <Route path="/organization/reports" element={<OrganizationReports />} />
         <Route path="/organization/notifications" element={<OrganizationNotifications />} />
-
       </Routes>
 
       <ToastContainer position="top-right" autoClose={2000} hideProgressBar />

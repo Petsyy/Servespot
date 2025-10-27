@@ -40,8 +40,12 @@ export default function ManageVolunteers() {
 
         res.data.forEach((opp) => {
           (opp.volunteers || []).forEach((vol) => {
+            // ✅ Create unique ID by combining volunteer ID and opportunity ID
+            const uniqueId = `${vol._id}-${opp._id}`;
+            
             allVolunteers.push({
-              id: vol._id,
+              id: uniqueId, // ✅ Use unique composite ID
+              volunteerId: vol._id, // Keep original volunteer ID for API calls
               name:
                 vol.firstName && vol.lastName
                   ? `${vol.firstName} ${vol.lastName}`
@@ -98,8 +102,9 @@ export default function ManageVolunteers() {
     if (!selectedVolunteer) return;
     try {
       setLoadingAction(true);
+      // ✅ Use volunteerId (original ID) for API call, not the composite ID
       await updateVolunteerStatus(
-        selectedVolunteer.id,
+        selectedVolunteer.volunteerId,
         selectedVolunteer.opportunityId,
         newStatus
       );
@@ -211,8 +216,8 @@ export default function ManageVolunteers() {
                       className="w-full md:w-48 appearance-none bg-white border border-gray-300 rounded-lg px-3 py-2.5 pr-8 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
                     >
                       <option>All Opportunities</option>
-                      {opportunities.map((opp, index) => (
-                        <option key={`${opp.id}-${index}`} value={opp.title}>
+                      {opportunities.map((opp) => (
+                        <option key={opp.id} value={opp.title}>
                           {opp.title}
                         </option>
                       ))}
@@ -269,7 +274,7 @@ export default function ManageVolunteers() {
                     ) : (
                       filteredVolunteers.map((v) => (
                         <tr
-                          key={v.id}
+                          key={v.id} // ✅ Now using unique composite ID
                           className="hover:bg-gray-50 transition-colors group"
                         >
                           <td className="px-4 py-3">

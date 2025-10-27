@@ -55,6 +55,9 @@ import opportunityRoutes from "./src/routes/opportunity.routes.js";
 import orgVolunteerRoutes from "./src/routes/manage.routes.js";
 import notificationRoutes from "./src/routes/notification.routes.js";
 
+import testRoutes from "./src/routes/test.routes.js";
+app.use("/api/test", testRoutes);
+
 app.use("/api/admin", adminRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/volunteer", volunteerRoutes);
@@ -95,40 +98,50 @@ function cleanSocket(map, socketId) {
   }
 }
 
-// --- SOCKET CONNECTION HANDLER ---
 io.on("connection", (socket) => {
-  console.log("Socket connected:", socket.id);
+  console.log("⚡ Socket connected:", socket.id);
 
-  // Register volunteer
+  // --- REGISTER VOLUNTEER ---
   socket.on("registerVolunteer", (volunteerId) => {
-    if (!volunteerId) return;
+    if (!volunteerId) return console.warn("⚠️ Missing volunteerId for registerVolunteer");
+
+    // cleanup old sockets
     cleanSocket(global.onlineVolunteers, socket.id);
     global.onlineVolunteers.set(volunteerId, socket.id);
-    console.log(`Volunteer socket registered: ${volunteerId}`);
+
+    // ✅ join that volunteer’s private room
+    socket.join(`volunteer_${volunteerId}`);
+    console.log(`✅ Volunteer ${volunteerId} joined room volunteer_${volunteerId}`);
   });
 
-  // Register organization
+  // --- REGISTER ORGANIZATION ---
   socket.on("registerOrganization", (orgId) => {
-    if (!orgId) return;
+    if (!orgId) return console.warn("⚠️ Missing orgId for registerOrganization");
+
     cleanSocket(global.onlineOrganizations, socket.id);
     global.onlineOrganizations.set(orgId, socket.id);
-    console.log(`Organization socket registered: ${orgId}`);
+
+    socket.join(`organization_${orgId}`);
+    console.log(`✅ Organization ${orgId} joined room organization_${orgId}`);
   });
 
-  // Register admin
+  // --- REGISTER ADMIN ---
   socket.on("registerAdmin", (adminId) => {
-    if (!adminId) return;
+    if (!adminId) return console.warn("⚠️ Missing adminId for registerAdmin");
+
     cleanSocket(global.onlineAdmins, socket.id);
     global.onlineAdmins.set(adminId, socket.id);
-    console.log(`Admin socket registered: ${adminId}`);
+
+    socket.join(`admin_${adminId}`);
+    console.log(`✅ Admin ${adminId} joined room admin_${adminId}`);
   });
 
-  // Disconnect
+  // --- DISCONNECT ---
   socket.on("disconnect", () => {
     cleanSocket(global.onlineVolunteers, socket.id);
     cleanSocket(global.onlineOrganizations, socket.id);
     cleanSocket(global.onlineAdmins, socket.id);
-    console.log("Socket disconnected:", socket.id);
+    console.log("❌ Socket disconnected:", socket.id);
   });
 });
 

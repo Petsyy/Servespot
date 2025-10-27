@@ -142,7 +142,7 @@ export default function VolunteerDashboard() {
       });
     });
 
-    // --- 🚫 Suspension listener (no toast, just redirect) ---
+    // --- Suspension listener (no toast, just redirect) ---
     socket.off("suspended").on("suspended", (data) => {
       const reason = data.reason || "No reason provided.";
       console.warn(`Account suspended. Reason: ${reason}`);
@@ -489,22 +489,9 @@ export default function VolunteerDashboard() {
                               page to see it here.
                             </p>
                           </div>
-                          <button
-                            onClick={async () => {
-                              try {
-                                const res = await getOpportunityById(t._id);
-                                setSelectedOpportunity(res.data);
-                                setViewModal(true);
-                              } catch (err) {
-                                toast.error("Failed to load details.");
-                              }
-                            }}
-                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-green-700 bg-green-100 hover:bg-green-200 rounded-lg transition flex-1 sm:flex-none justify-center"
-                          >
-                            <Eye size={16} /> View
-                          </button>
                         </div>
                       )}
+
                       {loading && (
                         <div className="h-24 bg-gray-100 rounded animate-pulse" />
                       )}

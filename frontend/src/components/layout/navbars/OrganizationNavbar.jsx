@@ -8,29 +8,185 @@ import {
   Building,
   Search,
   Menu,
+  User,
 } from "lucide-react";
-import { NavLink, useNavigate } from "react-router-dom";
-import { socket } from "@/utils/socket";
-import { getOrganizationProfile } from "@/services/organization.api";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { socket, registerUserSocket } from "@/utils/socket";
+import {
+  getOrganizationProfile,
+  getOrgNotifications,
+  markOrgNotificationsRead,
+} from "@/services/organization.api";
 
-export default function OrganizationNavbar({
-  onToggleSidebar,
-  notifCount,
-  notifications: notificationsProp,
-}) {
+export default function OrganizationNavbar({ onToggleSidebar }) {
   const navigate = useNavigate();
-  const [isConnected, setIsConnected] = useState(socket.connected);
-
-  // Remove fallback dummy notifications
-  const notifications = notificationsProp ?? [];
-  const computedCount =
-    typeof notifCount === "number" ? notifCount : notifications.length;
-
+  
+  // 🧠 State for notifications
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [openNotif, setOpenNotif] = useState(false);
   const [openProfile, setOpenProfile] = useState(false);
+  const [isConnected, setIsConnected] = useState(socket.connected);
+  const [organizationName, setOrganizationName] = useState("Organization");
+  const [organizationEmail, setOrganizationEmail] = useState("organization@servespot.com");
+
   const notifRef = useRef(null);
   const profileRef = useRef(null);
 
+  /* ------------------------- Socket setup (safe) ------------------------- */
+  useEffect(() => {
+    const orgId = localStorage.getItem("organizationId") || localStorage.getItem("orgId");
+    if (!orgId) return;
+
+    registerUserSocket(orgId, "organization");
+
+    // Notification listener WITHOUT toasts
+    const handleNotif = (notif) => {
+      setNotifications((prev) => {
+        // Check if notification already exists to prevent duplicates
+        const exists = prev.some((n) => n._id === notif._id);
+        if (exists) {
+          return prev;
+        }
+
+        // Add new notification and limit to 50
+        const updated = [notif, ...prev]
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+          .slice(0, 50);
+
+        return updated;
+      });
+
+      setUnreadCount((c) => c + 1);
+    };
+
+    socket.on("newNotification", handleNotif);
+
+    const handleConnect = () => setIsConnected(true);
+    const handleDisconnect = () => setIsConnected(false);
+    socket.on("connect", handleConnect);
+    socket.on("disconnect", handleDisconnect);
+
+    return () => {
+      socket.off("newNotification", handleNotif);
+      socket.off("connect", handleConnect);
+      socket.off("disconnect", handleDisconnect);
+    };
+  }, []);
+
+  /* ------------------------- Fetch org profile ------------------------- */
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const orgId = localStorage.getItem("orgId");
+        const token = localStorage.getItem("orgToken");
+        if (!orgId || !token) return;
+
+        const res = await getOrganizationProfile(orgId);
+        const data = res?.data?.data || res?.data;
+        if (!data) return;
+
+        if (data.orgName) setOrganizationName(data.orgName);
+        if (data.email) setOrganizationEmail(data.email);
+      } catch (err) {
+        console.error("❌ Failed to fetch organization profile:", err);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
+  /* ------------------------- Fetch Bell Notifications ------------------------- */
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const orgId = localStorage.getItem("organizationId") || localStorage.getItem("orgId");
+        if (!orgId) return;
+
+        const res = await getOrgNotifications(orgId);
+        const list = Array.isArray(res?.data) ? res.data : [];
+
+        // Deduplicate notifications by ID and sort by creation date
+        const uniqueNotifs = list.reduce((acc, current) => {
+          const existingIndex = acc.findIndex((item) => item._id === current._id);
+          if (existingIndex === -1) {
+            acc.push(current);
+          } else {
+            // Keep the more recent version if duplicate
+            if (new Date(current.createdAt) > new Date(acc[existingIndex].createdAt)) {
+              acc[existingIndex] = current;
+            }
+          }
+          return acc;
+        }, []);
+
+        // Sort by creation date (newest first) and limit to 50 notifications
+        const sortedNotifs = uniqueNotifs
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+          .slice(0, 50);
+
+        setNotifications(sortedNotifs);
+        setUnreadCount(sortedNotifs.filter((n) => !n.isRead).length);
+      } catch (err) {
+        console.error("❌ Failed to fetch organization notifications:", err);
+      }
+    };
+
+    fetchNotifications();
+
+    // Set up periodic refresh every 30 seconds to keep notifications updated
+    const interval = setInterval(() => {
+      fetchNotifications();
+      cleanupOldNotifications();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  /* ------------------------- Notification functions ------------------------- */
+  // 🧩 Mark all read
+  const markAllRead = async () => {
+    try {
+      const orgId = localStorage.getItem("organizationId") || localStorage.getItem("orgId");
+      const response = await markOrgNotificationsRead(orgId);
+      setUnreadCount(0);
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+
+      // Show success feedback
+      const updatedCount = response?.data?.updatedCount || 0;
+      if (updatedCount > 0) {
+        toast.success(
+          `✅ Marked ${updatedCount} notification${updatedCount === 1 ? "" : "s"} as read`
+        );
+      } else {
+        toast.info("All notifications were already read");
+      }
+    } catch (err) {
+      console.error("Failed to mark notifications as read:", err);
+      toast.error("Failed to mark notifications as read");
+    }
+  };
+
+  // 🧩 Mark individual notification as read
+  const markNotificationRead = (notificationId) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n._id === notificationId ? { ...n, isRead: true } : n))
+    );
+    setUnreadCount((c) => Math.max(0, c - 1));
+  };
+
+  // 🧩 Clean up old notifications (older than 30 days)
+  const cleanupOldNotifications = () => {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    setNotifications((prev) =>
+      prev.filter((n) => new Date(n.createdAt) > thirtyDaysAgo)
+    );
+  };
+
+  /* ------------------------- Outside click/ESC close ------------------------- */
   useEffect(() => {
     const onClick = (e) => {
       if (notifRef.current && !notifRef.current.contains(e.target))
@@ -52,59 +208,11 @@ export default function OrganizationNavbar({
     };
   }, []);
 
-  const [organizationName, setOrganizationName] = useState("Organization");
-  const [organizationEmail, setOrganizationEmail] = useState(
-    "organization@servespot.com"
-  );
-
-  useEffect(() => {
-    const fetchOrgProfile = async () => {
-      try {
-        const orgId = localStorage.getItem("orgId");
-        const token = localStorage.getItem("orgToken");
-        if (!orgId || !token) return;
-
-        const res = await getOrganizationProfile(orgId);
-        const data = res.data?.data || res.data;
-
-        if (data) {
-          if (data.orgName) setOrganizationName(data.orgName);
-          if (data.email) setOrganizationEmail(data.email);
-        }
-      } catch (err) {
-        console.error("❌ Failed to fetch organization profile:", err);
-      }
-    };
-
-    fetchOrgProfile();
-  }, []);
-
-  useEffect(() => {
-    const handleConnect = () => {
-      console.log("Navbar detected socket connect");
-      setIsConnected(true);
-    };
-    const handleDisconnect = () => {
-      console.log("Navbar detected socket disconnect");
-      setIsConnected(false);
-    };
-
-    // Listen for socket events
-    socket.on("connect", handleConnect);
-    socket.on("disconnect", handleDisconnect);
-
-    // Force re-check of state immediately
-    setIsConnected(socket.connected);
-
-    // Ensure connection is active
-    if (!socket.connected) socket.connect();
-
-    // Cleanup
-    return () => {
-      socket.off("connect", handleConnect);
-      socket.off("disconnect", handleDisconnect);
-    };
-  }, []);
+  /* ------------------------- Logout ------------------------- */
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate("/organization/login");
+  };
 
   const initials = useMemo(() => {
     return organizationName
@@ -115,19 +223,12 @@ export default function OrganizationNavbar({
       .toUpperCase();
   }, [organizationName]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("orgToken");
-    localStorage.removeItem("activeRole");
-    localStorage.removeItem("organizationId");
-    localStorage.removeItem("orgId");
-    localStorage.removeItem("orgName");
-    localStorage.removeItem("orgEmail");
-    navigate("/organization/login");
-  };
+  // Calculate unread count for notification badge
+  const computedUnreadCount = notifications.filter((n) => !n.isRead).length;
 
   const profileMenuItems = [
     {
-      icon: Building,
+      icon: UserCircle,
       label: "Profile",
       onClick: () => navigate("/organization/profile"),
     },
@@ -139,15 +240,12 @@ export default function OrganizationNavbar({
     },
   ];
 
-  // Calculate unread count for notification badge
-  const computedUnreadCount = notifications.filter((n) => !n.isRead).length;
-
+  /* ------------------------- Render ------------------------- */
   return (
     <header className="sticky top-0 z-30 backdrop-blur bg-white/70 border-b border-gray-200">
       <div className="h-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         {/* Left: Sidebar Toggle + Brand */}
         <div className="flex items-center gap-3">
-          {/* Hamburger Menu - Only visible on mobile */}
           <button
             onClick={onToggleSidebar}
             className="md:hidden p-2 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors"
@@ -162,12 +260,11 @@ export default function OrganizationNavbar({
 
         {/* Right: Notifications & Profile */}
         <div className="flex items-center gap-2 sm:gap-3">
-          {/* Mobile Search Button - Visible only on mobile */}
           <button className="md:hidden p-2 rounded-lg hover:bg-gray-100 text-gray-600">
             <Search size={20} />
           </button>
 
-          {/* Socket Status */}
+          {/* Live Connection Indicator */}
           <div
             className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full border ${
               isConnected
@@ -183,7 +280,7 @@ export default function OrganizationNavbar({
             {isConnected ? "Connected" : "Disconnected"}
           </div>
 
-          {/* Notifications - Updated UI */}
+          {/* Notifications - Updated UI (same as volunteer) */}
           <div className="relative" ref={notifRef}>
             <button
               onClick={() => setOpenNotif((v) => !v)}
@@ -201,46 +298,71 @@ export default function OrganizationNavbar({
               <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-50 animate-in fade-in zoom-in-95">
                 {/* Notification Header */}
                 <div className="px-4 py-3 border-b border-gray-100 bg-green-50/80">
-                  <p className="text-sm font-semibold text-gray-800">
-                    Notifications
-                  </p>
-                  <p className="text-xs text-green-600 mt-1">
-                    {computedUnreadCount} unread{" "}
-                    {computedUnreadCount === 1
-                      ? "notification"
-                      : "notifications"}
-                  </p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-gray-800">
+                        Notifications
+                      </p>
+                      <p className="text-xs text-green-600 mt-1">
+                        {computedUnreadCount} unread{" "}
+                        {computedUnreadCount === 1
+                          ? "notification"
+                          : "notifications"}
+                      </p>
+                    </div>
+                    {computedUnreadCount > 0 && (
+                      <button
+                        onClick={markAllRead}
+                        className="text-xs text-green-600 hover:text-green-700 font-medium px-2 py-1 rounded hover:bg-green-50 transition-colors"
+                      >
+                        Mark all read
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {/* Notifications List */}
-                {notifications.length ? (
+                {notifications && notifications.length ? (
                   <ul className="max-h-72 overflow-auto">
-                    {notifications.slice(0, 5).map((n) => (
-                      <li
-                        key={n.id}
-                        className={`px-4 py-3 text-sm flex items-start gap-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors ${
-                          !n.isRead ? "bg-green-50/70" : ""
-                        }`}
-                      >
-                        <div className="w-8 h-8 rounded-lg bg-green-50 text-green-600 grid place-items-center flex-shrink-0 mt-0.5">
-                          {n.icon || <Bell size={16} />}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-gray-900 font-medium truncate">
-                            {n.title}
-                          </p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            {n.message || ""}
-                          </p>
-                          <p className="text-xs text-gray-400 mt-1">
-                            {new Date().toLocaleString(undefined, {
-                              dateStyle: "medium",
-                              timeStyle: "short",
-                            })}
-                          </p>
-                        </div>
-                      </li>
-                    ))}
+                    {notifications
+                      // 🧹 Remove duplicates by ID
+                      .filter(
+                        (n, index, arr) =>
+                          index === arr.findIndex((x) => x._id === n._id)
+                      )
+                      .slice(0, 5)
+                      .map((n, i) => (
+                        <li
+                          key={`${n._id || "notif"}-${i}`} // ✅ unique + safe
+                          onClick={() => markNotificationRead(n._id)}
+                          className={`px-4 py-3 text-sm flex items-start gap-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors cursor-pointer ${
+                            !n.isRead ? "bg-green-50/70" : ""
+                          }`}
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-green-50 text-green-600 grid place-items-center flex-shrink-0 mt-0.5">
+                            <Bell size={16} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between">
+                              <p className="text-gray-900 font-medium truncate">
+                                {n.title}
+                              </p>
+                              {!n.isRead && (
+                                <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0 ml-2"></div>
+                              )}
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">
+                              {n.message}
+                            </p>
+                            <p className="text-xs text-gray-400 mt-1">
+                              {new Date(n.createdAt).toLocaleString(undefined, {
+                                dateStyle: "medium",
+                                timeStyle: "short",
+                              })}
+                            </p>
+                          </div>
+                        </li>
+                      ))}
                   </ul>
                 ) : (
                   <div className="px-4 py-8 text-center">
@@ -267,7 +389,7 @@ export default function OrganizationNavbar({
             )}
           </div>
 
-          {/* Profile Dropdown */}
+          {/* 👤 Profile Dropdown (similar to volunteer) */}
           <div className="relative" ref={profileRef}>
             <button
               onClick={() => setOpenProfile((v) => !v)}
@@ -280,9 +402,7 @@ export default function OrganizationNavbar({
                 <p className="text-sm font-medium text-gray-800 leading-tight">
                   {organizationName}
                 </p>
-                <p className="text-xs text-gray-500 leading-tight">
-                  Organization
-                </p>
+                <p className="text-xs text-gray-500 leading-tight">Organization</p>
               </div>
               <ChevronDown
                 size={16}
@@ -339,9 +459,7 @@ export default function OrganizationNavbar({
 
                 {/* Footer */}
                 <div className="px-4 py-2 border-t border-gray-100 bg-gray-50/50">
-                  <p className="text-xs text-gray-500">
-                    ServeSpot Organization
-                  </p>
+                  <p className="text-xs text-gray-500">ServeSpot Organization</p>
                 </div>
               </div>
             )}

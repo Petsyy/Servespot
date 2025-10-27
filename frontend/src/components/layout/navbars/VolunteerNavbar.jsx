@@ -15,7 +15,10 @@ import {
 import { NavLink, useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import { toast } from "react-toastify";
-import { getVolunteerNotifications, markVolunteerNotificationsRead } from "@/services/volunteer.api";
+import {
+  getVolunteerNotifications,
+  markVolunteerNotificationsRead,
+} from "@/services/volunteer.api";
 import API from "@/services/api";
 import { socket } from "@/utils/socket";
 import { getVolunteerProfile } from "@/services/volunteer.api";
@@ -29,11 +32,9 @@ export default function VolunteerNavbar({ onToggleSidebar }) {
   const [openNotif, setOpenNotif] = useState(false);
   const [openProfile, setOpenProfile] = useState(false);
   const [isConnected, setIsConnected] = useState(socket.connected);
-  
 
   const notifRef = useRef(null);
   const profileRef = useRef(null);
-  
 
   // 🧩 Get volunteer name (same logic you had)
   const getVolunteerName = () => {
@@ -57,35 +58,37 @@ export default function VolunteerNavbar({ onToggleSidebar }) {
     return directName?.trim() || "Volunteer";
   };
 
-const [volunteerName, setVolunteerFullName] = useState("Volunteer");
-const [volunteerEmail, setVolunteerEmail] = useState("volunteer@servespot.com");
+  const [volunteerName, setVolunteerFullName] = useState("Volunteer");
+  const [volunteerEmail, setVolunteerEmail] = useState(
+    "volunteer@servespot.com"
+  );
 
   useEffect(() => {
-  const fetchVolunteerProfile = async () => {
-    try {
-      const token = localStorage.getItem("volToken");
-      if (!token) return;
+    const fetchVolunteerProfile = async () => {
+      try {
+        const token = localStorage.getItem("volToken");
+        if (!token) return;
 
-      const res = await getVolunteerProfile();
-      const data = res.data;
+        const res = await getVolunteerProfile();
+        const data = res.data;
 
-      if (data) {
-        // Assuming your backend sends { data: { firstName, lastName, email } }
-        const user = data.data || data;
-        const fullName =
-          user.fullName ||
-          `${user.firstName || ""} ${user.lastName || ""}`.trim();
+        if (data) {
+          // Assuming your backend sends { data: { firstName, lastName, email } }
+          const user = data.data || data;
+          const fullName =
+            user.fullName ||
+            `${user.firstName || ""} ${user.lastName || ""}`.trim();
 
-        if (fullName) setVolunteerFullName(fullName);
-        if (user.email) setVolunteerEmail(user.email);
+          if (fullName) setVolunteerFullName(fullName);
+          if (user.email) setVolunteerEmail(user.email);
+        }
+      } catch (err) {
+        console.error("❌ Failed to fetch volunteer profile:", err);
       }
-    } catch (err) {
-      console.error("❌ Failed to fetch volunteer profile:", err);
-    }
-  };
+    };
 
-  fetchVolunteerProfile();
-}, []);
+    fetchVolunteerProfile();
+  }, []);
 
   // 🧩 Socket connection only - NO TOASTS in navbar
   useEffect(() => {
@@ -97,28 +100,27 @@ const [volunteerEmail, setVolunteerEmail] = useState("volunteer@servespot.com");
     // Notification listener WITHOUT toasts - let dashboard handle them
     socket.on("newNotification", (notif) => {
       // NO TOAST HERE - Dashboard handles all toast notifications
-      
+
       setNotifications((prev) => {
         // Check if notification already exists to prevent duplicates
-        const exists = prev.some(n => n._id === notif._id);
+        const exists = prev.some((n) => n._id === notif._id);
         if (exists) {
           return prev;
         }
-        
+
         // Add new notification and limit to 50
         const updated = [notif, ...prev]
           .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
           .slice(0, 50);
-        
+
         return updated;
       });
-      
+
       setUnreadCount((c) => c + 1);
     });
 
     return () => socket.off("newNotification");
   }, []);
-  
 
   useEffect(() => {
     // Update state when socket connects/disconnects
@@ -144,11 +146,13 @@ const [volunteerEmail, setVolunteerEmail] = useState("volunteer@servespot.com");
       const response = await markVolunteerNotificationsRead();
       setUnreadCount(0);
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-      
+
       // Show success feedback
       const updatedCount = response?.data?.updatedCount || 0;
       if (updatedCount > 0) {
-        toast.success(`✅ Marked ${updatedCount} notification${updatedCount === 1 ? '' : 's'} as read`);
+        toast.success(
+          `✅ Marked ${updatedCount} notification${updatedCount === 1 ? "" : "s"} as read`
+        );
       } else {
         toast.info("All notifications were already read");
       }
@@ -160,10 +164,8 @@ const [volunteerEmail, setVolunteerEmail] = useState("volunteer@servespot.com");
 
   // 🧩 Mark individual notification as read
   const markNotificationRead = (notificationId) => {
-    setNotifications((prev) => 
-      prev.map((n) => 
-        n._id === notificationId ? { ...n, isRead: true } : n
-      )
+    setNotifications((prev) =>
+      prev.map((n) => (n._id === notificationId ? { ...n, isRead: true } : n))
     );
     setUnreadCount((c) => Math.max(0, c - 1));
   };
@@ -172,8 +174,8 @@ const [volunteerEmail, setVolunteerEmail] = useState("volunteer@servespot.com");
   const cleanupOldNotifications = () => {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    
-    setNotifications((prev) => 
+
+    setNotifications((prev) =>
       prev.filter((n) => new Date(n.createdAt) > thirtyDaysAgo)
     );
   };
@@ -206,26 +208,31 @@ const [volunteerEmail, setVolunteerEmail] = useState("volunteer@servespot.com");
         const res = await getVolunteerNotifications();
         if (res?.data) {
           const notifs = Array.isArray(res.data) ? res.data : [];
-          
+
           // Deduplicate notifications by ID and sort by creation date
           const uniqueNotifs = notifs.reduce((acc, current) => {
-            const existingIndex = acc.findIndex(item => item._id === current._id);
+            const existingIndex = acc.findIndex(
+              (item) => item._id === current._id
+            );
             if (existingIndex === -1) {
               acc.push(current);
             } else {
               // Keep the more recent version if duplicate
-              if (new Date(current.createdAt) > new Date(acc[existingIndex].createdAt)) {
+              if (
+                new Date(current.createdAt) >
+                new Date(acc[existingIndex].createdAt)
+              ) {
                 acc[existingIndex] = current;
               }
             }
             return acc;
           }, []);
-          
+
           // Sort by creation date (newest first) and limit to 50 notifications
           const sortedNotifs = uniqueNotifs
             .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
             .slice(0, 50);
-          
+
           setNotifications(sortedNotifs);
           setUnreadCount(sortedNotifs.filter((n) => !n.isRead).length);
         }
@@ -235,13 +242,13 @@ const [volunteerEmail, setVolunteerEmail] = useState("volunteer@servespot.com");
     };
 
     fetchNotifs();
-    
+
     // Set up periodic refresh every 30 seconds to keep notifications updated
     const interval = setInterval(() => {
       fetchNotifs();
       cleanupOldNotifications();
     }, 30000);
-    
+
     return () => clearInterval(interval);
   }, []);
 
@@ -274,7 +281,7 @@ const [volunteerEmail, setVolunteerEmail] = useState("volunteer@servespot.com");
   ];
 
   // Calculate unread count for notification badge
-  const computedUnreadCount = notifications.filter(n => !n.isRead).length;
+  const computedUnreadCount = notifications.filter((n) => !n.isRead).length;
 
   return (
     <header className="sticky top-0 z-30 backdrop-blur bg-white/70 border-b border-gray-200">
@@ -339,7 +346,10 @@ const [volunteerEmail, setVolunteerEmail] = useState("volunteer@servespot.com");
                         Notifications
                       </p>
                       <p className="text-xs text-green-600 mt-1">
-                        {computedUnreadCount} unread {computedUnreadCount === 1 ? 'notification' : 'notifications'}
+                        {computedUnreadCount} unread{" "}
+                        {computedUnreadCount === 1
+                          ? "notification"
+                          : "notifications"}
                       </p>
                     </div>
                     {computedUnreadCount > 0 && (
@@ -356,39 +366,52 @@ const [volunteerEmail, setVolunteerEmail] = useState("volunteer@servespot.com");
                 {/* Notifications List */}
                 {notifications && notifications.length ? (
                   <ul className="max-h-72 overflow-auto">
-                    {notifications.slice(0, 5).map((n, i) => (
-                      <li
-                        key={n._id || i}
-                        onClick={() => markNotificationRead(n._id)}
-                        className={`px-4 py-3 text-sm flex items-start gap-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors cursor-pointer ${
-                          !n.isRead ? "bg-green-50/70" : ""
-                        }`}
-                      >
-                        <div className="w-8 h-8 rounded-lg bg-green-50 text-green-600 grid place-items-center flex-shrink-0 mt-0.5">
-                          <Bell size={16} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <p className="text-gray-900 font-medium truncate">{n.title}</p>
-                            {!n.isRead && (
-                              <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0 ml-2"></div>
-                            )}
+                    {notifications
+                      // 🧹 Remove duplicates by ID
+                      .filter(
+                        (n, index, arr) =>
+                          index === arr.findIndex((x) => x._id === n._id)
+                      )
+                      .slice(0, 5)
+                      .map((n, i) => (
+                        <li
+                          key={`${n._id || "notif"}-${i}`} // ✅ unique + safe
+                          onClick={() => markNotificationRead(n._id)}
+                          className={`px-4 py-3 text-sm flex items-start gap-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors cursor-pointer ${
+                            !n.isRead ? "bg-green-50/70" : ""
+                          }`}
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-green-50 text-green-600 grid place-items-center flex-shrink-0 mt-0.5">
+                            <Bell size={16} />
                           </div>
-                          <p className="text-xs text-gray-500 mt-1">{n.message}</p>
-                          <p className="text-xs text-gray-400 mt-1">
-                            {new Date(n.createdAt).toLocaleString(undefined, {
-                              dateStyle: "medium",
-                              timeStyle: "short",
-                            })}
-                          </p>
-                        </div>
-                      </li>
-                    ))}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between">
+                              <p className="text-gray-900 font-medium truncate">
+                                {n.title}
+                              </p>
+                              {!n.isRead && (
+                                <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0 ml-2"></div>
+                              )}
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">
+                              {n.message}
+                            </p>
+                            <p className="text-xs text-gray-400 mt-1">
+                              {new Date(n.createdAt).toLocaleString(undefined, {
+                                dateStyle: "medium",
+                                timeStyle: "short",
+                              })}
+                            </p>
+                          </div>
+                        </li>
+                      ))}
                   </ul>
                 ) : (
                   <div className="px-4 py-8 text-center">
                     <Bell className="mx-auto mb-2 text-gray-300 w-8 h-8" />
-                    <p className="text-sm text-gray-500">No new notifications</p>
+                    <p className="text-sm text-gray-500">
+                      No new notifications
+                    </p>
                   </div>
                 )}
 
@@ -465,7 +488,12 @@ const [volunteerEmail, setVolunteerEmail] = useState("volunteer@servespot.com");
                           : "text-gray-700 hover:bg-gray-50"
                       }`}
                     >
-                      <item.icon size={16} className={item.danger ? "text-red-500" : "text-gray-400"} />
+                      <item.icon
+                        size={16}
+                        className={
+                          item.danger ? "text-red-500" : "text-gray-400"
+                        }
+                      />
                       <span>{item.label}</span>
                     </button>
                   ))}
@@ -473,9 +501,7 @@ const [volunteerEmail, setVolunteerEmail] = useState("volunteer@servespot.com");
 
                 {/* Footer */}
                 <div className="px-4 py-2 border-t border-gray-100 bg-gray-50/50">
-                  <p className="text-xs text-gray-500">
-                    ServeSpot Volunteer
-                  </p>
+                  <p className="text-xs text-gray-500">ServeSpot Volunteer</p>
                 </div>
               </div>
             )}
