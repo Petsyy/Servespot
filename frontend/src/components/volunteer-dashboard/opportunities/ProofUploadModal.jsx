@@ -42,7 +42,12 @@ export default function ProofUploadModal({
       onClose();
     } catch (err) {
       console.error("❌ Proof upload failed:", err);
-      toast.error(err.response?.data?.message || "Failed to submit proof");
+      const errorMessage = err.response?.data?.message;
+      if (errorMessage && errorMessage.includes("Invalid image type")) {
+        toast.error("Please upload only JPG, JPEG, or PNG image files.");
+      } else {
+        toast.error(errorMessage || "Failed to submit proof. Please try again.");
+      }
     } finally {
       setSubmitting(false);
     }

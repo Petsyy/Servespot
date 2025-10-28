@@ -14,6 +14,7 @@ import {
   Info,
   Trophy,
   X,
+  Users,
 } from "lucide-react";
 import VolSidebar from "@/components/layout/sidebars/VolSidebar";
 import VolunteerNavbar from "@/components/layout/navbars/VolunteerNavbar";
@@ -548,6 +549,10 @@ export default function VolunteerDashboard() {
                                 {t.location}
                               </span>
                             )}
+                            <span className="flex items-center gap-2">
+                              <Users size={16} className="text-green-600" />
+                              {t.volunteers?.length || 0} / {t.volunteersNeeded || 1} volunteers
+                            </span>
                           </div>
 
                           <div className="flex flex-wrap gap-2">
@@ -779,7 +784,7 @@ export default function VolunteerDashboard() {
         </main>
       </div>
 
-      {/* ✅ Proof Modal */}
+      {/* Proof Modal */}
       {showProofModal && (
         <ProofUploadModal
           opportunityId={selectedTaskId}
@@ -788,7 +793,7 @@ export default function VolunteerDashboard() {
         />
       )}
 
-      {/* ✅ Enhanced View Opportunity Modal */}
+      {/* Enhanced View Opportunity Modal */}
       {viewModal && selectedOpportunity && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-scaleIn">
@@ -874,7 +879,7 @@ export default function VolunteerDashboard() {
                 )}
 
                 {selectedOpportunity.location && (
-                  <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl border border-gray-200 md:col-span-2">
+                  <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
                     <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
                       <MapPin size={20} className="text-orange-600" />
                     </div>
@@ -888,6 +893,18 @@ export default function VolunteerDashboard() {
                     </div>
                   </div>
                 )}
+
+                <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                  <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                    <Users size={20} className="text-green-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 font-medium">Volunteers</p>
+                    <p className="font-semibold text-gray-900">
+                      {selectedOpportunity.volunteers?.length || 0} / {selectedOpportunity.volunteersNeeded || 1}
+                    </p>
+                  </div>
+                </div>
               </div>
 
               {/* Description */}

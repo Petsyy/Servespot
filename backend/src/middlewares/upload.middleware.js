@@ -2,7 +2,7 @@ import multer from "multer";
 import path from "path";
 
 /* ---------------------------------------------
-   🧱 Shared Storage Engine
+   Shared Storage Engine
 --------------------------------------------- */
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, "uploads/"),
@@ -14,7 +14,7 @@ const storage = multer.diskStorage({
 });
 
 /* ---------------------------------------------
-   🏢 Organization Documents Upload
+   Organization Documents Upload
    Allowed: .pdf, .docx, .jpg, .jpeg, .png
 --------------------------------------------- */
 const docFilter = (_req, file, cb) => {
@@ -38,11 +38,11 @@ export const uploadDocs = multer({
 });
 
 /* ---------------------------------------------
-   🌍 Opportunity Image Upload
+   Opportunity Image Upload
    Allowed: .jpg, .jpeg, .png ONLY
 --------------------------------------------- */
 const imageFilter = (_req, file, cb) => {
-  const allowed = ["image/jpeg", "image/png"];
+  const allowed = ["image/jpeg", "image/png", "image/jpg"];
   if (allowed.includes(file.mimetype)) {
     cb(null, true);
   } else {

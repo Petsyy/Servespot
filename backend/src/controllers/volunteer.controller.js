@@ -118,9 +118,7 @@ export const updateMyProfile = async (req, res) => {
 
 export const getMyTasks = async (req, res) => {
   try {
-    const volunteerId = req.user.id; // decoded from token
-
-    const tasks = await Opportunity.find({ volunteers: volunteerId })
+    const tasks = await Opportunity.find({})
       .populate("organization", "orgName location")
       .sort({ date: -1 });
 
