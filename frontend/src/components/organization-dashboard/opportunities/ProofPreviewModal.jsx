@@ -1,59 +1,99 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { X, CheckCircle, XCircle, Image, Loader2 } from "lucide-react";
 import axios from "axios";
 import { toast } from "react-toastify";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000";
+const API_BASE = (import.meta.env.VITE_API_BASE || "http://localhost:5000").replace(/\/+$/, "");
+
+function getVolunteerId(v) {
+  if (!v) return "";
+  return typeof v === "string" ? v : v._id || "";
+}
 
 export default function ProofReviewModal({ opportunityId, onClose }) {
   const [proofs, setProofs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [reviewing, setReviewing] = useState(null);
+  const [reviewing, setReviewing] = useState(null); // stores volunteerId currently being reviewed
 
   // Load all submitted proofs for this opportunity
   useEffect(() => {
-    async function fetchProofs() {
+    let alive = true;
+    (async () => {
       try {
         const res = await axios.get(`${API_BASE}/api/opportunities/view/${opportunityId}`);
+        if (!alive) return;
         setProofs(res.data.completionProofs || []);
       } catch (err) {
         console.error("Failed to load proofs:", err);
         toast.error("Failed to load volunteer proofs");
       } finally {
-        setLoading(false);
+        if (alive) setLoading(false);
       }
-    }
-    fetchProofs();
+    })();
+    return () => {
+      alive = false;
+    };
   }, [opportunityId]);
 
-  const handleReview = async (volunteerId, action) => {
+  const handleReview = useCallback(async (volunteerId, action) => {
+    // Optimistic update: apply immediately
+    setReviewing(volunteerId);
+
+    setProofs((prevProofs) =>
+      prevProofs.map((p) => {
+        const pId = getVolunteerId(p.volunteer);
+        if (pId === volunteerId && p.status === "Pending") {
+          return {
+            ...p,
+            status: action === "approve" ? "Approved" : "Rejected",
+            // set timestamps optimistically
+            ...(action === "reject"
+              ? { rejectedAt: new Date().toISOString() }
+              : {}),
+          };
+        }
+        return p;
+      })
+    );
+
     try {
-      setReviewing(volunteerId);
-      const token = localStorage.getItem("token"); // Organization token
+      const token =
+        localStorage.getItem("ic_org_token") ||
+        localStorage.getItem("ic_token") ||
+        localStorage.getItem("token") ||
+        "";
+
       const res = await axios.patch(
         `${API_BASE}/api/opportunities/${opportunityId}/proof/${volunteerId}/review`,
         { action },
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         }
       );
-      toast.success(res.data.message);
-
-      // Update UI
-      setProofs((prev) =>
-        prev.map((p) =>
-          p.volunteer === volunteerId ? { ...p, status: action === "approve" ? "Approved" : "Rejected" } : p
-        )
-      );
+      toast.success(res?.data?.message || "Review updated");
     } catch (err) {
       console.error("Review failed:", err);
-      toast.error("Failed to update review status");
+      // Revert on failure
+      setProofs((prevProofs) =>
+        prevProofs.map((p) => {
+          const pId = getVolunteerId(p.volunteer);
+          if (pId === volunteerId) {
+            return {
+              ...p,
+              status: "Pending",
+              rejectedAt: undefined,
+            };
+          }
+          return p;
+        })
+      );
+      toast.error(
+        err?.response?.data?.message || "Failed to update review status"
+      );
     } finally {
       setReviewing(null);
     }
-  };
+  }, [opportunityId]);
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
@@ -80,114 +120,121 @@ export default function ProofReviewModal({ opportunityId, onClose }) {
           </div>
         ) : (
           <div className="space-y-6">
-            {proofs.map((proof) => (
-              <div
-                key={proof._id}
-                className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-800">
-                      {proof.volunteer?.firstName
-                        ? `${proof.volunteer.firstName} ${proof.volunteer.lastName}`
-                        : "Volunteer"}
-                    </h3>
-                    <div className="text-sm text-gray-600">
-                      <div className="flex items-center gap-2">
-                        <span>Status:</span>
-                        <span
-                          className={`font-semibold px-2 py-1 rounded-full text-xs ${
-                            proof.status === "Approved"
-                              ? "bg-green-100 text-green-700"
-                              : proof.status === "Rejected"
-                              ? "bg-red-100 text-red-700"
-                              : "bg-yellow-100 text-yellow-700"
-                          }`}
-                        >
-                          {proof.status}
-                        </span>
+            {proofs.map((proof) => {
+              const volunteerId = getVolunteerId(proof.volunteer);
+              const isThisRowLoading = reviewing === volunteerId;
+
+              return (
+                <div
+                  key={proof._id || volunteerId}
+                  className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-800">
+                        {proof.volunteer?.firstName
+                          ? `${proof.volunteer.firstName} ${proof.volunteer.lastName}`
+                          : "Volunteer"}
+                      </h3>
+                      <div className="text-sm text-gray-600">
+                        <div className="flex items-center gap-2">
+                          <span>Status:</span>
+                          <span
+                            className={`font-semibold px-2 py-1 rounded-full text-xs ${
+                              proof.status === "Approved"
+                                ? "bg-green-100 text-green-700"
+                                : proof.status === "Rejected"
+                                ? "bg-red-100 text-red-700"
+                                : "bg-yellow-100 text-yellow-700"
+                            }`}
+                          >
+                            {proof.status}
+                          </span>
+                        </div>
+                        {proof.status === "Rejected" && proof.rejectedAt && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            Rejected on:{" "}
+                            {new Date(proof.rejectedAt).toLocaleString()}
+                          </div>
+                        )}
+                        {proof.status === "Pending" && proof.submittedAt && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            Submitted:{" "}
+                            {new Date(proof.submittedAt).toLocaleString()}
+                          </div>
+                        )}
                       </div>
-                      {proof.status === "Rejected" && proof.rejectedAt && (
-                        <div className="text-xs text-gray-500 mt-1">
-                          Rejected on: {new Date(proof.rejectedAt).toLocaleString()}
-                        </div>
-                      )}
-                      {proof.status === "Pending" && (
-                        <div className="text-xs text-gray-500 mt-1">
-                          Submitted: {new Date(proof.submittedAt).toLocaleString()}
-                        </div>
+                    </div>
+
+                    <div className="flex gap-2">
+                      {proof.status === "Pending" ? (
+                        <>
+                          <button
+                            disabled={isThisRowLoading}
+                            onClick={() => handleReview(volunteerId, "approve")}
+                            className="flex items-center gap-1 px-3 py-1.5 bg-green-100 hover:bg-green-200 text-green-700 rounded-md text-sm font-medium disabled:opacity-60"
+                          >
+                            {isThisRowLoading ? (
+                              <Loader2 size={16} className="animate-spin" />
+                            ) : (
+                              <CheckCircle size={16} />
+                            )}
+                            Approve
+                          </button>
+
+                          <button
+                            disabled={isThisRowLoading}
+                            onClick={() => handleReview(volunteerId, "reject")}
+                            className="flex items-center gap-1 px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-md text-sm font-medium disabled:opacity-60"
+                          >
+                            {isThisRowLoading ? (
+                              <Loader2 size={16} className="animate-spin" />
+                            ) : (
+                              <XCircle size={16} />
+                            )}
+                            Reject
+                          </button>
+                        </>
+                      ) : proof.status === "Approved" ? (
+                        <span className="flex items-center gap-1 px-3 py-1.5 bg-green-100 text-green-700 rounded-md text-sm font-medium">
+                          <CheckCircle size={16} />
+                          Approved
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-1 px-3 py-1.5 bg-red-100 text-red-700 rounded-md text-sm font-medium">
+                          <XCircle size={16} />
+                          Rejected
+                        </span>
                       )}
                     </div>
                   </div>
 
-                  <div className="flex gap-2">
-                    {proof.status === "Pending" && (
-                      <>
-                        <button
-                          disabled={reviewing === proof.volunteer}
-                          onClick={() =>
-                            handleReview(proof.volunteer, "approve")
-                          }
-                          className="flex items-center gap-1 px-3 py-1.5 bg-green-100 hover:bg-green-200 text-green-700 rounded-md text-sm font-medium"
-                        >
-                          <CheckCircle size={16} />
-                          Approve
-                        </button>
+                  {proof.message && (
+                    <p className="text-gray-700 text-sm mb-2 border-l-2 border-blue-200 pl-3 italic">
+                      “{proof.message}”
+                    </p>
+                  )}
 
-                        <button
-                          disabled={reviewing === proof.volunteer}
-                          onClick={() =>
-                            handleReview(proof.volunteer, "reject")
-                          }
-                          className="flex items-center gap-1 px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-md text-sm font-medium"
-                        >
-                          <XCircle size={16} />
-                          Reject
-                        </button>
-                      </>
-                    )}
-                    
-                    {proof.status === "Approved" && (
-                      <span className="flex items-center gap-1 px-3 py-1.5 bg-green-100 text-green-700 rounded-md text-sm font-medium">
-                        <CheckCircle size={16} />
-                        Approved
-                      </span>
-                    )}
-                    
-                    {proof.status === "Rejected" && (
-                      <span className="flex items-center gap-1 px-3 py-1.5 bg-red-100 text-red-700 rounded-md text-sm font-medium">
-                        <XCircle size={16} />
-                        Rejected
-                      </span>
-                    )}
-                  </div>
+                  {proof.fileUrl && (
+                    <div className="relative group">
+                      <img
+                        src={`${API_BASE}${proof.fileUrl}`}
+                        alt="proof"
+                        className="rounded-lg border border-gray-200 max-h-64 object-cover mx-auto"
+                      />
+                      <a
+                        href={`${API_BASE}${proof.fileUrl}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-sm font-medium transition"
+                      >
+                        View Full Image
+                      </a>
+                    </div>
+                  )}
                 </div>
-
-                {proof.message && (
-                  <p className="text-gray-700 text-sm mb-2 border-l-2 border-blue-200 pl-3 italic">
-                    “{proof.message}”
-                  </p>
-                )}
-
-                {proof.fileUrl && (
-                  <div className="relative group">
-                    <img
-                      src={`${API_BASE}${proof.fileUrl}`}
-                      alt="proof"
-                      className="rounded-lg border border-gray-200 max-h-64 object-cover mx-auto"
-                    />
-                    <a
-                      href={`${API_BASE}${proof.fileUrl}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-sm font-medium transition"
-                    >
-                      View Full Image
-                    </a>
-                  </div>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

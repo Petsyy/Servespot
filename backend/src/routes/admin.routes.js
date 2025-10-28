@@ -15,7 +15,7 @@ import Admin from "../models/Admin.js";
 
 const router = express.Router();
 
-router.get("/dashboard", async (req, res) => {
+router.get("/dashboard", protectAdmin, async (req, res) => {
   try {
     const totalVolunteers = await Volunteer.countDocuments();
     const totalOrganizations = await Organization.countDocuments();
@@ -270,12 +270,7 @@ router.get("/profile/:id", protectAdmin, async (req, res) => {
   }
 });
 
-/* =====================================================
-    ADMIN DASHBOARD (Example Protected)
-===================================================== */
-router.get("/dashboard", protectAdmin, (req, res) => {
-  res.status(200).json({ message: "Welcome to the Admin Dashboard" });
-});
+
 
 /* =====================================================
    ORGANIZATION MANAGEMENT

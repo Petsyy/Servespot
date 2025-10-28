@@ -63,7 +63,7 @@ export default function ImageDropzone({ onFile }) {
       role="button"
       tabIndex={0}
       className={`w-full rounded-xl border-2 border-dashed transition flex flex-col items-center justify-center p-6 cursor-pointer
-        ${hover ? "border-blue-400 bg-blue-50" : "border-gray-300 bg-white hover:border-blue-400"}
+        ${hover ? "border-green-400 bg-blue-50" : "border-gray-300 bg-white hover:border-green-400"}
       `}
     >
       {preview ? (
@@ -83,7 +83,7 @@ export default function ImageDropzone({ onFile }) {
         </div>
       ) : (
         <div className="flex flex-col items-center text-center text-gray-600">
-          <UploadCloud size={32} className="text-blue-500 mb-2" />
+          <UploadCloud size={32} className="text-green-500 mb-2" />
           <p className="text-sm font-medium">
             Click to upload or drag & drop
           </p>

@@ -732,31 +732,7 @@ export const reviewCompletionProof = async (req, res) => {
 
     await opportunity.save();
 
-    // Notify volunteer about proof approval/rejection
-    try {
-      const volunteer = await Volunteer.findById(volunteerId);
-      const org = await Organization.findById(opportunity.organization);
-
-      if (volunteer && org) {
-        await sendNotification({
-          userId: volunteer._id,
-          userModel: "Volunteer",
-          email: volunteer.email,
-          title: action === "approve" ? "Proof Approved" : "Proof Rejected",
-          message:
-            action === "approve"
-              ? `Your proof for "${opportunity.title}" by ${org.orgName} has been approved.`
-              : `Your proof for "${opportunity.title}" by ${org.orgName} was rejected. You can submit a new proof.`,
-          type: action === "approve" ? "completion" : "update",
-          channel: "both",
-          link: `/volunteer/opportunities/${id}`,
-        });
-      }
-    } catch (notifErr) {
-      console.error("Failed to send proof review notification:", notifErr);
-      // Don't fail the main request if notification fails
-    }
-
+    // Respond immediately to avoid delay
     res.status(200).json({
       message:
         action === "approve"
@@ -765,6 +741,32 @@ export const reviewCompletionProof = async (req, res) => {
       opportunityStatus: opportunity.status,
       approvedCount,
       total,
+    });
+
+    // Send notifications in background (non-blocking)
+    process.nextTick(async () => {
+      try {
+        const volunteer = await Volunteer.findById(volunteerId);
+        const org = await Organization.findById(opportunity.organization);
+
+        if (volunteer && org) {
+          await sendNotification({
+            userId: volunteer._id,
+            userModel: "Volunteer",
+            email: volunteer.email,
+            title: action === "approve" ? "Proof Approved" : "Proof Rejected",
+            message:
+              action === "approve"
+                ? `Your proof for "${opportunity.title}" by ${org.orgName} has been approved.`
+                : `Your proof for "${opportunity.title}" by ${org.orgName} was rejected. You can submit a new proof.`,
+            type: action === "approve" ? "completion" : "update",
+            channel: "both",
+            link: `/volunteer/opportunities/${id}`,
+          });
+        }
+      } catch (notifErr) {
+        console.error("Failed to send proof review notification:", notifErr);
+      }
     });
   } catch (err) {
     console.error("❌ Error reviewing proof:", err);

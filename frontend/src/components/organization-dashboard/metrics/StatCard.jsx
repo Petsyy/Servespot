@@ -1,7 +1,7 @@
 import React from "react";
 
 export default function StatCard({ icon, title, value, delta, color = "green" }) {
-  // 🎨 Define gradient themes per color
+  //  Define gradient themes per color
   const getGradient = (color) => {
     switch (color) {
       case "green":

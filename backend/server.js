@@ -99,41 +99,41 @@ function cleanSocket(map, socketId) {
 }
 
 io.on("connection", (socket) => {
-  console.log("⚡ Socket connected:", socket.id);
+  console.log("Socket connected:", socket.id);
 
   // --- REGISTER VOLUNTEER ---
   socket.on("registerVolunteer", (volunteerId) => {
-    if (!volunteerId) return console.warn("⚠️ Missing volunteerId for registerVolunteer");
+    if (!volunteerId) return console.warn("Missing volunteerId for registerVolunteer");
 
     // cleanup old sockets
     cleanSocket(global.onlineVolunteers, socket.id);
     global.onlineVolunteers.set(volunteerId, socket.id);
 
-    // ✅ join that volunteer’s private room
+    // join that volunteer’s private room
     socket.join(`volunteer_${volunteerId}`);
-    console.log(`✅ Volunteer ${volunteerId} joined room volunteer_${volunteerId}`);
+    console.log(`Volunteer ${volunteerId} joined room volunteer_${volunteerId}`);
   });
 
   // --- REGISTER ORGANIZATION ---
   socket.on("registerOrganization", (orgId) => {
-    if (!orgId) return console.warn("⚠️ Missing orgId for registerOrganization");
+    if (!orgId) return console.warn("Missing orgId for registerOrganization");
 
     cleanSocket(global.onlineOrganizations, socket.id);
     global.onlineOrganizations.set(orgId, socket.id);
 
     socket.join(`organization_${orgId}`);
-    console.log(`✅ Organization ${orgId} joined room organization_${orgId}`);
+    console.log(`Organization ${orgId} joined room organization_${orgId}`);
   });
 
   // --- REGISTER ADMIN ---
   socket.on("registerAdmin", (adminId) => {
-    if (!adminId) return console.warn("⚠️ Missing adminId for registerAdmin");
+    if (!adminId) return console.warn("Missing adminId for registerAdmin");
 
     cleanSocket(global.onlineAdmins, socket.id);
     global.onlineAdmins.set(adminId, socket.id);
 
     socket.join(`admin_${adminId}`);
-    console.log(`✅ Admin ${adminId} joined room admin_${adminId}`);
+    console.log(`Admin ${adminId} joined room admin_${adminId}`);
   });
 
   // --- DISCONNECT ---

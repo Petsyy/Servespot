@@ -404,7 +404,7 @@ export default function OpportunityBoard({
                   {!proofStatus && (
                     <button
                       onClick={() => setShowProofModal(true)}
-                      className="w-full h-10 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-medium flex items-center justify-center gap-2 transition cursor-pointer"
+                      className="w-full h-10 rounded-lg bg-green-500 hover:bg-green-600 text-white font-medium flex items-center justify-center gap-2 transition cursor-pointer"
                     >
                       <UploadCloud size={16} />
                       Submit Proof
