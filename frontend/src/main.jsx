@@ -18,42 +18,42 @@ function GlobalSocketHandler() {
     const volunteerId = localStorage.getItem("volunteerId");
     const organizationId = localStorage.getItem("organizationId");
 
-    // 🔌 Always ensure socket is connected
+    // Always ensure socket is connected
     if (!socket.connected) socket.connect();
 
-    // 🧠 Register role-specific socket
+    // Register role-specific socket
     if (role === "volunteer" && volunteerId) {
       registerUserSocket(volunteerId, "volunteer");
     } else if (role === "organization" && organizationId) {
       registerUserSocket(organizationId, "organization");
     }
 
-    // 🔔 Only bind global listeners once
+    // Only bind global listeners once
     if (!isSocketBound) {
       isSocketBound = true;
 
       socket.on("connect", () => {
-        console.log("✅ Global socket connected:", socket.id);
+        console.log("Global socket connected:", socket.id);
       });
 
       socket.on("disconnect", (reason) => {
-        console.warn("⚠️ Global socket disconnected:", reason);
+        console.warn("Global socket disconnected:", reason);
       });
 
       socket.on("newNotification", (notif) => {
-        console.log("📩 Global notification received:", notif);
-        toast.info(`🔔 ${notif.title}: ${notif.message}`, {
+        console.log("Global notification received:", notif);
+        toast.info(`${notif.title}: ${notif.message}`, {
           position: "top-right",
           autoClose: 4000,
         });
       });
     }
 
-    // 🔄 Auto refresh page on route change
+    // Auto refresh page on route change
     if (!window._lastPath) {
       window._lastPath = location.pathname;
     } else if (window._lastPath !== location.pathname) {
-      console.log("🔁 Route changed → forcing reload:", location.pathname);
+      console.log("Route changed → forcing reload:", location.pathname);
       window._lastPath = location.pathname;
       window.location.reload(); // full page reload
     }

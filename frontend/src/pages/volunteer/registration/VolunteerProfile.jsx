@@ -119,20 +119,31 @@ export default function ProfileStep({
         password: formData.password,
       });
 
-      // Save token and volunteer ID to localStorage
-      localStorage.setItem("token", loginRes.data.token);
+      // Save token and volunteer ID to localStorage (consistent with login)
+      localStorage.setItem("volToken", loginRes.data.token);
+      localStorage.setItem("token", loginRes.data.token); // also set general token
       localStorage.setItem("volunteerId", loginRes.data.user.id);
+      localStorage.setItem("volUser", JSON.stringify(loginRes.data.user));
+      localStorage.setItem("activeRole", "volunteer");
+
+      // Store volunteer name for easy access in navbar
+      const volunteerName = loginRes.data.user?.fullName || "Volunteer";
+      localStorage.setItem("volunteerName", volunteerName);
+
+      // Register volunteer socket
+      const { registerUserSocket } = await import("@/utils/socket");
+      registerUserSocket(loginRes.data.user.id, "volunteer");
 
       // fixed: reference correct field from backend
       toast.success(
         <div>
           <span className="text-sm text-black">
-            Welcome, {loginRes.data.user.fullName || "Volunteer"}!
+            Welcome, {volunteerName}!
           </span>
         </div>
       );
 
-      // 4️Redirect to volunteer homepage
+      // Redirect to volunteer homepage
       setTimeout(() => {
         navigate("/volunteer/homepage");
         if (onSubmit) onSubmit();
