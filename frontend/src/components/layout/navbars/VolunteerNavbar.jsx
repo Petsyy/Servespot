@@ -306,21 +306,7 @@ export default function VolunteerNavbar({ onToggleSidebar }) {
             <Search size={20} />
           </button>
 
-          {/* Live Connection Indicator */}
-          <div
-            className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full border ${
-              isConnected
-                ? "text-green-700 border-green-400 bg-green-50"
-                : "text-red-700 border-red-400 bg-red-50"
-            }`}
-          >
-            <span
-              className={`w-2.5 h-2.5 rounded-full ${
-                isConnected ? "bg-green-500" : "bg-red-500"
-              }`}
-            />
-            {isConnected ? "Connected" : "Disconnected"}
-          </div>
+
 
           {/* Notifications - Updated UI */}
           <div className="relative" ref={notifRef}>

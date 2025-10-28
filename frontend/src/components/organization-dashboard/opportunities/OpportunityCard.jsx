@@ -63,31 +63,31 @@ export default function OpportunityCard({
   const [expanded, setExpanded] = useState(false);
 
   // Auto-update status when slots fill
-  useEffect(() => {
-    const fetchLatestData = async () => {
-      try {
-        const res = await getOpportunityVolunteers(_id);
+  const fetchLatestData = async () => {
+    try {
+      const res = await getOpportunityVolunteers(_id);
 
-        if (Array.isArray(res.data.volunteers)) {
-          setVolList(res.data.volunteers);
-        }
-
-        if (res.data.status && res.data.status !== status) {
-          setStatus(res.data.status);
-        }
-
-        if (
-          (status === "Open" || res.data.status === "Open") &&
-          res.data.currentVolunteers >= res.data.volunteersNeeded &&
-          res.data.volunteersNeeded > 0
-        ) {
-          setStatus("In Progress");
-        }
-      } catch (err) {
-        console.warn("Auto-refresh failed:", err.message);
+      if (Array.isArray(res.data.volunteers)) {
+        setVolList(res.data.volunteers);
       }
-    };
 
+      if (res.data.status && res.data.status !== status) {
+        setStatus(res.data.status);
+      }
+
+      if (
+        (status === "Open" || res.data.status === "Open") &&
+        res.data.currentVolunteers >= res.data.volunteersNeeded &&
+        res.data.volunteersNeeded > 0
+      ) {
+        setStatus("In Progress");
+      }
+    } catch (err) {
+      console.warn("Auto-refresh failed:", err.message);
+    }
+  };
+
+  useEffect(() => {
     fetchLatestData();
 
     const interval = setInterval(fetchLatestData, 10000);
@@ -170,7 +170,7 @@ export default function OpportunityCard({
 
   return (
     <>
-      <div className="group bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-lg hover:border-blue-200 transition-all duration-300 p-6 font-sans">
+      <div className="group bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-lg hover:border-green-200 transition-all duration-300 p-6 font-sans">
         {/* Header Section */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1 min-w-0">
@@ -271,7 +271,7 @@ export default function OpportunityCard({
         <div className="flex flex-wrap gap-2 pt-4 border-t border-gray-100">
           <button
             onClick={handleViewVolunteers}
-            className="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-700 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all hover:scale-105"
+            className="flex items-center gap-2 bg-green-50 hover:bg-green-100 text-green-700 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all hover:scale-105"
           >
             <UsersIcon size={16} />
             View Volunteers
@@ -335,10 +335,10 @@ export default function OpportunityCard({
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden">
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-green-50 to-indigo-50">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <UsersIcon className="text-blue-600" size={24} />
+                <div className="p-2 bg-green-100 rounded-lg">
+                  <UsersIcon className="text-green-600" size={24} />
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900">Volunteers</h2>
@@ -360,7 +360,7 @@ export default function OpportunityCard({
             <div className="p-6 max-h-[60vh] overflow-y-auto">
               {loading ? (
                 <div className="flex flex-col items-center justify-center py-12">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mb-4"></div>
                   <p className="text-gray-600 font-medium">Loading volunteers...</p>
                 </div>
               ) : volList.length === 0 ? (
@@ -375,7 +375,7 @@ export default function OpportunityCard({
                     <span className="text-sm text-gray-500">
                       {volList.length} volunteer{volList.length !== 1 ? 's' : ''} signed up
                     </span>
-                    <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                    <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
                       {cardData.currentVolunteers}/{cardData.volunteersNeeded} slots filled
                     </span>
                   </div>
@@ -387,7 +387,7 @@ export default function OpportunityCard({
                         className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                          <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
                             {v.fullName?.[0]?.toUpperCase() || 
                              v.firstName?.[0]?.toUpperCase() || 
                              v.lastName?.[0]?.toUpperCase() || 

@@ -161,7 +161,7 @@ export default function PostedOpportunities() {
                   <option value="all">All Status</option>
                   <option value="Open">Active</option>
                   <option value="Completed">Completed</option>
-                  <option value="Draft">Draft</option>
+                  {/* <option value="Draft">Draft</option> */}
                 </select>
 
                 <select
@@ -250,10 +250,9 @@ export default function PostedOpportunities() {
                 ) : (
                   <button
                     onClick={() => navigate("/organization/dashboard")}
-                    className="flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors mx-auto"
+                    className="flex items-center gap-2 px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors mx-auto"
                   >
-                    <Plus size={18} />
-                    <span>Post First Opportunity</span>
+                    <span>Go to Dashboard</span>
                   </button>
                 )}
               </div>

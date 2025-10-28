@@ -276,16 +276,26 @@ export const volunteerSignup = async (req, res) => {
       const volunteer = await Volunteer.findById(volunteerId);
 
       if (opportunityWithOrg?.organization && volunteer) {
-        await sendNotification({
-          userId: opportunityWithOrg.organization._id,
+        // Check if a notification with the same title, userId, and message already exists
+        const existingNotification = await Notification.findOne({
+          user: opportunityWithOrg.organization._id,
           userModel: "Organization",
-          email: opportunityWithOrg.organization.email,
           title: "New Volunteer Application",
           message: `${volunteer.fullName} applied for "${opportunity.title}".`,
-          type: "update",
-          channel: "both",
-          link: `/organization/opportunities/${opportunityId}`,
         });
+
+        if (!existingNotification) {
+          await sendNotification({
+            userId: opportunityWithOrg.organization._id,
+            userModel: "Organization",
+            email: opportunityWithOrg.organization.email,
+            title: "New Volunteer Application",
+            message: `${volunteer.fullName} applied for "${opportunity.title}".`,
+            type: "update",
+            channel: "both",
+            link: `/organization/opportunities/${opportunityId}`,
+          });
+        }
       }
     } catch (notifErr) {
       console.error(

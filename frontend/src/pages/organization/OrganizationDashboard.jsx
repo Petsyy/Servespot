@@ -80,7 +80,7 @@ export default function OrganizationDashboard() {
     });
 
     socket.on("reactivated", () => {
-      toast.success("✅ Your organization account has been reactivated!", {
+      toast.success("Your organization account has been reactivated!", {
         autoClose: 5000,
       });
       localStorage.setItem("justReactivated", "true");
@@ -365,7 +365,7 @@ export default function OrganizationDashboard() {
                         Start making an impact by posting your first volunteer
                         opportunity
                       </p>
-                      <button
+                      {/* <button
                         onClick={() =>
                           canPost
                             ? setShowModal(true)
@@ -383,7 +383,7 @@ export default function OrganizationDashboard() {
                       >
                         <Plus size={20} />
                         Post First Opportunity
-                      </button>
+                      </button> */}
                     </div>
                   )}
                 </div>

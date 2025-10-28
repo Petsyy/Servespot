@@ -101,6 +101,9 @@ export const updateOrganizationStatus = async (req, res) => {
     } else if (status === "active") {
       emitToOrganization(id, "reactivated", {});
     }
+    if (status === "suspended") {
+      emitToOrganization(id, "suspended", { reason });
+    }
 
     // --- Create in-app & email notification ---
     const notifTitle =
@@ -126,6 +129,7 @@ export const updateOrganizationStatus = async (req, res) => {
       title: notifTitle,
       message: notifMsg,
       type: "update",
+      channel: "email", // or "dbOnly" depending on your helper’s options
     });
 
     // --- Notify all admins for real-time updates ---
@@ -227,6 +231,9 @@ export const updateVolunteerStatus = async (req, res) => {
       emitToVolunteer(id, "suspended", { reason: volunteer.suspensionReason });
     } else if (status === "active") {
       emitToVolunteer(id, "reactivated", {});
+    }
+    if (status === "suspended") {
+      emitToVolunteer(id, "suspended", { reason: volunteer.suspensionReason });
     }
 
     // --- Create in-app + email notification ---

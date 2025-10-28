@@ -61,7 +61,11 @@ export default function AdminNotifications() {
 
 
         // Replace all items instead of merging to avoid duplicates
-        setItems(notifications.sort(
+        const uniqueNotifications = notifications.filter(
+          (notif, index, self) =>
+            index === self.findIndex((n) => n._id === notif._id)
+        );
+        setItems(uniqueNotifications.sort(
           (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
         ));
       } catch (e) {
@@ -273,7 +277,7 @@ export default function AdminNotifications() {
       case "update":
       case "maintenance":
       case "security":
-        return <Shield className="text-blue-500 w-5 h-5" />;
+        return <Shield className="text-green-500 w-5 h-5" />;
       case "user_reactivation":
         return <CheckCircle className="text-green-600 w-5 h-5" />;
       
@@ -322,7 +326,7 @@ export default function AdminNotifications() {
                   <select
                     value={filter}
                     onChange={(e) => setFilter(e.target.value)}
-                    className="appearance-none border border-gray-300 rounded-lg px-4 py-2.5 pr-10 bg-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="appearance-none border border-gray-300 rounded-lg px-4 py-2.5 pr-10 bg-white text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   >
                     <option>All</option>
                     <option>System</option>
@@ -386,7 +390,7 @@ export default function AdminNotifications() {
                     <div
                       key={n._id}
                       className={`flex items-start gap-4 p-5 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition-all ${
-                        !n.isRead ? "bg-blue-50/70 border-blue-200" : ""
+                        !n.isRead ? "bg-green-50/70 border-green-200" : ""
                       }`}
                     >
                       <div className="p-2 bg-gray-100 rounded-lg">
@@ -399,7 +403,7 @@ export default function AdminNotifications() {
                             {n.title || "Untitled Notification"}
                           </h4>
                           {!n.isRead && (
-                            <span className="inline-block w-2 h-2 bg-blue-500 rounded-full ml-2 mt-1 flex-shrink-0" />
+                            <span className="inline-block w-2 h-2 bg-green-500 rounded-full ml-2 mt-1 flex-shrink-0" />
                           )}
                         </div>
                         <p className="text-gray-600 text-sm line-clamp-2">

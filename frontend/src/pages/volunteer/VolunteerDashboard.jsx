@@ -588,7 +588,7 @@ export default function VolunteerDashboard() {
                               it will appear here with your earned points and
                               badges.
                             </p>
-                            <button
+                            {/* <button
                               onClick={() => {
                                 if (t.proofFile) {
                                   setSelectedProof(t.proofFile);
@@ -602,7 +602,7 @@ export default function VolunteerDashboard() {
                               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-green-700 bg-green-100 hover:bg-green-200 rounded-lg transition w-full justify-center sm:w-auto"
                             >
                               <Eye size={16} /> View Proof
-                            </button>
+                            </button> */}
                           </div>
                         </div>
                       )}
