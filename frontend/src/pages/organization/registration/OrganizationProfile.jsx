@@ -29,8 +29,11 @@ export default function OrganizationProfileStep({
     const e = {};
     if (!formData.contactPerson.trim())
       e.contactPerson = "Contact person is required";
-    if (!formData.contactNumber.trim())
+    if (!formData.contactNumber.trim()) {
       e.contactNumber = "Contact number is required";
+    } else if (!/^09\d{9}$/.test(formData.contactNumber)) {
+      e.contactNumber = "Contact number must start with 09 and be 11 digits";
+    }
     if (!formData.city.trim()) e.city = "City is required";
     if (!formData.orgType) e.orgType = "Organization type is required";
     setErrors(e);
@@ -121,10 +124,15 @@ export default function OrganizationProfileStep({
 
           <FormInput
             label="Contact Number"
-            type="number"
+            type="text"
             placeholder="Enter your organization's phone number"
             value={formData.contactNumber}
-            onChange={(v) => updateField("contactNumber", v)}
+            onChange={(val) => {
+              // Allow only numbers and limit to exactly 11 digits
+              if (/^\d{0,11}$/.test(val)) {
+                updateField("contactNumber", val);
+              }
+            }}
             error={errors.contactNumber}
           />
 

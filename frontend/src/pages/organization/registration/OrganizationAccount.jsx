@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Button from "@/components/ui/Button";
 import FormInput from "@/components/ui/FormInput";
-import { Building2, Eye, EyeOff } from "lucide-react";
+import { Building2, Eye, EyeOff, CheckCircle2, XCircle } from "lucide-react";
 import { toast } from "react-toastify";
 
 export default function OrganizationAccountStep({
@@ -14,18 +14,46 @@ export default function OrganizationAccountStep({
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  // Validation function
   const validate = () => {
     const e = {};
+
+    // Organization Name
     if (!formData.orgName.trim()) e.orgName = "Organization name is required";
-    if (!/\S+@\S+\.\S+/.test(formData.email))
+
+    // Email
+    if (!/\S+@\S+\.\S+/.test(formData.email)) {
       e.email = "Valid email is required";
-    if (formData.password.length < 8)
+    } else if (/@example\.com$/i.test(formData.email)) {
+      e.email = "Please use a real email address (not example.com)";
+    }
+
+    // Password rules
+    const startsWithCapital = /^[A-Z]/;
+    const specialCharRegex = /[!@#$%^&*(),.?":{}|<>]/;
+
+    if (formData.password.length < 8) {
       e.password = "Password must be at least 8 characters";
-    if (formData.password !== formData.confirmPassword)
+    } else if (!startsWithCapital.test(formData.password)) {
+      e.password = "Password must start with a capital letter";
+    } else if (!specialCharRegex.test(formData.password)) {
+      e.password = "Password must contain a special character";
+    }
+
+    // Confirm Password
+    if (formData.password !== formData.confirmPassword) {
       e.confirmPassword = "Passwords do not match";
+    }
+
     setErrors(e);
     return Object.keys(e).length === 0;
   };
+
+  // Password conditions
+  const password = formData.password;
+  const startsWithCapital = /^[A-Z]/.test(password);
+  const specialCharRegex = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+  const hasMinLength = password.length >= 8;
 
   const handleNext = (e) => {
     e.preventDefault();
@@ -101,6 +129,36 @@ export default function OrganizationAccountStep({
             {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </button>
         </div>
+
+        {/* Password Checklist */}
+        {formData.password && (
+          <div className="text-sm mt-1 space-y-1 ml-1">
+            <div className="flex items-center gap-1">
+              {startsWithCapital ? (
+                <CheckCircle2 className="text-green-600 w-4 h-4" />
+              ) : (
+                <XCircle className="text-red-500 w-4 h-4" />
+              )}
+              <span>Starts with a capital letter</span>
+            </div>
+            <div className="flex items-center gap-1">
+              {hasMinLength ? (
+                <CheckCircle2 className="text-green-600 w-4 h-4" />
+              ) : (
+                <XCircle className="text-red-500 w-4 h-4" />
+              )}
+              <span>At least 8 characters</span>
+            </div>
+            <div className="flex items-center gap-1">
+              {specialCharRegex ? (
+                <CheckCircle2 className="text-green-600 w-4 h-4" />
+              ) : (
+                <XCircle className="text-red-500 w-4 h-4" />
+              )}
+              <span>Contains a special character</span>
+            </div>
+          </div>
+        )}
 
         {/* Confirm Password with toggle */}
         <div className="relative">

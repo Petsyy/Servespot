@@ -21,7 +21,7 @@ const skillsOptions = [
   "First Aid & CPR",
   "Construction & Repair",
   "Child Care",
-  "Animal Care",
+  "Gardening",
   "Translation & Interpretation",
   "Photography & Documentation",
   "Data Entry & Tech Support",
@@ -48,12 +48,16 @@ export default function ProfileStep({
   onSubmit,
 }) {
   const navigate = useNavigate();
-
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // limit how many skills/interests can be selected
+  const MAX_SELECTION = 5;
+
   const validateForm = () => {
     let newErrors = {};
+
+    // Birthdate validation
     if (!formData.birthdate) newErrors.birthdate = "Birthdate is required";
     else {
       const bd = new Date(formData.birthdate);
@@ -68,31 +72,54 @@ export default function ProfileStep({
           newErrors.birthdate = "You must be 18 or older to sign up";
       }
     }
+
+    // Gender (removed "Other" option)
     if (!formData.gender) newErrors.gender = "Gender is required";
+
+    // City and Address
     if (!formData.city || formData.city.trim() === "")
       newErrors.city = "City is required";
     if (!formData.address || formData.address.trim() === "")
       newErrors.address = "Address is required";
+
+    if (!formData.contact) {
+      newErrors.contact = "Contact number is required";
+    } else if (!/^09\d{9}$/.test(formData.contact)) {
+      newErrors.contact = "Contact number must start with 09 and be 11 digits";
+    }
+
+    // Skills limit
     if (!formData.skills || formData.skills.length === 0)
       newErrors.skills = "Please select at least one skill";
+    else if (formData.skills.length > MAX_SELECTION)
+      newErrors.skills = `You can select up to ${MAX_SELECTION} skills only`;
+
+    // Interests limit
     if (!formData.interests || formData.interests.length === 0)
       newErrors.interests = "Please select at least one interest";
+    else if (formData.interests.length > MAX_SELECTION)
+      newErrors.interests = `You can select up to ${MAX_SELECTION} interests only`;
+
+    // Availability required
     if (!formData.availability)
       newErrors.availability = "Availability is required";
-    if (!formData.bio || formData.bio.trim() === "")
-      newErrors.bio = "Bio & Motivation is required";
+
+    // Bio (optional — no validation)
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleCheckboxChange = (field, value) => {
-    updateField(
-      field,
-      formData[field].includes(value)
-        ? formData[field].filter((v) => v !== value)
-        : [...formData[field], value]
-    );
+    const updated = formData[field].includes(value)
+      ? formData[field].filter((v) => v !== value)
+      : [...formData[field], value];
+
+    if (updated.length <= 5) {
+      updateField(field, updated);
+    } else {
+      toast.warning(`You can only select up to ${MAX_SELECTION} ${field}`);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -106,44 +133,35 @@ export default function ProfileStep({
     setIsSubmitting(true);
 
     try {
-      // 1️Sign up first - map contact to contactNumber for backend
       const signupData = {
         ...formData,
-        contactNumber: formData.contact, // Map contact field to contactNumber
+        contactNumber: formData.contact,
       };
       await signupVolunteer(signupData);
 
-      // Automatically log in using same credentials
       const loginRes = await loginVolunteer({
         email: formData.email,
         password: formData.password,
       });
 
-      // Save token and volunteer ID to localStorage (consistent with login)
       localStorage.setItem("volToken", loginRes.data.token);
-      localStorage.setItem("token", loginRes.data.token); // also set general token
+      localStorage.setItem("token", loginRes.data.token);
       localStorage.setItem("volunteerId", loginRes.data.user.id);
       localStorage.setItem("volUser", JSON.stringify(loginRes.data.user));
       localStorage.setItem("activeRole", "volunteer");
 
-      // Store volunteer name for easy access in navbar
       const volunteerName = loginRes.data.user?.fullName || "Volunteer";
       localStorage.setItem("volunteerName", volunteerName);
 
-      // Register volunteer socket
       const { registerUserSocket } = await import("@/utils/socket");
       registerUserSocket(loginRes.data.user.id, "volunteer");
 
-      // fixed: reference correct field from backend
       toast.success(
         <div>
-          <span className="text-sm text-black">
-            Welcome, {volunteerName}!
-          </span>
+          <span className="text-sm text-black">Welcome, {volunteerName}!</span>
         </div>
       );
 
-      // Redirect to volunteer homepage
       setTimeout(() => {
         navigate("/volunteer/homepage");
         if (onSubmit) onSubmit();
@@ -164,7 +182,6 @@ export default function ProfileStep({
 
   return (
     <div className="w-2xl max-w-3xl">
-      {/* Header */}
       <div className="text-center mb-6">
         <span className="text-gray-600"> Step 2 of 2</span>
         <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
@@ -176,12 +193,10 @@ export default function ProfileStep({
         </p>
       </div>
 
-      {/* Form */}
       <form
         onSubmit={handleSubmit}
         className="bg-white rounded-xl shadow p-6 w-full space-y-4"
       >
-        {/* Icon */}
         <div className="flex justify-center mb-4">
           <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
             <Users className="w-6 h-6 text-green-600" />
@@ -205,7 +220,7 @@ export default function ProfileStep({
             <FormInput
               label="Gender"
               type="select"
-              options={["Male", "Female", "Other"]}
+              options={["Male", "Female"]}
               value={formData.gender}
               onChange={(val) => updateField("gender", val)}
             />
@@ -220,10 +235,17 @@ export default function ProfileStep({
           <FormInput
             label="Contact Number"
             type="text"
-            placeholder="Enter your phone number"
             value={formData.contact}
-            onChange={(val) => updateField("contact", val)}
+            onChange={(val) => {
+              // Allow only numbers and limit to exactly 11 digits
+              if (/^\d{0,11}$/.test(val)) {
+                updateField("contact", val);
+              }
+            }}
           />
+          {errors.contact && (
+            <p className="text-red-500 text-sm">{errors.contact}</p>
+          )}
         </div>
 
         {/* City + Address */}
@@ -235,10 +257,8 @@ export default function ProfileStep({
               placeholder="Enter your city"
               value={formData.city}
               onChange={(val) => updateField("city", val)}
+              error={errors.city}
             />
-            {errors.city && (
-              <p className="text-red-500 text-sm">{errors.city}</p>
-            )}
           </div>
           <div>
             <FormInput
@@ -247,17 +267,15 @@ export default function ProfileStep({
               placeholder="Enter your address"
               value={formData.address}
               onChange={(val) => updateField("address", val)}
+              error={errors.address}
             />
-            {errors.address && (
-              <p className="text-red-500 text-sm">{errors.address}</p>
-            )}
           </div>
         </div>
 
         {/* Skills */}
         <div>
           <CheckboxGroup
-            label="Skills & Expertise"
+            label={`Skills & Expertise (max ${MAX_SELECTION})`}
             options={skillsOptions}
             selected={formData.skills}
             onChange={(val) => handleCheckboxChange("skills", val)}
@@ -270,7 +288,7 @@ export default function ProfileStep({
         {/* Interests */}
         <div>
           <CheckboxGroup
-            label="Interests & Causes"
+            label={`Interests & Causes (max ${MAX_SELECTION})`}
             options={interestsOptions}
             selected={formData.interests}
             onChange={(val) => handleCheckboxChange("interests", val)}
@@ -288,22 +306,19 @@ export default function ProfileStep({
             options={["Weekdays", "Weekends"]}
             value={formData.availability}
             onChange={(val) => updateField("availability", val)}
+            error={errors.availability}
           />
-          {errors.availability && (
-            <p className="text-red-500 text-sm">{errors.availability}</p>
-          )}
         </div>
 
-        {/* Bio */}
+        {/* Bio (optional) */}
         <div>
           <FormInput
-            label="Bio & Motivation"
+            label="Bio & Motivation (Optional)"
             type="textarea"
-            placeholder="Tell us about yourself and why you want to volunteer"
+            placeholder="Tell us about yourself (optional)"
             value={formData.bio}
             onChange={(val) => updateField("bio", val)}
           />
-          {errors.bio && <p className="text-red-500 text-sm">{errors.bio}</p>}
         </div>
 
         {/* Buttons */}

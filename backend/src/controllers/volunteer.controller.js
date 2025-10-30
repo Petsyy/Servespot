@@ -118,7 +118,16 @@ export const updateMyProfile = async (req, res) => {
 
 export const getMyTasks = async (req, res) => {
   try {
-    const tasks = await Opportunity.find({})
+    const volunteerId = req.user?.id;
+
+    if (!volunteerId) {
+      return res.status(401).json({ message: "Unauthorized: no volunteer ID" });
+    }
+
+    // Only fetch opportunities where this volunteer has joined
+    const tasks = await Opportunity.find({
+      volunteers: volunteerId,
+    })
       .populate("organization", "orgName location")
       .sort({ date: -1 });
 

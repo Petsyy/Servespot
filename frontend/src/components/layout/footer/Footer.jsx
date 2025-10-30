@@ -12,7 +12,7 @@ export default function Footer({ showAuthButtons = true }) {
           </p>
         </div>
 
-        {/* Links */}
+        {/* Links
         {showAuthButtons && (
         <div className="flex space-x-8 text-sm">
           <a href="#" className="hover:text-green-600 transition">
@@ -25,7 +25,7 @@ export default function Footer({ showAuthButtons = true }) {
             Contact
           </a>
         </div>
-        )}
+        )} */}
       </div>
     </footer>
   );
