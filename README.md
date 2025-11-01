@@ -1,8 +1,8 @@
-# 🌍 ServeSpot: Micro-Volunteering Hub for Local Communities  
+# ServeSpot: Micro-Volunteering Hub for Local Communities  
 
-**ServeSpot** is a web-based platform designed to connect volunteers with short, flexible community service opportunities.  
-It helps organizations and individuals easily post micro-tasks — like a 1-hour tutoring session, packing relief goods, or helping translate a flyer — while allowing volunteers to quickly browse, sign up, and track their completed activities.  
-The system promotes civic engagement by making volunteering fast, accessible, and rewarding.  
+**ServeSpot** is a web-based platform that connects volunteers with short, flexible community service opportunities.
+It enables organizations and individuals to post quick, low-commitment micro-tasks — such as tutoring for an hour, packing relief goods, or translating materials — while allowing volunteers to easily browse, join, and track their activities.
+The platform promotes civic engagement by making volunteering simple, convenient, and rewarding.
 
 ---
 
