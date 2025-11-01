@@ -12,8 +12,7 @@ The platform promotes civic engagement by making volunteering simple, convenient
 - **Backend:** Node.js, Express.js  
 - **Database:** MongoDB  
 
-We chose the **MERN stack** because it’s modern, efficient, and supports a seamless single-page web application experience.  
-It’s also developer-friendly and scalable for future expansion.  
+We chose the **MERN stack** because it’s modern, efficient, and supports a seamless single-page web application experience. It’s also developer-friendly and scalable for future expansion.  
 
 ---
 
