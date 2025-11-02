@@ -303,7 +303,10 @@ export default function ProfileStep({
           <FormInput
             label="Availability"
             type="select"
-            options={["Weekdays", "Weekends"]}
+            options={[
+              "Monday, Tuesday, Wednesday, Thursday, Friday",
+              "Saturday, Sunday",
+            ]}
             value={formData.availability}
             onChange={(val) => updateField("availability", val)}
             error={errors.availability}

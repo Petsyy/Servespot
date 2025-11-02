@@ -2,27 +2,50 @@ import React, { useState } from "react";
 import { toast } from "react-toastify";
 import Button from "../../../components/ui/Button";
 import FormInput from "../../../components/ui/FormInput";
-import { Users, Eye, EyeOff } from "lucide-react";
+import { Users, Eye, EyeOff, CheckCircle2, XCircle } from "lucide-react";
 
-export default function AccountStep({ formData, updateField, onNext }) {
+export default function VolunteerAccount({ formData, updateField, onNext }) {
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  // Validation function
   const validate = () => {
     const e = {};
+
+    // Full Name
     if (!formData.fullName.trim()) e.fullName = "Full name is required";
-    if (!/\S+@\S+\.\S+/.test(formData.email))
+
+    // Email
+    if (!/\S+@\S+\.\S+/.test(formData.email)) {
       e.email = "Valid email is required";
-    if (formData.password.length < 8)
+    } else if (/@example\.com$/i.test(formData.email)) {
+      e.email = "Please use a real email address (not example.com)";
+    }
+
+    // Password rules
+    const startsWithCapital = /^[A-Z]/;
+    const specialCharRegex = /[!@#$%^&*(),.?":{}|<>]/;
+
+    if (formData.password.length < 8) {
       e.password = "Password must be at least 8 characters";
-    if (formData.password !== formData.confirmPassword)
+    } else if (!startsWithCapital.test(formData.password)) {
+      e.password = "Password must start with a capital letter";
+    } else if (!specialCharRegex.test(formData.password)) {
+      e.password = "Password must contain a special character";
+    }
+
+    // Confirm Password
+    if (formData.password !== formData.confirmPassword) {
       e.confirmPassword = "Passwords do not match";
+    }
+
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
+  // Next step
   const handleNext = (e) => {
     e.preventDefault();
     if (!validate()) return;
@@ -39,6 +62,12 @@ export default function AccountStep({ formData, updateField, onNext }) {
       onNext();
     }, 1500);
   };
+
+  // Password conditions
+  const password = formData.password;
+  const startsWithCapital = /^[A-Z]/.test(password);
+  const specialCharRegex = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+  const hasMinLength = password.length >= 8;
 
   return (
     <div className="w-auto max-w-lg">
@@ -77,12 +106,11 @@ export default function AccountStep({ formData, updateField, onNext }) {
           error={errors.email}
         />
 
-        {/* Password with toggle */}
+        {/* Password field with toggle */}
         <div className="relative">
           <FormInput
             label="Password"
             type={showPassword ? "text" : "password"}
-            placeholder="Create a password (min. 8 characters)"
             value={formData.password}
             onChange={(val) => updateField("password", val)}
             error={errors.password}
@@ -96,12 +124,41 @@ export default function AccountStep({ formData, updateField, onNext }) {
           </button>
         </div>
 
-        {/* Confirm password with toggle */}
+        {/* Password Checklist */}
+        {password && (
+          <div className="text-sm mt-1 space-y-1 ml-1">
+            <div className="flex items-center gap-1">
+              {startsWithCapital ? (
+                <CheckCircle2 className="text-green-600 w-4 h-4" />
+              ) : (
+                <XCircle className="text-red-500 w-4 h-4" />
+              )}
+              <span>Starts with a capital letter</span>
+            </div>
+            <div className="flex items-center gap-1">
+              {hasMinLength ? (
+                <CheckCircle2 className="text-green-600 w-4 h-4" />
+              ) : (
+                <XCircle className="text-red-500 w-4 h-4" />
+              )}
+              <span>At least 8 characters</span>
+            </div>
+            <div className="flex items-center gap-1">
+              {specialCharRegex ? (
+                <CheckCircle2 className="text-green-600 w-4 h-4" />
+              ) : (
+                <XCircle className="text-red-500 w-4 h-4" />
+              )}
+              <span>Contains a special character</span>
+            </div>
+          </div>
+        )}
+
+        {/* Confirm password */}
         <div className="relative">
           <FormInput
             label="Confirm Password"
             type={showConfirmPassword ? "text" : "password"}
-            placeholder="Confirm your password"
             value={formData.confirmPassword}
             onChange={(val) => updateField("confirmPassword", val)}
             error={errors.confirmPassword}
@@ -129,8 +186,7 @@ export default function AccountStep({ formData, updateField, onNext }) {
         </Button>
 
         <p className="text-xs text-gray-500 text-center">
-          By creating an account, you agree to our Terms of Service and Privacy
-          Policy.
+          By creating an account, you agree to our Terms of Service and Privacy Policy.
         </p>
       </form>
     </div>
