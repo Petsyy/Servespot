@@ -69,10 +69,15 @@ export default function OrganizationProfileStep({
 
   // Fetch provinces when region is selected with caching
   const handleRegionChange = async (regionCode) => {
-    updateField("region", regionCode);
+    const regionData = regions.find(r => r.code === regionCode);
+    updateField("region", regionData ? regionData.name : "");
+    updateField("regionCode", regionCode);
     updateField("province", "");
+    updateField("provinceCode", "");
     updateField("city", "");
+    updateField("cityCode", "");
     updateField("barangay", "");
+    updateField("barangayCode", "");
     setProvinces([]);
     setCities([]);
     setBarangays([]);
@@ -106,9 +111,13 @@ export default function OrganizationProfileStep({
 
   // Fetch cities when province is selected with caching
   const handleProvinceChange = async (provinceCode) => {
-    updateField("province", provinceCode);
+    const provinceData = provinces.find(p => p.code === provinceCode);
+    updateField("province", provinceData ? provinceData.name : "");
+    updateField("provinceCode", provinceCode);
     updateField("city", "");
+    updateField("cityCode", "");
     updateField("barangay", "");
+    updateField("barangayCode", "");
     setCities([]);
     setBarangays([]);
     if (provinceCode) {
@@ -141,8 +150,11 @@ export default function OrganizationProfileStep({
 
   // Fetch barangays when city is selected with caching
   const handleCityChange = async (cityCode) => {
-    updateField("city", cityCode);
+    const cityData = cities.find(c => c.code === cityCode);
+    updateField("city", cityData ? cityData.name : "");
+    updateField("cityCode", cityCode);
     updateField("barangay", "");
+    updateField("barangayCode", "");
     setBarangays([]);
     if (cityCode) {
       const cacheKey = `psgc_barangays_${cityCode}`;
@@ -317,7 +329,7 @@ export default function OrganizationProfileStep({
             label="Region"
             type="select"
             options={regions.map((r) => ({ value: r.code, label: r.name }))}
-            value={formData.region}
+            value={formData.regionCode}
             onChange={handleRegionChange}
             error={errors.region}
             loading={loadingRegions}
@@ -340,24 +352,28 @@ export default function OrganizationProfileStep({
             label="City/Municipality"
             type="select"
             options={cities.map((c) => ({ value: c.code, label: c.name }))}
-            value={formData.city}
+            value={formData.cityCode}
             onChange={handleCityChange}
             error={errors.city}
             loading={loadingCities}
             placeholder="Select your city/municipality"
-            disabled={!formData.province}
+            disabled={!formData.provinceCode}
           />
 
           <FormInput
             label="Barangay"
             type="select"
             options={barangays.map((b) => ({ value: b.code, label: b.name }))}
-            value={formData.barangay}
-            onChange={(v) => updateField("barangay", v)}
+            value={formData.barangayCode}
+            onChange={(v) => {
+              const barangayData = barangays.find(b => b.code === v);
+              updateField("barangay", barangayData ? barangayData.name : "");
+              updateField("barangayCode", v);
+            }}
             error={errors.barangay}
             loading={loadingBarangays}
             placeholder="Select your barangay"
-            disabled={!formData.city}
+            disabled={!formData.cityCode}
           />
 
           <FormInput

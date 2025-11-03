@@ -5,7 +5,6 @@ import {
   User,
   Phone,
   MapPin,
-  Home,
   FileText,
   Check,
   X,
@@ -56,7 +55,6 @@ export default function OrganizationProfile() {
     cityCode: "",
     barangay: "",
     barangayCode: "",
-    address: "",
     orgType: "",
     description: "",
   });
@@ -275,10 +273,10 @@ export default function OrganizationProfile() {
   };
 
   // Handle region change
-  const handleRegionChange = async (regionCode) => {
-    if (!regionCode) return;
+  const handleRegionChange = async (regionName) => {
+    if (!regionName) return;
 
-    const regionData = regions.find((r) => r.code === regionCode);
+    const regionData = regions.find((r) => r.name === regionName);
     if (!regionData) return;
 
     // Update both display name and code
@@ -317,10 +315,10 @@ export default function OrganizationProfile() {
   };
 
   // Handle province change
-  const handleProvinceChange = async (provinceCode) => {
-    if (!provinceCode) return;
+  const handleProvinceChange = async (provinceName) => {
+    if (!provinceName) return;
 
-    const provinceData = provinces.find((p) => p.code === provinceCode);
+    const provinceData = provinces.find((p) => p.name === provinceName);
     if (!provinceData) return;
 
     setOrg((prev) => ({
@@ -355,10 +353,10 @@ export default function OrganizationProfile() {
   };
 
   // Handle city/municipality change
-  const handleCityChange = async (cityCode) => {
-    if (!cityCode) return;
+  const handleCityChange = async (cityName) => {
+    if (!cityName) return;
 
-    const cityData = cities.find((c) => c.code === cityCode);
+    const cityData = cities.find((c) => c.name === cityName);
     if (!cityData) return;
 
     setOrg((prev) => ({
@@ -390,10 +388,10 @@ export default function OrganizationProfile() {
   };
 
   // Handle barangay change
-  const handleBarangayChange = (barangayCode) => {
-    if (!barangayCode) return;
+  const handleBarangayChange = (barangayName) => {
+    if (!barangayName) return;
 
-    const barangayData = barangays.find((b) => b.code === barangayCode);
+    const barangayData = barangays.find((b) => b.name === barangayName);
     if (!barangayData) return;
 
     setOrg((prev) => ({
@@ -651,10 +649,10 @@ export default function OrganizationProfile() {
                     />
                     <SelectField
                       label="Region"
-                      value={org.regionCode}
+                      value={org.region}
                       editable={isEditing}
                       options={regions.map((r) => ({
-                        value: r.code,
+                        value: r.name,
                         label: r.name,
                       }))}
                       onChange={handleRegionChange}
@@ -662,10 +660,10 @@ export default function OrganizationProfile() {
                     />
                     <SelectField
                       label="Province"
-                      value={org.provinceCode}
+                      value={org.province}
                       editable={isEditing}
                       options={provinces.map((p) => ({
-                        value: p.code,
+                        value: p.name,
                         label: p.name,
                       }))}
                       onChange={handleProvinceChange}
@@ -674,10 +672,10 @@ export default function OrganizationProfile() {
                     />
                     <SelectField
                       label="City"
-                      value={org.cityCode}
+                      value={org.city}
                       editable={isEditing}
                       options={cities.map((c) => ({
-                        value: c.code,
+                        value: c.name,
                         label: c.name,
                       }))}
                       onChange={handleCityChange}
@@ -686,24 +684,15 @@ export default function OrganizationProfile() {
                     />
                     <SelectField
                       label="Barangay"
-                      value={org.barangayCode}
+                      value={org.barangay}
                       editable={isEditing}
                       options={barangays.map((b) => ({
-                        value: b.code,
+                        value: b.name,
                         label: b.name,
                       }))}
                       onChange={handleBarangayChange}
                       loading={loadingBarangays}
                       disabled={!org.cityCode}
-                    />
-                    <Field
-                      label="Address"
-                      icon={<Home size={16} />}
-                      value={org.address}
-                      editable={isEditing}
-                      onChange={(v) => handleChange("address", v)}
-                      className="md:col-span-2"
-                      placeholder="Street address"
                     />
                   </div>
 
@@ -730,7 +719,7 @@ export default function OrganizationProfile() {
   );
 }
 
-/* 🔹 Components */
+/* Components */
 function Section({ title, icon, children }) {
   return (
     <section className="rounded-2xl border border-green-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">

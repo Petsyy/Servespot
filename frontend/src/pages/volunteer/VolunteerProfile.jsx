@@ -21,9 +21,12 @@ import {
   Crown,
   Medal,
   Sparkles,
+  AlertCircle,
+  Plus,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import {
   getVolunteerProfile,
   updateVolunteerProfile,
@@ -37,19 +40,33 @@ export default function VolunteerProfile() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [profileIncomplete, setProfileIncomplete] = useState(false);
   const [me, setMe] = useState({
     fullName: "",
     email: "",
     birthdate: "",
     gender: "",
     contactNumber: "",
+    region: "",
+    province: "",
     city: "",
+    barangay: "",
     address: "",
     skills: [],
     interests: [],
-    availability: "",
+    availability: [],
     bio: "",
   });
+
+  // Location states
+  const [regions, setRegions] = useState([]);
+  const [provinces, setProvinces] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [barangays, setBarangays] = useState([]);
+  const [loadingRegions, setLoadingRegions] = useState(true);
+  const [loadingProvinces, setLoadingProvinces] = useState(false);
+  const [loadingCities, setLoadingCities] = useState(false);
+  const [loadingBarangays, setLoadingBarangays] = useState(false);
   const [badgesData, setBadgesData] = useState({
     badges: [],
     points: 0,
@@ -58,6 +75,22 @@ export default function VolunteerProfile() {
     nextMilestone: null,
     volunteerName: "",
   });
+  const [locationNames, setLocationNames] = useState({
+    region: "",
+    province: "",
+    city: "",
+    barangay: "",
+  });
+
+  // Check if profile is incomplete
+  const checkProfileCompletion = (profileData) => {
+    const requiredFields = ['fullName', 'contactNumber', 'birthdate'];
+    const isIncomplete = requiredFields.some(field => !profileData[field]) || 
+                        !profileData.fullName || 
+                        !profileData.contactNumber;
+    setProfileIncomplete(isIncomplete);
+    return isIncomplete;
+  };
 
   // Toggle sidebar function
   const toggleSidebar = () => {
@@ -69,6 +102,91 @@ export default function VolunteerProfile() {
     setSidebarOpen(false);
   };
 
+  // Fetch regions on mount
+  useEffect(() => {
+    const fetchRegions = async () => {
+      try {
+        const response = await axios.get("https://psgc.gitlab.io/api/regions/");
+        setRegions(response.data);
+      } catch (error) {
+        console.error("Error fetching regions:", error);
+        toast.error("Failed to load regions.");
+      } finally {
+        setLoadingRegions(false);
+      }
+    };
+    fetchRegions();
+  }, []);
+
+  // Fetch provinces when region changes
+  useEffect(() => {
+    if (me.region) {
+      const fetchProvinces = async () => {
+        setLoadingProvinces(true);
+        try {
+          const response = await axios.get(`https://psgc.gitlab.io/api/regions/${me.region}/provinces/`);
+          setProvinces(response.data);
+          setCities([]);
+          setBarangays([]);
+        } catch (error) {
+          console.error("Error fetching provinces:", error);
+          toast.error("Failed to load provinces.");
+        } finally {
+          setLoadingProvinces(false);
+        }
+      };
+      fetchProvinces();
+    } else {
+      setProvinces([]);
+      setCities([]);
+      setBarangays([]);
+    }
+  }, [me.region]);
+
+  // Fetch cities when province changes
+  useEffect(() => {
+    if (me.province) {
+      const fetchCities = async () => {
+        setLoadingCities(true);
+        try {
+          const response = await axios.get(`https://psgc.gitlab.io/api/provinces/${me.province}/cities-municipalities/`);
+          setCities(response.data);
+          setBarangays([]);
+        } catch (error) {
+          console.error("Error fetching cities:", error);
+          toast.error("Failed to load cities.");
+        } finally {
+          setLoadingCities(false);
+        }
+      };
+      fetchCities();
+    } else {
+      setCities([]);
+      setBarangays([]);
+    }
+  }, [me.province]);
+
+  // Fetch barangays when city changes
+  useEffect(() => {
+    if (me.city) {
+      const fetchBarangays = async () => {
+        setLoadingBarangays(true);
+        try {
+          const response = await axios.get(`https://psgc.gitlab.io/api/cities-municipalities/${me.city}/barangays/`);
+          setBarangays(response.data);
+        } catch (error) {
+          console.error("Error fetching barangays:", error);
+          toast.error("Failed to load barangays.");
+        } finally {
+          setLoadingBarangays(false);
+        }
+      };
+      fetchBarangays();
+    } else {
+      setBarangays([]);
+    }
+  }, [me.city]);
+
   // Fetch volunteer data
   useEffect(() => {
     (async () => {
@@ -77,7 +195,7 @@ export default function VolunteerProfile() {
           getVolunteerProfile(),
           getVolunteerBadges(),
         ]);
-        
+
         const profileData = profileRes.data;
         setMe({
           ...profileData,
@@ -85,6 +203,41 @@ export default function VolunteerProfile() {
           skills: profileData.skills || [],
           interests: profileData.interests || [],
         });
+
+        // Fetch location names if codes are present
+        if (profileData.region || profileData.province || profileData.city || profileData.barangay) {
+          const locationNames = {};
+          try {
+            if (profileData.region) {
+              const regionRes = await axios.get(`https://psgc.gitlab.io/api/regions/${profileData.region}/`);
+              locationNames.region = regionRes.data.name;
+            }
+            if (profileData.province) {
+              const provinceRes = await axios.get(`https://psgc.gitlab.io/api/provinces/${profileData.province}/`);
+              locationNames.province = provinceRes.data.name;
+            }
+            if (profileData.city) {
+              const cityRes = await axios.get(`https://psgc.gitlab.io/api/cities-municipalities/${profileData.city}/`);
+              locationNames.city = cityRes.data.name;
+            }
+            if (profileData.barangay) {
+              const barangayRes = await axios.get(`https://psgc.gitlab.io/api/barangays/${profileData.barangay}/`);
+              locationNames.barangay = barangayRes.data.name;
+            }
+            setLocationNames(locationNames);
+          } catch (error) {
+            console.error("Error fetching location names:", error);
+          }
+        }
+
+        // Check if profile needs to be set up
+        if (checkProfileCompletion(profileData)) {
+          setIsEditing(true);
+          toast.info("Please complete your volunteer profile to continue.", {
+            autoClose: false,
+            closeOnClick: false,
+          });
+        }
 
         const badgesData = badgesRes.data;
         setBadgesData({
@@ -113,10 +266,22 @@ export default function VolunteerProfile() {
       : "VA";
   }, [me.fullName]);
 
-  const handleChange = (name, value) =>
+  const handleChange = (name, value) => {
     setMe((prev) => ({ ...prev, [name]: value }));
+    
+    // Re-check profile completion when important fields change
+    if (['fullName', 'contactNumber', 'birthdate'].includes(name)) {
+      setTimeout(() => checkProfileCompletion({...me, [name]: value}), 100);
+    }
+  };
 
   const handleSave = async () => {
+    // Validate required fields
+    if (!me.fullName || !me.contactNumber || !me.birthdate) {
+      toast.error("Please fill in all required fields: Full Name, Contact Number, and Birthdate");
+      return;
+    }
+
     try {
       setSaving(true);
       const payload = {
@@ -131,11 +296,17 @@ export default function VolunteerProfile() {
       await updateVolunteerProfile(payload);
       toast.success("Profile updated successfully!");
       setIsEditing(false);
+      setProfileIncomplete(false);
     } catch (e) {
       toast.error(e.response?.data?.message || "Update failed.");
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleSetupProfile = () => {
+    setIsEditing(true);
+    toast.info("Please complete your volunteer profile setup.");
   };
 
   return (
@@ -169,10 +340,17 @@ export default function VolunteerProfile() {
                 </div>
               </div>
 
-              {!isEditing ? (
+              {profileIncomplete && !isEditing ? (
+                <button
+                  onClick={handleSetupProfile}
+                  className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition text-sm shadow-sm hover:shadow-md"
+                >
+                  <Plus size={16} /> Setup Profile
+                </button>
+              ) : !isEditing ? (
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm"
+                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm shadow-sm hover:shadow-md"
                 >
                   <Pencil size={16} /> Edit Profile
                 </button>
@@ -181,19 +359,42 @@ export default function VolunteerProfile() {
                   <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-60 text-sm"
+                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-60 text-sm shadow-sm hover:shadow-md transition"
                   >
-                    <Check size={16} /> {saving ? "Saving..." : "Save"}
+                    <Check size={16} /> {saving ? "Saving..." : "Save Profile"}
                   </button>
                   <button
-                    onClick={() => setIsEditing(false)}
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 text-sm"
+                    onClick={() => {
+                      setIsEditing(false);
+                      if (profileIncomplete) {
+                        toast.info("Please complete your profile setup to access all features.");
+                      }
+                    }}
+                    className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 text-sm transition"
                   >
                     <X size={16} /> Cancel
                   </button>
                 </div>
               )}
             </div>
+
+            {/* 🔹 Profile Setup Alert */}
+            {profileIncomplete && (
+              <div className="mb-6 bg-orange-50 border border-orange-200 rounded-lg p-4">
+                <div className="flex items-center gap-3">
+                  <AlertCircle className="text-orange-500" size={20} />
+                  <div>
+                    <h3 className="font-semibold text-orange-800 text-sm">
+                      Profile Setup Required
+                    </h3>
+                    <p className="text-orange-700 text-xs">
+                      Please complete your volunteer profile to access all features. 
+                      Required fields: Full Name, Contact Number, and Birthdate.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* 🔹 Profile Card */}
             <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6 shadow-sm">
@@ -209,26 +410,41 @@ export default function VolunteerProfile() {
                     <div>
                       <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2 mb-1">
                         <User size={18} className="text-green-600" />
-                        {me.fullName || "—"}
+                        {me.fullName || "No name set"}
                       </h2>
 
                       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-gray-700 text-sm mb-3">
-                        {me.city && (
+                        {me.barangay ? (
                           <div className="flex items-center gap-1">
                             <MapPin size={14} className="text-green-600" />
-                            <span className="text-sm">{me.city}</span>
+                            <span className="text-sm">{locationNames.barangay || me.barangay}</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1 text-gray-500">
+                            <MapPin size={14} />
+                            <span className="text-sm">Location not set</span>
                           </div>
                         )}
-                        {me.contactNumber && me.contactNumber.trim() && (
+                        {me.contactNumber && me.contactNumber.trim() ? (
                           <div className="flex items-center gap-1">
                             <Phone size={14} className="text-green-600" />
                             <span className="text-sm">{me.contactNumber}</span>
                           </div>
+                        ) : (
+                          <div className="flex items-center gap-1 text-gray-500">
+                            <Phone size={14} />
+                            <span className="text-sm">Contact not set</span>
+                          </div>
                         )}
-                        {me.email && (
+                        {me.email ? (
                           <div className="flex items-center gap-1">
                             <Mail size={14} className="text-green-600" />
                             <span className="text-sm">{me.email}</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1 text-gray-500">
+                            <Mail size={14} />
+                            <span className="text-sm">Email not set</span>
                           </div>
                         )}
                       </div>
@@ -252,6 +468,16 @@ export default function VolunteerProfile() {
                           )}
                         </div>
                       )}
+
+                      {/* Profile Status */}
+                      {profileIncomplete && (
+                        <div className="mt-3">
+                          <span className="inline-flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full">
+                            <AlertCircle size={12} />
+                            Setup Incomplete
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -271,6 +497,7 @@ export default function VolunteerProfile() {
                     value={me.bio}
                     editable={isEditing}
                     onChange={(v) => handleChange("bio", v)}
+                    placeholder="Tell us about yourself..."
                   />
                   <TagInput
                     label="Skills"
@@ -304,11 +531,13 @@ export default function VolunteerProfile() {
                 >
                   <div className="space-y-4">
                     <Field
-                      label="Full Name"
+                      label="Full Name *"
                       icon={<User size={14} />}
                       value={me.fullName}
                       editable={isEditing}
                       onChange={(v) => handleChange("fullName", v)}
+                      placeholder="Enter your full name"
+                      required={profileIncomplete}
                     />
                     <Field
                       label="Email"
@@ -318,12 +547,13 @@ export default function VolunteerProfile() {
                     />
                     <div className="grid grid-cols-2 gap-4">
                       <Field
-                        label="Birthdate"
+                        label="Birthdate *"
                         icon={<Calendar size={14} />}
                         type="date"
                         value={me.birthdate}
                         editable={isEditing}
                         onChange={(v) => handleChange("birthdate", v)}
+                        required={profileIncomplete}
                       />
                       <Field
                         label="Gender"
@@ -334,27 +564,73 @@ export default function VolunteerProfile() {
                       />
                     </div>
                     <Field
-                      label="Contact Number"
+                      label="Contact Number *"
                       icon={<Phone size={14} />}
                       value={me.contactNumber}
                       editable={isEditing}
                       onChange={(v) => handleChange("contactNumber", v)}
+                      placeholder="Your phone number"
+                      required={profileIncomplete}
                     />
-                    <Field
+                    
+                    {/* Location Fields */}
+                    <SelectField
+                      label="Region"
+                      value={me.region}
+                      editable={isEditing}
+                      options={regions.map((r) => ({
+                        value: r.code,
+                        label: r.name,
+                      }))}
+                      onChange={(v) => handleChange("region", v)}
+                      loading={loadingRegions}
+                    />
+                    <SelectField
+                      label="Province"
+                      value={me.province}
+                      editable={isEditing}
+                      options={provinces.map((p) => ({
+                        value: p.code,
+                        label: p.name,
+                      }))}
+                      onChange={(v) => handleChange("province", v)}
+                      loading={loadingProvinces}
+                      disabled={!me.region}
+                    />
+                    <SelectField
                       label="City"
-                      icon={<MapPin size={14} />}
                       value={me.city}
                       editable={isEditing}
+                      options={cities.map((c) => ({
+                        value: c.code,
+                        label: c.name,
+                      }))}
                       onChange={(v) => handleChange("city", v)}
+                      loading={loadingCities}
+                      disabled={!me.province}
                     />
-                    <Field
-                      label="Address"
-                      icon={<Home size={14} />}
-                      value={me.address}
+                    <SelectField
+                      label="Barangay"
+                      value={me.barangay}
                       editable={isEditing}
-                      onChange={(v) => handleChange("address", v)}
+                      options={barangays.map((b) => ({
+                        value: b.code,
+                        label: b.name,
+                      }))}
+                      onChange={(v) => handleChange("barangay", v)}
+                      loading={loadingBarangays}
+                      disabled={!me.city}
                     />
                   </div>
+
+                  {/* Required Fields Note */}
+                  {isEditing && (
+                    <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <p className="text-xs text-blue-700">
+                        <strong>Note:</strong> Fields marked with * are required to complete your profile setup.
+                      </p>
+                    </div>
+                  )}
                 </Section>
               </div>
 
@@ -615,12 +891,14 @@ function Field({
   type = "text",
   placeholder = "",
   className = "",
+  required = false,
 }) {
   return (
     <div className={className}>
       <label className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
         {icon}
         {label}
+        {required && <span className="text-red-500">*</span>}
       </label>
       {editable ? (
         <input
@@ -632,14 +910,14 @@ function Field({
         />
       ) : (
         <div className="w-full h-9 px-3 flex items-center rounded-lg bg-gray-50 border border-gray-200 text-gray-800 text-sm">
-          {value || "—"}
+          {value || <span className="text-gray-500">Not set</span>}
         </div>
       )}
     </div>
   );
 }
 
-function Area({ label, value, onChange, editable }) {
+function Area({ label, value, onChange, editable, placeholder = "" }) {
   return (
     <div>
       <label className="text-sm font-medium text-gray-700 mb-1">{label}</label>
@@ -649,10 +927,48 @@ function Area({ label, value, onChange, editable }) {
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
           className="w-full rounded-lg border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 p-3 text-sm"
+          placeholder={placeholder}
         />
       ) : (
         <div className="rounded-lg bg-gray-50 border border-gray-200 p-3 text-gray-800 min-h-[72px] text-sm">
-          {value || "—"}
+          {value || <span className="text-gray-500">Not set</span>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SelectField({
+  label,
+  value,
+  onChange,
+  editable,
+  options,
+  loading,
+  disabled,
+}) {
+  return (
+    <div>
+      <label className="text-sm font-medium text-gray-700 mb-1">{label}</label>
+      {editable ? (
+        <select
+          value={value || ""}
+          onChange={(e) => onChange(e.target.value)}
+          disabled={disabled || loading}
+          className="w-full h-9 px-3 rounded-lg border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm transition disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <option value="" disabled>
+            {loading ? "Loading..." : "Select..."}
+          </option>
+          {options.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+      ) : (
+        <div className="w-full h-9 px-3 flex items-center rounded-lg bg-gray-50 border border-gray-200 text-gray-800 text-sm">
+          {value ? options.find((o) => o.value === value)?.label || value : <span className="text-gray-500">Not set</span>}
         </div>
       )}
     </div>
@@ -699,7 +1015,7 @@ function TagInput({ label, icon, value = [], onChange, editable }) {
               </span>
             ))
           ) : (
-            <span className="text-gray-500 text-sm">—</span>
+            <span className="text-gray-500 text-sm">Not set</span>
           )}
         </div>
       )}

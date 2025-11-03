@@ -11,6 +11,7 @@ export default function FormInput({
   accept,
   loading = false,
   disabled = false,
+  multi = false,
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -87,38 +88,61 @@ export default function FormInput({
           disabled={disabled}
         />
       ) : type === "select" ? (
-        <div className="relative">
-          <input
-            ref={inputRef}
-            type="text"
-            className={`border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 w-full ${loading ? 'bg-gray-100' : ''}`}
-            value={searchTerm}
-            onChange={handleInputChange}
-            onFocus={() => setIsOpen(true)}
-            placeholder={placeholder || "Type to search..."}
+        multi ? (
+          <select
+            multiple
+            className="border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 w-full"
+            value={value || []}
+            onChange={(e) => {
+              const selected = Array.from(e.target.selectedOptions, option => option.value);
+              onChange(selected);
+            }}
             disabled={disabled || loading}
-          />
-          {isOpen && filteredOptions.length > 0 && (
-            <div
-              ref={dropdownRef}
-              className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto mt-1"
-            >
-              {filteredOptions.map((opt, i) => {
-                const optionValue = opt.value || opt;
-                const optionLabel = opt.label || opt;
-                return (
-                  <div
-                    key={i}
-                    className="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm"
-                    onClick={() => handleSelect(optionValue, optionLabel)}
-                  >
-                    {optionLabel}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+          >
+            {options.map((opt, i) => {
+              const optionValue = opt.value || opt;
+              const optionLabel = opt.label || opt;
+              return (
+                <option key={i} value={optionValue}>
+                  {optionLabel}
+                </option>
+              );
+            })}
+          </select>
+        ) : (
+          <div className="relative">
+            <input
+              ref={inputRef}
+              type="text"
+              className={`border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 w-full ${loading ? 'bg-gray-100' : ''}`}
+              value={searchTerm}
+              onChange={handleInputChange}
+              onFocus={() => setIsOpen(true)}
+              placeholder={placeholder || "Type to search..."}
+              disabled={disabled || loading}
+            />
+            {isOpen && filteredOptions.length > 0 && (
+              <div
+                ref={dropdownRef}
+                className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto mt-1"
+              >
+                {filteredOptions.map((opt, i) => {
+                  const optionValue = opt.value || opt;
+                  const optionLabel = opt.label || opt;
+                  return (
+                    <div
+                      key={i}
+                      className="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                      onClick={() => handleSelect(optionValue, optionLabel)}
+                    >
+                      {optionLabel}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )
       ) : type === "file" ? (
         <input
           type="file"

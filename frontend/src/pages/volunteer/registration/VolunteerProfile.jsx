@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Button from "../../../components/ui/Button";
 import FormInput from "../../../components/ui/FormInput";
 import CheckboxGroup from "../../../components/ui/CheckboxGroup";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import { signupVolunteer, loginVolunteer } from "../../../services/api";
 import { Users } from "lucide-react";
 
@@ -54,6 +55,44 @@ export default function ProfileStep({
   // limit how many skills/interests can be selected
   const MAX_SELECTION = 5;
 
+  // Location states
+  const [regions, setRegions] = useState([]);
+  const [provinces, setProvinces] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [barangays, setBarangays] = useState([]);
+  const [loadingRegions, setLoadingRegions] = useState(true);
+  const [loadingProvinces, setLoadingProvinces] = useState(false);
+  const [loadingCities, setLoadingCities] = useState(false);
+  const [loadingBarangays, setLoadingBarangays] = useState(false);
+
+  // Search terms for location selects
+  const [regionSearch, setRegionSearch] = useState("");
+  const [provinceSearch, setProvinceSearch] = useState("");
+  const [citySearch, setCitySearch] = useState("");
+  const [barangaySearch, setBarangaySearch] = useState("");
+  const [showAvailabilityDropdown, setShowAvailabilityDropdown] =
+    useState(false);
+
+  useEffect(() => {
+    const fetchRegions = async () => {
+      try {
+        setLoadingRegions(true);
+        const res = await axios.get("https://psgc.gitlab.io/api/regions.json");
+        const formatted = res.data.map((r) => ({
+          code: r.code || r.regionCode,
+          name: r.name || r.regionName,
+        }));
+        setRegions(formatted);
+      } catch (error) {
+        console.error("Error fetching regions:", error);
+        toast.error("Failed to load regions.");
+      } finally {
+        setLoadingRegions(false);
+      }
+    };
+    fetchRegions();
+  }, []);
+
   const validateForm = () => {
     let newErrors = {};
 
@@ -76,11 +115,10 @@ export default function ProfileStep({
     // Gender (removed "Other" option)
     if (!formData.gender) newErrors.gender = "Gender is required";
 
-    // City and Address
+    // City is required (selected from dropdown)
     if (!formData.city || formData.city.trim() === "")
       newErrors.city = "City is required";
-    if (!formData.address || formData.address.trim() === "")
-      newErrors.address = "Address is required";
+    // Address is optional
 
     if (!formData.contact) {
       newErrors.contact = "Contact number is required";
@@ -101,8 +139,9 @@ export default function ProfileStep({
       newErrors.interests = `You can select up to ${MAX_SELECTION} interests only`;
 
     // Availability required
-    if (!formData.availability)
-      newErrors.availability = "Availability is required";
+    if (!formData.availability || formData.availability.length === 0)
+      newErrors.availability =
+        "Please select at least one day for availability";
 
     // Bio (optional — no validation)
 
@@ -120,6 +159,95 @@ export default function ProfileStep({
     } else {
       toast.warning(`You can only select up to ${MAX_SELECTION} ${field}`);
     }
+  };
+
+  const handleRegionChange = async (regionCode) => {
+    updateField("region", regionCode);
+    setProvinces([]);
+    setCities([]);
+    setBarangays([]);
+    updateField("province", "");
+    updateField("city", "");
+    updateField("barangay", "");
+    updateField("address", "");
+
+    if (regionCode) {
+      try {
+        setLoadingProvinces(true);
+        const res = await axios.get(
+          `https://psgc.gitlab.io/api/regions/${regionCode}/provinces.json`
+        );
+        const formatted = res.data.map((p) => ({
+          code: p.code || p.provinceCode,
+          name: p.name || p.provinceName,
+        }));
+        setProvinces(formatted);
+      } catch (error) {
+        console.error("Error fetching provinces:", error);
+        toast.error("Failed to load provinces.");
+      } finally {
+        setLoadingProvinces(false);
+      }
+    }
+  };
+
+  const handleProvinceChange = async (provinceCode) => {
+    updateField("province", provinceCode);
+    setCities([]);
+    setBarangays([]);
+    updateField("city", "");
+    updateField("barangay", "");
+    updateField("address", "");
+
+    if (provinceCode) {
+      try {
+        setLoadingCities(true);
+        const res = await axios.get(
+          `https://psgc.gitlab.io/api/provinces/${provinceCode}/cities-municipalities.json`
+        );
+        const formatted = res.data.map((c) => ({
+          code: c.code || c.cityMunicipalityCode,
+          name: c.name || c.cityMunicipalityName,
+        }));
+        setCities(formatted);
+      } catch (error) {
+        console.error("Error fetching cities:", error);
+        toast.error("Failed to load cities.");
+      } finally {
+        setLoadingCities(false);
+      }
+    }
+  };
+
+  const handleCityChange = async (cityCode) => {
+    updateField("city", cityCode);
+    setBarangays([]);
+    updateField("barangay", "");
+    updateField("address", "");
+
+    if (cityCode) {
+      try {
+        setLoadingBarangays(true);
+        const res = await axios.get(
+          `https://psgc.gitlab.io/api/cities-municipalities/${cityCode}/barangays.json`
+        );
+        const formatted = res.data.map((b) => ({
+          code: b.code || b.barangayCode,
+          name: b.name || b.barangayName,
+        }));
+        setBarangays(formatted);
+      } catch (error) {
+        console.error("Error fetching barangays:", error);
+        toast.error("Failed to load barangays.");
+      } finally {
+        setLoadingBarangays(false);
+      }
+    }
+  };
+
+  const handleBarangayChange = (barangayCode) => {
+    updateField("barangay", barangayCode);
+    updateField("address", "");
   };
 
   const handleSubmit = async (e) => {
@@ -248,26 +376,83 @@ export default function ProfileStep({
           )}
         </div>
 
-        {/* City + Address */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Location Selection */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-gray-900">Location</h3>
+
+          {/* Region */}
           <div>
             <FormInput
-              label="City"
-              type="text"
-              placeholder="Enter your city"
-              value={formData.city}
-              onChange={(val) => updateField("city", val)}
+              label="Region"
+              type="select"
+              options={regions.map((r) => ({ value: r.code, label: r.name }))}
+              value={formData.region || ""}
+              onChange={handleRegionChange}
+              placeholder={
+                loadingRegions ? "Loading regions..." : "Select your region"
+              }
+              disabled={loadingRegions}
+            />
+          </div>
+
+          {/* Province */}
+          <div>
+            <FormInput
+              label="Province"
+              type="select"
+              options={provinces.map((p) => ({ value: p.code, label: p.name }))}
+              value={formData.province || ""}
+              onChange={handleProvinceChange}
+              placeholder={
+                loadingProvinces
+                  ? "Loading provinces..."
+                  : "Select your province"
+              }
+              disabled={loadingProvinces || !formData.region}
+            />
+          </div>
+
+          {/* City/Municipality */}
+          <div>
+            <FormInput
+              label="City/Municipality"
+              type="select"
+              options={cities.map((c) => ({ value: c.code, label: c.name }))}
+              value={formData.city || ""}
+              onChange={handleCityChange}
+              placeholder={
+                loadingCities ? "Loading cities..." : "Select your city"
+              }
+              disabled={loadingCities || !formData.province}
               error={errors.city}
             />
           </div>
+
+          {/* Barangay */}
           <div>
             <FormInput
-              label="Address"
+              label="Barangay"
+              type="select"
+              options={barangays.map((b) => ({ value: b.code, label: b.name }))}
+              value={formData.barangay || ""}
+              onChange={handleBarangayChange}
+              placeholder={
+                loadingBarangays
+                  ? "Loading barangays..."
+                  : "Select your barangay"
+              }
+              disabled={loadingBarangays || !formData.city}
+            />
+          </div>
+
+          {/* Specific Address */}
+          <div>
+            <FormInput
+              label="Specific Address (Optional)"
               type="text"
-              placeholder="Enter your address"
-              value={formData.address}
+              placeholder="e.g., Street name, building number, etc."
+              value={formData.address || ""}
               onChange={(val) => updateField("address", val)}
-              error={errors.address}
             />
           </div>
         </div>
@@ -299,19 +484,58 @@ export default function ProfileStep({
         </div>
 
         {/* Availability */}
-        <div>
-          <FormInput
-            label="Availability"
-            type="select"
-            options={[
-              "Monday, Tuesday, Wednesday, Thursday, Friday",
-              "Saturday, Sunday",
-            ]}
-            value={formData.availability}
-            onChange={(val) => updateField("availability", val)}
-            error={errors.availability}
-          />
+        <div className="mb-4 relative">
+          <label className="block text-sm font-medium mb-1">
+            Availability (Select all that apply)
+          </label>
+
+          <div
+            className="border rounded-lg p-2 bg-white cursor-pointer select-none"
+            onClick={() =>
+              setShowAvailabilityDropdown(!showAvailabilityDropdown)
+            }
+          >
+            {formData.availability?.length
+              ? formData.availability.join(", ")
+              : "Select days..."}
+          </div>
+
+          {showAvailabilityDropdown && (
+            <div className="absolute z-10 w-full bg-white border rounded-lg mt-1 shadow-md max-h-48 overflow-y-auto">
+              {[
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+                "Saturday",
+                "Sunday",
+              ].map((day) => (
+                <label
+                  key={day}
+                  className="flex items-center px-3 py-2 hover:bg-blue-50 cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    checked={formData.availability?.includes(day)}
+                    onChange={(e) => {
+                      const newAvailability = e.target.checked
+                        ? [...(formData.availability || []), day]
+                        : formData.availability.filter((d) => d !== day);
+                      updateField("availability", newAvailability);
+                    }}
+                    className="mr-2 accent-blue-500"
+                  />
+                  {day}
+                </label>
+              ))}
+            </div>
+          )}
         </div>
+
+        {errors.availability && (
+          <p className="text-red-500 text-sm mt-1">{errors.availability}</p>
+        )}
 
         {/* Bio (optional) */}
         <div>

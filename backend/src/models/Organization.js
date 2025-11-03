@@ -7,14 +7,21 @@ const organizationSchema = new mongoose.Schema(
     password: { type: String, required: true },
     contactPerson: { type: String },
     contactNumber: { type: String },
+    region: { type: String },
+    regionCode: { type: String },
+    province: { type: String },
+    provinceCode: { type: String },
     city: { type: String },
+    cityCode: { type: String },
+    barangay: { type: String },
+    barangayCode: { type: String },
     address: { type: String },
     orgType: { type: String },
     description: { type: String },
     otpCode: String,
     otpExpire: Date,
 
-    // Newly added fields for verification
+    //r Newly added fields for verification
     document: {
       type: String, // File path or URL of the uploaded verification document
       default: null,
