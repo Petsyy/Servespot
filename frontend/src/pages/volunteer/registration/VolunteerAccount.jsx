@@ -111,6 +111,7 @@ export default function VolunteerAccount({ formData, updateField, onNext }) {
           <FormInput
             label="Password"
             type={showPassword ? "text" : "password"}
+            placeholder={"Enter your password"}
             value={formData.password}
             onChange={(val) => updateField("password", val)}
             error={errors.password}
@@ -159,6 +160,7 @@ export default function VolunteerAccount({ formData, updateField, onNext }) {
           <FormInput
             label="Confirm Password"
             type={showConfirmPassword ? "text" : "password"}
+            placeholder={"Confirm your password"}
             value={formData.confirmPassword}
             onChange={(val) => updateField("confirmPassword", val)}
             error={errors.confirmPassword}

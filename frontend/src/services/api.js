@@ -99,22 +99,6 @@ export const confirmVolunteerCompletion = async (oppId, volunteerId) => {
 // -----------------------------
 export const getOpportunityById = (id) => API.get(`/opportunities/view/${id}`);
 
-//
-// -----------------------------
-// ORGANIZATION → Manage Volunteers
-// -----------------------------
-export const getOrgVolunteers = () =>
-  API.get("/org/volunteers", {
-    headers: { Authorization: `Bearer ${localStorage.getItem("orgToken")}` },
-  });
 
-export const updateVolunteerStatus = (id, opportunityId, status) =>
-  API.put(
-    `/org/volunteers/${id}/status`,
-    { opportunityId, status },
-    {
-      headers: { Authorization: `Bearer ${localStorage.getItem("orgToken")}` },
-    }
-  );
 
 export default API;

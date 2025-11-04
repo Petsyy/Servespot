@@ -31,7 +31,7 @@ import OrganizationDashboard from "@/pages/organization/OrganizationDashboard";
 import MyOpportunity from "@/pages/organization/posted-page/PostedOpportunity";
 import OrganizationProfile from "@/pages/organization/OrganizationProfile";
 import OrganizationReports from "@/pages/organization/OrganizationReports";
-import ManageVolunteers from "@/pages/organization/ManageVolunteers";
+
 import OrganizationNotifications from "@/pages/organization/OrganizationNotifications";
 
 // Admin
@@ -85,7 +85,7 @@ export default function App() {
         <Route path="/organization/opportunities" element={<MyOpportunity />} />
         <Route path="/organization/forgot-password" element={<ForgotPassword />} />
         <Route path="/organization/profile" element={<OrganizationProfile />} />
-        <Route path="/organization/manage" element={<ManageVolunteers />} />
+
         <Route path="/organization/reports" element={<OrganizationReports />} />
         <Route path="/organization/notifications" element={<OrganizationNotifications />} />
       </Routes>

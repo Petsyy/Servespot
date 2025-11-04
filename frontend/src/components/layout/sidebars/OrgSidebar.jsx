@@ -33,7 +33,7 @@ export default function OrgSidebar({ isOpen, onClose }) {
   const navItems = [
     { to: "/organization/dashboard", icon: LayoutGrid, label: "Dashboard" },
     { to: "/organization/opportunities", icon: PlusSquare, label: "Posted Opportunities" },
-    { to: "/organization/manage", icon: Users, label: "Manage Volunteers" },
+
     { to: "/organization/notifications", icon: Bell, label: "Notifications" },
     { to: "/organization/profile", icon: User, label: "Profile" },
   ];

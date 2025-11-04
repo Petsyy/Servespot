@@ -52,7 +52,7 @@ import authRoutes from "./src/routes/auth.routes.js";
 import volunteerRoutes from "./src/routes/volunteer.routes.js";
 import organizationRoutes from "./src/routes/organization.routes.js";
 import opportunityRoutes from "./src/routes/opportunity.routes.js";
-import orgVolunteerRoutes from "./src/routes/manage.routes.js";
+
 import notificationRoutes from "./src/routes/notification.routes.js";
 
 import testRoutes from "./src/routes/test.routes.js";
@@ -63,7 +63,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/volunteer", volunteerRoutes);
 app.use("/api/organization", organizationRoutes);
 app.use("/api/opportunities", opportunityRoutes);
-app.use("/api/org/volunteers", orgVolunteerRoutes);
+
 app.use("/api/notifications", notificationRoutes);
 
 // Health check
