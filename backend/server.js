@@ -55,7 +55,7 @@ import opportunityRoutes from "./src/routes/opportunity.routes.js";
 
 import notificationRoutes from "./src/routes/notification.routes.js";
 
-import testRoutes from "./src/routes/test.routes.js";
+import testRoutes from "./src/tests/test.routes.js";
 app.use("/api/test", testRoutes);
 
 app.use("/api/admin", adminRoutes);
