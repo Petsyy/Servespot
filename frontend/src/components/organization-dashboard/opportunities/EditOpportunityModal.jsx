@@ -4,8 +4,8 @@ import { toast } from "react-toastify";
 import { getOpportunityById } from "@/services/api";
 import { updateOpportunity } from "@/services/organization.api";
 import PreviewCard from "@/components/organization-dashboard/post/PreviewCard";
-import SkillCheckbox from "@/components/organization-dashboard/post/SkillCheckbox";
-import ImageDropzone from "@/components/organization-dashboard/post/ImageDropzone";
+import SkillCheckbox from "@/components/organization-dashboard/post-opportunity/SkillCheckbox";
+import ImageDropzone from "@/components/organization-dashboard/post-opportunity/ImageDropzone";
 
 const skillsOptions = [
   "Event Organizing",
