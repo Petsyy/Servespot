@@ -17,7 +17,7 @@ import VolunteerLogin from "@/pages/volunteer-pages/auth/VolunteerLogin";
 import VolunteerSignup from "@/pages/volunteer-pages/auth/volunteerSignup";
 import VolunteerLanding from "@/pages/volunteer-pages/VolunteerLanding";
 import VolunteerDashboard from "@/pages/volunteer-pages/VolunteerDashboard";
-import BrowseOpportunities from "@/pages/volunteer-pages/browse-page/BrowseOpportunities";
+import BrowseOpportunities from "@/pages/volunteer-pages/BrowseOpportunities";
 import VolunteerProfile from "@/pages/volunteer-pages/VolunteerProfile";
 import VolunteerBadges from "@/pages/volunteer-pages/VolunteerBadges";
 import VolunteerNotifications from "@/pages/volunteer-pages/VolunteerNotifications";
@@ -28,17 +28,17 @@ import OrganizationLogin from "@/pages/organization-pages/auth/OrganizationLogin
 import OrganizationSignup from "@/pages/organization-pages/auth/OrganizationSignup";
 import OrganizationLanding from "@/pages/organization-pages/OrganizationLanding";
 import OrganizationDashboard from "@/pages/organization-pages/OrganizationDashboard";
-import MyOpportunity from "@/pages/organization-pages/posted-page/PostedOpportunity";
+import MyOpportunity from "@/pages/organization-pages/PostedOpportunity";
 import OrganizationProfile from "@/pages/organization-pages/OrganizationProfile";
 import OrganizationReports from "@/pages/organization-pages/OrganizationReports";
 import OrganizationNotifications from "@/pages/organization-pages/OrganizationNotifications";
 
 // Admin
 import AdminLogin from "@/components/auth/AdminLogin";
-import AdminDashboard from "@/pages/admin/AdminDashboard";
-import UserManagement from "@/pages/admin/UserManagement";
-import AdminReports from "@/pages/admin/AdminReports";
-import AdminNotifications from "@/pages/admin/AdminNotifications";
+import AdminDashboard from "@/pages/admin-pages/AdminDashboard";
+import UserManagement from "@/pages/admin-pages/UserManagement";
+import AdminReports from "@/pages/admin-pages/AdminReports";
+import AdminNotifications from "@/pages/admin-pages/AdminNotifications";
 
 // Shared
 import ForgotPassword from "@/pages/auth-password/ForgotPassword";
