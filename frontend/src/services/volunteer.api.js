@@ -1,6 +1,3 @@
-/* -------------------------------------------
-   VOLUNTEER PROFILE
--------------------------------------------- */
 import API from "@/services/api";
 
 // Get volunteer profile
@@ -19,9 +16,9 @@ export const getAllOpportunities = () => API.get("/opportunities/all");
 export const signupForOpportunity = (id) =>
   API.post(`/opportunities/${id}/signup`);
 
-/* -------------------------------------------
-   VOLUNTEER DASHBOARD DATA
--------------------------------------------- */
+
+// VOLUNTEER DASHBOARD DATA
+
 // Badges & Points
 export const getVolunteerOverview = () => API.get("/volunteer/me");
 
@@ -32,8 +29,6 @@ export const getVolunteerProgress = () => API.get("/volunteer/me/progress");
 export const getVolunteerBadges = () => API.get("/volunteer/me/badges?limit=6");
 
 export const getTopVolunteers = () => API.get("/volunteer/top?limit=3");
-
-
 
 export const getVolunteerNotifications = () =>
   API.get("/notifications/volunteer");

@@ -3,7 +3,7 @@ import { X } from "lucide-react";
 import { toast } from "react-toastify";
 import { getOpportunityById } from "@/services/api";
 import { updateOpportunity } from "@/services/organization.api";
-import PreviewCard from "@/components/organization-dashboard/post/PreviewCard";
+import PreviewCard from "@/components/organization-dashboard/post-opportunity/PreviewCard";
 import SkillCheckbox from "@/components/organization-dashboard/post-opportunity/SkillCheckbox";
 import ImageDropzone from "@/components/organization-dashboard/post-opportunity/ImageDropzone";
 

@@ -12,27 +12,26 @@ import Suspended from "@/pages/Suspend";
 import RoleLogin from "@/pages/user-selection/RoleLogin";
 import RoleSignup from "@/pages/user-selection/RoleSignup";
 
-// Volunteer
-import VolunteerLogin from "@/pages/volunteer/auth/VolunteerLogin";
-import VolunteerSignup from "@/pages/volunteer/auth/VolunteerSignup";
-import VolunteerLanding from "@/pages/volunteer/VolunteerLanding";
-import VolunteerDashboard from "@/pages/volunteer/VolunteerDashboard";
-import BrowseOpportunities from "@/pages/volunteer/browse-page/BrowseOpportunities";
-import VolunteerProfile from "@/pages/volunteer/VolunteerProfile";
-import VolunteerBadges from "@/pages/volunteer/VolunteerBadges";
-import VolunteerNotifications from "@/pages/volunteer/VolunteerNotifications";
-import MyTasks from "@/pages/volunteer/MyTasks";
+// volunteer-pages
+import VolunteerLogin from "@/pages/volunteer-pages/auth/VolunteerLogin";
+import VolunteerSignup from "@/pages/volunteer-pages/auth/volunteerSignup";
+import VolunteerLanding from "@/pages/volunteer-pages/VolunteerLanding";
+import VolunteerDashboard from "@/pages/volunteer-pages/VolunteerDashboard";
+import BrowseOpportunities from "@/pages/volunteer-pages/browse-page/BrowseOpportunities";
+import VolunteerProfile from "@/pages/volunteer-pages/VolunteerProfile";
+import VolunteerBadges from "@/pages/volunteer-pages/VolunteerBadges";
+import VolunteerNotifications from "@/pages/volunteer-pages/VolunteerNotifications";
+import VolunteerTasks from "@/pages/volunteer-pages/VolunteerTasks";
 
 // Organization
-import OrganizationLogin from "@/pages/organization/auth/OrganizationLogin";
-import OrganizationSignup from "@/pages/organization/auth/OrganizationSignup";
-import OrganizationLanding from "@/pages/organization/OrganizationLanding";
-import OrganizationDashboard from "@/pages/organization/OrganizationDashboard";
-import MyOpportunity from "@/pages/organization/posted-page/PostedOpportunity";
-import OrganizationProfile from "@/pages/organization/OrganizationProfile";
-import OrganizationReports from "@/pages/organization/OrganizationReports";
-
-import OrganizationNotifications from "@/pages/organization/OrganizationNotifications";
+import OrganizationLogin from "@/pages/organization-pages/auth/OrganizationLogin";
+import OrganizationSignup from "@/pages/organization-pages/auth/OrganizationSignup";
+import OrganizationLanding from "@/pages/organization-pages/OrganizationLanding";
+import OrganizationDashboard from "@/pages/organization-pages/OrganizationDashboard";
+import MyOpportunity from "@/pages/organization-pages/posted-page/PostedOpportunity";
+import OrganizationProfile from "@/pages/organization-pages/OrganizationProfile";
+import OrganizationReports from "@/pages/organization-pages/OrganizationReports";
+import OrganizationNotifications from "@/pages/organization-pages/OrganizationNotifications";
 
 // Admin
 import AdminLogin from "@/components/auth/AdminLogin";
@@ -42,7 +41,7 @@ import AdminReports from "@/pages/admin/AdminReports";
 import AdminNotifications from "@/pages/admin/AdminNotifications";
 
 // Shared
-import ForgotPassword from "@/pages/auth/ForgotPassword";
+import ForgotPassword from "@/pages/auth-password/ForgotPassword";
 
 export default function App() {
 
@@ -72,7 +71,7 @@ export default function App() {
         <Route path="/volunteer/dashboard" element={<VolunteerDashboard />} />
         <Route path="/volunteer/opportunities" element={<BrowseOpportunities />} />
         <Route path="/volunteer/forgot-password" element={<ForgotPassword />} />
-        <Route path="/volunteer/tasks" element={<MyTasks />} />
+        <Route path="/volunteer/tasks" element={<VolunteerTasks/>} />
         <Route path="/volunteer/profile" element={<VolunteerProfile />} />
         <Route path="/volunteer/badges" element={<VolunteerBadges />} />
         <Route path="/volunteer/notifications" element={<VolunteerNotifications />} />

@@ -109,7 +109,7 @@ export default function AdminReports() {
   //   }
 
   //   try {
-  //     // ✅ Clone node
+  //     //  Clone node
   //     const clone = element.cloneNode(true);
   //     clone.id = "reports-content-clone";
   //     clone.style.position = "absolute";
@@ -118,7 +118,7 @@ export default function AdminReports() {
   //     clone.style.background = "#fff";
   //     document.body.appendChild(clone);
 
-  //     // ✅ Replace any OKLCH or LAB colors with rgb fallbacks
+  //     // Replace any OKLCH or LAB colors with rgb fallbacks
   //     const sanitizeColor = (color) => {
   //       if (!color) return "rgb(255,255,255)";
   //       if (color.startsWith("oklch") || color.startsWith("lab("))
@@ -139,7 +139,7 @@ export default function AdminReports() {
   //       el.style.boxShadow = "none";
   //     });
 
-  //     // ✅ Override Tailwind CSS vars that use oklch()
+  //     // Override Tailwind CSS vars that use oklch()
   //     const vars = clone.querySelectorAll("[style], [class]");
   //     vars.forEach((el) => {
   //       const inline = el.getAttribute("style");
@@ -151,7 +151,7 @@ export default function AdminReports() {
   //       }
   //     });
 
-  //     // ✅ Snapshot
+  //     // Snapshot
   //     const canvas = await html2canvas(clone, {
   //       scale: 2,
   //       useCORS: true,

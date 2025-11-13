@@ -1,13 +1,9 @@
 import API from "@/services/api";
 
-// -------------------------------
 // Admin Authentication
-// -------------------------------
 export const loginAdmin = (formData) => API.post("/admin/login", formData);
 
-// -------------------------------
 //  Admin Dashboard
-// -------------------------------
 // Fetch Admin Dashboard statistics
 export const getAdminDashboard = () =>
   API.get("/admin/dashboard", {
@@ -57,6 +53,8 @@ export const updateVolunteerStatus = (id, status, data = {}) =>
     }
   );
 
+
+// Admin Notifications
 export const getAdminNotifications = async (adminId) => {
   try {
     const response = await API.get(`/admin/${adminId}/notifications`, {
