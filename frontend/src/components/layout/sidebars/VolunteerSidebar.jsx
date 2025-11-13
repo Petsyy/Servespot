@@ -23,7 +23,7 @@ const linkCls = ({ isActive }) =>
        : "text-green-100 hover:bg-green-500 hover:text-white hover:shadow-sm"
    }`;
 
-export default function VolSidebar({ isOpen, onClose }) {
+export default function VolunteerSidebar({ isOpen, onClose }) {
   const navigate = useNavigate();
   const location = useLocation();
 

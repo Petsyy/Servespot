@@ -32,7 +32,7 @@ import {
   updateVolunteerProfile,
   getVolunteerBadges,
 } from "@/services/volunteer.api";
-import VolSidebar from "@/components/layout/sidebars/VolSidebar";
+import VolunteerSidebar from "@/components/layout/sidebars/VolunteerSidebar";
 import VolunteerNavbar from "@/components/layout/navbars/VolunteerNavbar";
 
 export default function VolunteerProfile() {
@@ -312,7 +312,7 @@ export default function VolunteerProfile() {
   return (
     <div className="flex min-h-screen bg-gray-50">
       {/* Sidebar with responsive controls */}
-      <VolSidebar 
+      <VolunteerSidebar 
         isOpen={sidebarOpen} 
         onClose={closeSidebar} 
       />
