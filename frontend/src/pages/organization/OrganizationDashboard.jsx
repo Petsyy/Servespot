@@ -19,7 +19,7 @@ import {
   deleteOpportunity,
   getOrganizationProfile,
 } from "@/services/organization.api";
-import OrganizationSidebar from "@/components/layout/sidebars/OrgSidebar";
+import OrganizationSidebar from "@/components/layout/sidebars/OrganizationSidebar";
 import OrganizationNavbar from "@/components/layout/navbars/OrganizationNavbar";
 import StatCard from "@/components/organization-dashboard/metrics/StatCard";
 import OpportunityCard from "@/components/organization-dashboard/opportunities/OpportunityCard";

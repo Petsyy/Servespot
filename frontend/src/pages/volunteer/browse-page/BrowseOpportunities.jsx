@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Search, MapPin, Filter, Calendar, RotateCcw, Building2, Users, Award } from "lucide-react";
-import VolSidebar from "@/components/layout/sidebars/VolSidebar";
+import VolunteerSidebar from "@/components/layout/sidebars/VolunteerSidebar";
 import VolunteerNavbar from "@/components/layout/navbars/VolunteerNavbar";
 import OpportunityBoard from "@/components/volunteer-dashboard/opportunities/OpportunityBoard";
 import { getAllOpportunities } from "@/services/volunteer.api";
@@ -131,7 +131,7 @@ export default function BrowseOpportunities() {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
-      <VolSidebar isOpen={sidebarOpen} onClose={closeSidebar} />
+      <VolunteerSidebar isOpen={sidebarOpen} onClose={closeSidebar} />
 
       {/* Main Layout */}
       <div className="flex-1 flex flex-col min-w-0">

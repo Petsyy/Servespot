@@ -7,7 +7,7 @@ import {
   AlertCircle,
   Clock,
 } from "lucide-react";
-import VolunteerSidebar from "@/components/layout/sidebars/VolSidebar.jsx";
+import VolunteerSidebar from "@/components/layout/sidebars/VolunteerSidebar.jsx";
 import VolunteerNavbar from "@/components/layout/navbars/VolunteerNavbar.jsx";
 import {
   getVolunteerNotifications,

@@ -16,7 +16,7 @@ import {
   X,
   Users,
 } from "lucide-react";
-import VolSidebar from "@/components/layout/sidebars/VolSidebar";
+import VolunteerSidebar from "@/components/layout/sidebars/VolunteerSidebar";
 import VolunteerNavbar from "@/components/layout/navbars/VolunteerNavbar";
 import MetricCard from "@/components/volunteer-dashboard/metrics/MetricCard";
 import Notifications from "@/components/volunteer-dashboard/notifications/Notifications";
@@ -391,7 +391,7 @@ export default function VolunteerDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      <VolSidebar isOpen={sidebarOpen} onClose={closeSidebar} />
+      <VolunteerSidebar isOpen={sidebarOpen} onClose={closeSidebar} />
 
       <div className="flex-1 flex flex-col min-w-0">
         <VolunteerNavbar

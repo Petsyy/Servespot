@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Star, Zap, Award, Trophy, Flame, Crown, Medal, Sparkles } from "lucide-react";
 import { getVolunteerOverview } from "@/services/volunteer.api";
-import VolSidebar from "@/components/layout/sidebars/VolSidebar";
+import VolunteerSidebar from "@/components/layout/sidebars/VolunteerSidebar";
 import VolunteerNavbar from "@/components/layout/navbars/VolunteerNavbar";
 
 export default function VolunteerBadges() {
@@ -121,7 +121,7 @@ export default function VolunteerBadges() {
   if (loading) {
     return (
       <div className="flex min-h-screen bg-gray-50">
-        <VolSidebar isOpen={sidebarOpen} onClose={closeSidebar} />
+        <VolunteerSidebar isOpen={sidebarOpen} onClose={closeSidebar} />
         <div className="flex-1 flex flex-col min-w-0">
           <VolunteerNavbar onToggleSidebar={toggleSidebar} />
           <main className="flex-1 flex items-center justify-center">
@@ -137,7 +137,7 @@ export default function VolunteerBadges() {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <VolSidebar isOpen={sidebarOpen} onClose={closeSidebar} />
+      <VolunteerSidebar isOpen={sidebarOpen} onClose={closeSidebar} />
       <div className="flex-1 flex flex-col min-w-0">
         <VolunteerNavbar onToggleSidebar={toggleSidebar} />
 

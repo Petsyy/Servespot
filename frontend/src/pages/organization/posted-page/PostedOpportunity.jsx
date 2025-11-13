@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { getOpportunities, deleteOpportunity } from "@/services/organization.api";
 import OpportunityCard from "@/components/organization-dashboard/opportunities/OpportunityCard";
-import OrgSidebar from "@/components/layout/sidebars/OrgSidebar";
+import OrganizationSidebar from "@/components/layout/sidebars/OrganizationSidebar";
 import OrganizationNavbar from "@/components/layout/navbars/OrganizationNavbar";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
@@ -110,7 +110,7 @@ export default function PostedOpportunities() {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Organization Sidebar */}
-      <OrgSidebar 
+      <OrganizationSidebar 
         isOpen={sidebarOpen} 
         onClose={closeSidebar} 
       />

@@ -7,7 +7,7 @@ import {
   AlertCircle,
   Clock,
 } from "lucide-react";
-import OrgSidebar from "@/components/layout/sidebars/OrgSidebar.jsx";
+import OrganizationSidebar from "@/components/layout/sidebars/OrganizationSidebar.jsx";
 import OrgNavbar from "@/components/layout/navbars/OrganizationNavbar.jsx";
 import {
   getOrgNotifications,
@@ -133,7 +133,7 @@ export default function OrganizationNotifications() {
   // =============================
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <OrgSidebar
+      <OrganizationSidebar
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
       />

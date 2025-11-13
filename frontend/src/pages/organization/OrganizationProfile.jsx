@@ -19,7 +19,7 @@ import {
   getOrganizationById,
   updateOrganization,
 } from "@/services/organization.api";
-import OrgSidebar from "@/components/layout/sidebars/OrgSidebar";
+import OrganizationSidebar from "@/components/layout/sidebars/OrganizationSidebar";
 import OrganizationNavbar from "@/components/layout/navbars/OrganizationNavbar";
 
 const ORG_TYPES = [
@@ -432,7 +432,7 @@ export default function OrganizationProfile() {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Organization Sidebar */}
-      <OrgSidebar isOpen={sidebarOpen} onClose={closeSidebar} />
+      <OrganizationSidebar isOpen={sidebarOpen} onClose={closeSidebar} />
 
       <div className="flex-1 flex flex-col min-w-0">
         {/* Organization Navbar */}

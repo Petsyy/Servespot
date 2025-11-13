@@ -13,7 +13,7 @@ import {
   Users,
   Tag,
 } from "lucide-react";
-import VolSidebar from "@/components/layout/sidebars/VolSidebar";
+import VolunteerSidebar from "@/components/layout/sidebars/VolunteerSidebar";
 import VolunteerNavbar from "@/components/layout/navbars/VolunteerNavbar";
 import { getVolunteerTasks } from "@/services/volunteer.api";
 import { getOpportunityById } from "@/services/api";
@@ -128,7 +128,7 @@ export default function VolunteerTasks() {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
-      <VolSidebar isOpen={sidebarOpen} onClose={closeSidebar} />
+      <VolunteerSidebar isOpen={sidebarOpen} onClose={closeSidebar} />
 
       <div className="flex-1 flex flex-col min-w-0">
         {/* Navbar */}

@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import OrgSidebar from "@/components/layout/sidebars/OrgSidebar.jsx";
+import OrganizationSidebar from "@/components/layout/sidebars/OrganizationSidebar.jsx";
 import OrgNavbar from "@/components/layout/navbars/OrganizationNavbar.jsx";
 import {
   ResponsiveContainer,
@@ -261,7 +261,7 @@ export default function Reports() {
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/20">
       {/* Sidebar */}
-      <OrgSidebar
+      <OrganizationSidebar
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
       />
