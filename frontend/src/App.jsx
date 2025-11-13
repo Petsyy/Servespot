@@ -17,7 +17,7 @@ import VolunteerLogin from "@/pages/volunteer-pages/auth/VolunteerLogin";
 import VolunteerSignup from "@/pages/volunteer-pages/auth/volunteerSignup";
 import VolunteerLanding from "@/pages/volunteer-pages/VolunteerLanding";
 import VolunteerDashboard from "@/pages/volunteer-pages/VolunteerDashboard";
-import BrowseOpportunities from "@/pages/volunteer-pages/BrowseOpportunities";
+import BrowseOpportunities from "@/pages/volunteer-pages/VolunteerBrowseOpportunities";
 import VolunteerProfile from "@/pages/volunteer-pages/VolunteerProfile";
 import VolunteerBadges from "@/pages/volunteer-pages/VolunteerBadges";
 import VolunteerNotifications from "@/pages/volunteer-pages/VolunteerNotifications";
@@ -28,7 +28,7 @@ import OrganizationLogin from "@/pages/organization-pages/auth/OrganizationLogin
 import OrganizationSignup from "@/pages/organization-pages/auth/OrganizationSignup";
 import OrganizationLanding from "@/pages/organization-pages/OrganizationLanding";
 import OrganizationDashboard from "@/pages/organization-pages/OrganizationDashboard";
-import MyOpportunity from "@/pages/organization-pages/PostedOpportunity";
+import MyOpportunity from "@/pages/organization-pages/OrganizationPostedOpportunity";
 import OrganizationProfile from "@/pages/organization-pages/OrganizationProfile";
 import OrganizationReports from "@/pages/organization-pages/OrganizationReports";
 import OrganizationNotifications from "@/pages/organization-pages/OrganizationNotifications";

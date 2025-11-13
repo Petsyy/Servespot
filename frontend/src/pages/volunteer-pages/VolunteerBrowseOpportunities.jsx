@@ -5,7 +5,7 @@ import VolunteerNavbar from "@/components/layout/navbars/VolunteerNavbar";
 import OpportunityBoard from "@/components/volunteer-dashboard/opportunities/OpportunityBoard";
 import { getAllOpportunities } from "@/services/volunteer.api";
 
-export default function BrowseOpportunities() {
+export default function VolunteerBrowseOpportunities() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [opportunities, setOpportunities] = useState([]);
   const [loading, setLoading] = useState(true);
