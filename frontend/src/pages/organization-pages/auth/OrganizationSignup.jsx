@@ -1,8 +1,8 @@
 import React from "react";
 import { useState } from "react";
 import StepIndicator from "@/components/ui/StepIndicator";
-import OrganizationAccountStep from "@/pages/organization-pages/organization-registration/OrganizationAccount";
-import OrganizationProfileStep from "@/pages/organization-pages/organization-registration/OrganizationProfile";
+import OrganizationAccountStep from "@/pages/organization-pages/organization-registration/Step1-OrganizationAccount";
+import OrganizationProfileStep from "@/pages/organization-pages/organization-registration/Step2-OrganizationCompleteProfile";
 
 export default function OrganizationSignup() {
   const [step, setStep] = useState(1);

@@ -10,15 +10,11 @@ import Notification from "../models/Notification.js";
 
 const router = express.Router();
 
-// =============================
-// 📩 General Notifications Routes
-// =============================
+// General Notifications Routes
 router.get("/", protect, getNotifications);
 router.patch("/:id/read", protect, markAsRead);
 
-// =============================
-// 👥 Volunteer Notifications
-// =============================
+// Volunteer Notifications
 router.get("/volunteer", verifyToken, getVolunteerNotifications);
 
 // Mark all volunteer notifications as read
@@ -41,9 +37,7 @@ router.put("/volunteer/read-all", verifyToken, async (req, res) => {
   }
 });
 
-// =============================
 // Organization Notifications
-// =============================
 
 // Get notifications for a specific organization
 router.get("/organization/:orgId", async (req, res) => {

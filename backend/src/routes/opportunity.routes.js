@@ -29,9 +29,7 @@ import { triggerReminderTest } from "../utils/reminderNotifications.js";
 
 const router = express.Router();
 
-/* ------------------------------------------------
-   Public (Volunteer)
------------------------------------------------- */
+// Public (Volunteer)
 router.get("/all", async (req, res) => {
   try {
     const opportunities = await Opportunity.find()
@@ -51,9 +49,8 @@ router.get("/all", async (req, res) => {
   }
 });
 
-/* ------------------------------------------------
-    Get opportunities posted by specific organization
------------------------------------------------- */
+
+// Get opportunities posted by specific organization
 router.get("/organization/:orgId", async (req, res) => {
   try {
     const opportunities = await Opportunity.find({
@@ -74,9 +71,9 @@ router.get("/organization/:orgId", async (req, res) => {
   }
 });
 
-/* ------------------------------------------------
-   Get single opportunity by ID
------------------------------------------------- */
+
+// Get single opportunity by ID
+
 router.get("/view/:id", async (req, res) => {
   try {
     const opportunity = await Opportunity.findById(req.params.id);
@@ -89,26 +86,23 @@ router.get("/view/:id", async (req, res) => {
   }
 });
 
-/* ------------------------------------------------
-   Create & Update (with Image Upload)
------------------------------------------------- */
+// Create & Update (with Image Upload)
+
 // Create new opportunity (with poster/image)
 router.post("/", uploadImages.single("file"), createOpportunity);
 
 // Update opportunity (with new poster/image)
 router.put("/:id", uploadImages.single("file"), updateOpportunity);
 
-/* ------------------------------------------------
-   Dashboard routes (organization-specific)
------------------------------------------------- */
+// Dashboard routes (organization-specific)
 router.get("/organization/:orgId/stats", getStats);
 router.get("/organization/:orgId/notifications", getOrgNotifications);
 router.get("/organization/:orgId/activity", getActivity);
 router.get("/:id/volunteers", getOpportunityVolunteers);
 
-/* ------------------------------------------------
-   Volunteer & Completion Management
------------------------------------------------- */
+
+// Volunteer & Completion Management
+
 // Volunteer sign-up
 router.post("/:id/signup", verifyToken, volunteerSignup);
 

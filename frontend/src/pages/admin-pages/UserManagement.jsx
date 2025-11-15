@@ -284,7 +284,7 @@ export default function UserManagement() {
   }, []);
 
   /* -----------------------------
-     SWEETALERT2 HANDLERS
+     SWEETALERT HANDLERS
   ----------------------------- */
   const handleVerifyOrganization = async (user) => {
     if (loadingUserId) return;
