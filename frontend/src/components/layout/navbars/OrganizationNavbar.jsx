@@ -22,7 +22,7 @@ import {
 export default function OrganizationNavbar({ onToggleSidebar }) {
   const navigate = useNavigate();
   
-  // 🧠 State for notifications
+  // State for notifications
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [openNotif, setOpenNotif] = useState(false);
@@ -145,7 +145,7 @@ export default function OrganizationNavbar({ onToggleSidebar }) {
   }, []);
 
   /* ------------------------- Notification functions ------------------------- */
-  // 🧩 Mark all read
+  // Mark all read
   const markAllRead = async () => {
     try {
       const orgId = localStorage.getItem("organizationId") || localStorage.getItem("orgId");
@@ -157,7 +157,7 @@ export default function OrganizationNavbar({ onToggleSidebar }) {
       const updatedCount = response?.data?.updatedCount || 0;
       if (updatedCount > 0) {
         toast.success(
-          `✅ Marked ${updatedCount} notification${updatedCount === 1 ? "" : "s"} as read`
+          `Marked ${updatedCount} notification${updatedCount === 1 ? "" : "s"} as read`
         );
       } else {
         toast.info("All notifications were already read");
@@ -168,7 +168,7 @@ export default function OrganizationNavbar({ onToggleSidebar }) {
     }
   };
 
-  // 🧩 Mark individual notification as read
+  // Mark individual notification as read
   const markNotificationRead = (notificationId) => {
     setNotifications((prev) =>
       prev.map((n) => (n._id === notificationId ? { ...n, isRead: true } : n))
@@ -176,7 +176,7 @@ export default function OrganizationNavbar({ onToggleSidebar }) {
     setUnreadCount((c) => Math.max(0, c - 1));
   };
 
-  // 🧩 Clean up old notifications (older than 30 days)
+  // Clean up old notifications (older than 30 days)
   const cleanupOldNotifications = () => {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -264,8 +264,6 @@ export default function OrganizationNavbar({ onToggleSidebar }) {
             <Search size={20} />
           </button>
 
-
-
           {/* Notifications - Updated UI (same as volunteer) */}
           <div className="relative" ref={notifRef}>
             <button
@@ -319,7 +317,7 @@ export default function OrganizationNavbar({ onToggleSidebar }) {
                       .slice(0, 5)
                       .map((n, i) => (
                         <li
-                          key={`${n._id || "notif"}-${i}`} // ✅ unique + safe
+                          key={`${n._id || "notif"}-${i}`} // unique + safe
                           onClick={() => markNotificationRead(n._id)}
                           className={`px-4 py-3 text-sm flex items-start gap-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors cursor-pointer ${
                             !n.isRead ? "bg-green-50/70" : ""

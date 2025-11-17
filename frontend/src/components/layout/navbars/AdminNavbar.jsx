@@ -32,7 +32,7 @@ export default function AdminNavbar({
   const adminId = localStorage.getItem("adminId");
   const token = localStorage.getItem("adminToken");
 
-  // ✅ Fetch admin profile
+  // Fetch admin profile
   useEffect(() => {
     const fetchAdminProfile = async () => {
       try {
@@ -44,7 +44,7 @@ export default function AdminNavbar({
           setAdminEmail(data.email || "admin@servespot.com");
         }
       } catch (err) {
-        console.error("❌ Failed to fetch admin profile:", err);
+        console.error("Failed to fetch admin profile:", err);
       }
     };
     fetchAdminProfile();

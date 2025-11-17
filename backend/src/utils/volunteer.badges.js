@@ -130,7 +130,7 @@ export const awardVolunteerRewards = async (volunteerId) => {
     }
 
     await volunteer.save();
-    console.log(`✅ Rewards awarded to ${volunteer.fullName}: +${totalPoints} points, ${newBadges.length} new badges`);
+    console.log(`Rewards awarded to ${volunteer.fullName}: +${totalPoints} points, ${newBadges.length} new badges`);
     
     return newBadges;
   } catch (error) {

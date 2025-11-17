@@ -26,7 +26,7 @@ import { getVolunteerProfile } from "@/services/volunteer.api";
 export default function VolunteerNavbar({ onToggleSidebar }) {
   const navigate = useNavigate();
 
-  // 🧠 State for notifications
+  // State for notifications
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [openNotif, setOpenNotif] = useState(false);
@@ -36,7 +36,7 @@ export default function VolunteerNavbar({ onToggleSidebar }) {
   const notifRef = useRef(null);
   const profileRef = useRef(null);
 
-  // 🧩 Get volunteer name (same logic you had)
+  // Get volunteer name (same logic you had)
   const getVolunteerName = () => {
     if (typeof window === "undefined") return "Volunteer";
     const volUser = localStorage.getItem("volUser");
@@ -90,7 +90,7 @@ export default function VolunteerNavbar({ onToggleSidebar }) {
     fetchVolunteerProfile();
   }, []);
 
-  // 🧩 Socket connection only - NO TOASTS in navbar
+  // Socket connection only - NO TOASTS in navbar
   useEffect(() => {
     const volunteerId = localStorage.getItem("volunteerId");
     if (!volunteerId) return;
@@ -140,7 +140,7 @@ export default function VolunteerNavbar({ onToggleSidebar }) {
     };
   }, []);
 
-  // 🧩 Mark all read
+  // Mark all read
   const markAllRead = async () => {
     try {
       const response = await markVolunteerNotificationsRead();
@@ -151,7 +151,7 @@ export default function VolunteerNavbar({ onToggleSidebar }) {
       const updatedCount = response?.data?.updatedCount || 0;
       if (updatedCount > 0) {
         toast.success(
-          `✅ Marked ${updatedCount} notification${updatedCount === 1 ? "" : "s"} as read`
+          `Marked ${updatedCount} notification${updatedCount === 1 ? "" : "s"} as read`
         );
       } else {
         toast.info("All notifications were already read");
@@ -162,7 +162,7 @@ export default function VolunteerNavbar({ onToggleSidebar }) {
     }
   };
 
-  // 🧩 Mark individual notification as read
+  // Mark individual notification as read
   const markNotificationRead = (notificationId) => {
     setNotifications((prev) =>
       prev.map((n) => (n._id === notificationId ? { ...n, isRead: true } : n))
@@ -170,7 +170,7 @@ export default function VolunteerNavbar({ onToggleSidebar }) {
     setUnreadCount((c) => Math.max(0, c - 1));
   };
 
-  // 🧩 Clean up old notifications (older than 30 days)
+  // Clean up old notifications (older than 30 days)
   const cleanupOldNotifications = () => {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -180,7 +180,7 @@ export default function VolunteerNavbar({ onToggleSidebar }) {
     );
   };
 
-  // 🧩 Outside click/ESC close
+  // Outside click/ESC close
   useEffect(() => {
     const onClick = (e) => {
       if (notifRef.current && !notifRef.current.contains(e.target))
@@ -353,7 +353,7 @@ export default function VolunteerNavbar({ onToggleSidebar }) {
                 {notifications && notifications.length ? (
                   <ul className="max-h-72 overflow-auto">
                     {notifications
-                      // 🧹 Remove duplicates by ID
+                      // Remove duplicates by ID
                       .filter(
                         (n, index, arr) =>
                           index === arr.findIndex((x) => x._id === n._id)
@@ -417,7 +417,7 @@ export default function VolunteerNavbar({ onToggleSidebar }) {
             )}
           </div>
 
-          {/* 👤 Profile Dropdown */}
+          {/* Profile Dropdown */}
           <div className="relative" ref={profileRef}>
             <button
               onClick={() => setOpenProfile((v) => !v)}

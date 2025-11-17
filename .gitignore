@@ -10,6 +10,7 @@ build/
 
 # Environment variables
 .env
+.loadEnv
 .env.local
 .env.development.local
 .env.test.local

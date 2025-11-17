@@ -82,7 +82,7 @@ export default function LoginForm({ role = "Volunteer", icon: Icon }) {
         localStorage.setItem("orgName", orgName);
         console.log("🔍 Stored orgName in localStorage:", orgName);
 
-        // ✅ Register socket instantly
+        //  Register socket instantly
         registerUserSocket(orgId, "organization");
         console.log("📡 Organization socket registered after login:", orgId);
 
