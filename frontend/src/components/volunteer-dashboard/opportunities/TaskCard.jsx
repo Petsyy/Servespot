@@ -17,7 +17,7 @@ export default function TaskCard({
   points,
   status,
 }) {
-  // 🎨 Define colors and icons per status
+  //  Define colors and icons per status
   const statusStyles = {
     Open: {
       color: "text-green-700",

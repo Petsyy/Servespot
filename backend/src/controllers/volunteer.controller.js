@@ -217,9 +217,9 @@ export const getMyOpportunities = async (req, res) => {
     if (!volunteerId)
       return res.status(401).json({ message: "Unauthorized: no volunteer ID" });
 
-    // 🧠 Only fetch opportunities where:
-    // - volunteer is still in the 'volunteers' array
-    // - opportunity is not completed or closed
+    // Only fetch opportunities where:
+    // volunteer is still in the 'volunteers' array
+    // Opportunity is not completed or closed
     const myOpportunities = await Opportunity.find({
       volunteers: volunteerId,
       status: { $nin: ["Completed", "Closed"] },
@@ -249,7 +249,6 @@ function computeLevelProgress(points) {
   };
 }
 
-// GET /volunteer/me/progress
 export const getMyProgress = async (req, res) => {
   try {
     const me = await Volunteer.findById(req.user.id)
@@ -278,7 +277,6 @@ export const getMyProgress = async (req, res) => {
   }
 };
 
-// GET /volunteer/top
 export const getTopVolunteers = async (req, res) => {
   try {
     const limit = Math.max(1, Math.min(50, Number(req.query.limit) || 3));
