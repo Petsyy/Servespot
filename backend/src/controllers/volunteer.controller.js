@@ -1,5 +1,5 @@
-import Opportunity from "../models/Opportunity.js";
-import Volunteer from "../models/Volunteer.js";
+import Opportunity from "../models/opportunity.model.js";
+import Volunteer from "../models/volunteer.model.js";
 
 // get volunteer profile + stats + total hours
 export const getMyProfile = async (req, res) => {

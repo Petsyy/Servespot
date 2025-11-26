@@ -6,7 +6,7 @@ import {
   markAsRead,
 } from "../controllers/notification.controller.js";
 import { protect, verifyToken } from "../middlewares/auth.middleware.js";
-import Notification from "../models/Notification.js";
+import Notification from "../models/notification.model.js";
 
 const router = express.Router();
 

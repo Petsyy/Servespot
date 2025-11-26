@@ -1,7 +1,7 @@
-import Admin from "../models/Admin.js";
-import Organization from "../models/Organization.js";
-import Volunteer from "../models/Volunteer.js";
-import Opportunity from "../models/Opportunity.js";
+import Admin from "../models/admin.model.js";
+import Organization from "../models/organization.model.js";
+import Volunteer from "../models/volunteer.model.js";
+import Opportunity from "../models/opportunity.model.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import {

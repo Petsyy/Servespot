@@ -1,6 +1,6 @@
 import express from "express";
 import mongoose from "mongoose";
-import Opportunity from "../models/Opportunity.js";
+import Opportunity from "../models/opportunity.model.js";
 
 // Use the new separated upload logic
 import { uploadImages } from "../middlewares/upload.middleware.js";

@@ -1,4 +1,4 @@
-import Volunteer from "../models/Volunteer.js";
+import Volunteer from "../models/volunteer.model.js";
 import { sendNotification } from "./sendNotification.js";
 
 /**

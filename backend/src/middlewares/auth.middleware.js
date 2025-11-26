@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
-import Volunteer from "../models/Volunteer.js";
-import Organization from "../models/Organization.js"; 
+import Volunteer from "../models/volunteer.model.js";
+import Organization from "../models/organization.model.js"; 
 
 export const protect = async (req, res, next) => {
   let token;

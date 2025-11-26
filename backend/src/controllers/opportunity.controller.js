@@ -1,8 +1,8 @@
-import Opportunity from "../models/Opportunity.js";
-import Organization from "../models/Organization.js";
-import Volunteer from "../models/Volunteer.js";
-import Notification from "../models/Notification.js";
-import Admin from "../models/Admin.js";
+import Opportunity from "../models/opportunity.model.js";
+import Organization from "../models/organization.model.js";
+import Volunteer from "../models/volunteer.model.js";
+import Notification from "../models/notification.model.js";
+import Admin from "../models/admin.model.js";
 import { awardVolunteerRewards } from "../utils/volunteer.badges.js";
 import { sendNotification } from "../utils/sendNotification.js";
 

@@ -1,5 +1,5 @@
 import mongoose from "mongoose"
-import Organization from "../models/Organization.js";
+import Organization from "../models/organization.model.js";
 
 //  GET organization profile by ID
 export const getOrganizationById = async (req, res) => {

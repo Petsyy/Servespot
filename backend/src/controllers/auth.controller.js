@@ -1,6 +1,6 @@
-import Volunteer from "../models/Volunteer.js";
-import Organization from "../models/Organization.js";
-import Admin from "../models/Admin.js";
+import Volunteer from "../models/volunteer.model.js";
+import Organization from "../models/organization.model.js";
+import Admin from "../models/admin.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
@@ -66,7 +66,7 @@ export const registerVolunteer = async (req, res) => {
 
     // Notify admins about new volunteer registration
     try {
-      const Admin = (await import("../models/Admin.js")).default;
+      const Admin = (await import("../models/admin.model.js")).default;
       const admins = await Admin.find({});
       
       // Filter to active admins, fallback to all admins if none are active
@@ -134,7 +134,7 @@ export const registerOrganization = async (req, res) => {
 
     // Notify admins about new organization registration
     try {
-      const Admin = (await import("../models/Admin.js")).default;
+      const Admin = (await import("../models/admin.model.js")).default;
       const admins = await Admin.find({});
       
       // Filter to active admins, fallback to all admins if none are active

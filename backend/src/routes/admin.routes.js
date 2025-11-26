@@ -7,11 +7,11 @@ import {
   updateVolunteerStatus,
 } from "../controllers/admin.controller.js";
 import { protectAdmin } from "../middlewares/auth.middleware.js";
-import Volunteer from "../models/Volunteer.js";
-import Organization from "../models/Organization.js";
-import Opportunity from "../models/Opportunity.js";
-import Notification from "../models/Notification.js";
-import Admin from "../models/Admin.js";
+import Volunteer from "../models/volunteer.model.js";
+import Organization from "../models/organization.model.js";
+import Opportunity from "../models/opportunity.model.js";
+import Notification from "../models/notification.model.js";
+import Admin from "../models/admin.model.js";
 
 const router = express.Router();
 
