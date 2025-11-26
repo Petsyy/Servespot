@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { Search, MapPin, Filter, Calendar, RotateCcw, Building2, Users, Award } from "lucide-react";
+import {
+  Search,
+  MapPin,
+  Filter,
+  Calendar,
+  RotateCcw,
+  Building2,
+  Users,
+  Award,
+} from "lucide-react";
 import VolunteerSidebar from "@/components/layout/sidebars/VolunteerSidebar";
 import VolunteerNavbar from "@/components/layout/navbars/VolunteerNavbar";
 import OpportunityBoard from "@/components/volunteer-dashboard/opportunities/OpportunityBoard";
@@ -43,43 +52,46 @@ export default function VolunteerBrowseOpportunities() {
   };
 
   // Extract unique values for filter options
-  const uniqueLocations = [...new Set(opportunities
-    .map(o => o?.location)
-    .filter(Boolean)
-    .map(loc => loc.toString().trim())
-  )].sort();
+  const uniqueLocations = [
+    ...new Set(
+      opportunities
+        .map((o) => o?.location)
+        .filter(Boolean)
+        .map((loc) => loc.toString().trim())
+    ),
+  ].sort();
 
-  const uniqueSkills = [...new Set(opportunities
-    .flatMap(o => Array.isArray(o?.skills) ? o.skills : [])
-    .filter(Boolean)
-    .map(skill => skill.toString().trim())
-  )].sort();
+  const uniqueSkills = [
+    ...new Set(
+      opportunities
+        .flatMap((o) => (Array.isArray(o?.skills) ? o.skills : []))
+        .filter(Boolean)
+        .map((skill) => skill.toString().trim())
+    ),
+  ].sort();
 
   const statusOptions = [
     { value: "", label: "All Status" },
     { value: "Open", label: "Open" },
     { value: "In Progress", label: "In Progress" },
-    { value: "Closed", label: "Closed" }
-    // Removed "Completed" since completed opportunities disappear
+    { value: "Closed", label: "Closed" },
   ];
 
-  // 🔎 Combined search + filter logic (null-safe)
+  // Apply filters
   const filtered = opportunities.filter((o) => {
     if (!o) return false;
 
-    // 🚨 EXCLUDE COMPLETED OPPORTUNITIES - They disappear from browse view
     if (o?.status === "Completed") return false;
 
     const title = (o?.title ?? "").toString().toLowerCase();
 
-    // organization might be an object, string, null, or undefined
     const orgNameRaw =
       typeof o?.organization === "object" && o?.organization !== null
-        ? o?.organization?.orgName ??
+        ? (o?.organization?.orgName ??
           o?.organization?.name ??
           o?.organization?.title ??
-          ""
-        : o?.organization ?? "";
+          "")
+        : (o?.organization ?? "");
 
     const org = orgNameRaw.toString().toLowerCase();
 
@@ -109,10 +121,16 @@ export default function VolunteerBrowseOpportunities() {
 
     const matchesStatus = statusFilter ? status === statusFilter : true;
 
-    return matchesSearch && matchesLocation && matchesSkill && matchesDate && matchesStatus;
+    return (
+      matchesSearch &&
+      matchesLocation &&
+      matchesSkill &&
+      matchesDate &&
+      matchesStatus
+    );
   });
 
-  // 🔄 Reset filters
+  // Reset filters
   const handleReset = () => {
     setSearch("");
     setLocationFilter("");
@@ -122,7 +140,8 @@ export default function VolunteerBrowseOpportunities() {
   };
 
   // Check if any filter is active
-  const hasActiveFilters = search || locationFilter || skillFilter || dateFilter || statusFilter;
+  const hasActiveFilters =
+    search || locationFilter || skillFilter || dateFilter || statusFilter;
 
   // Stats for filtered results
   const totalOpportunities = opportunities.length;
@@ -143,18 +162,24 @@ export default function VolunteerBrowseOpportunities() {
           <div className="mb-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Opportunity Board</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+                  Opportunity Board
+                </h1>
                 <p className="text-gray-600 text-sm mt-1">
-                  Browse and filter available volunteer opportunities in your community
+                  Browse and filter available volunteer opportunities in your
+                  community
                 </p>
               </div>
-              
+
               <button
                 onClick={fetchOpportunities}
                 disabled={loading}
                 className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition disabled:opacity-60 w-full sm:w-auto justify-center"
               >
-                <RotateCcw size={16} className={loading ? "animate-spin" : ""} />
+                <RotateCcw
+                  size={16}
+                  className={loading ? "animate-spin" : ""}
+                />
                 {loading ? "Refreshing..." : "Refresh"}
               </button>
             </div>
@@ -163,12 +188,15 @@ export default function VolunteerBrowseOpportunities() {
           {/* ---------- Search & Filter Bar ---------- */}
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-6 mb-6">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Filter Opportunities</h2>
-              
+              <h2 className="text-lg font-semibold text-gray-900">
+                Filter Opportunities
+              </h2>
+
               {hasActiveFilters && (
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-gray-600">
-                    Showing {filteredCount} of {totalOpportunities} opportunities
+                    Showing {filteredCount} of {totalOpportunities}{" "}
+                    opportunities
                   </span>
                   <button
                     onClick={handleReset}
@@ -272,7 +300,10 @@ export default function VolunteerBrowseOpportunities() {
                 {search && (
                   <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full">
                     Search: "{search}"
-                    <button onClick={() => setSearch("")} className="ml-1 hover:text-green-900">
+                    <button
+                      onClick={() => setSearch("")}
+                      className="ml-1 hover:text-green-900"
+                    >
                       ×
                     </button>
                   </span>
@@ -280,7 +311,10 @@ export default function VolunteerBrowseOpportunities() {
                 {locationFilter && (
                   <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
                     Location: {locationFilter}
-                    <button onClick={() => setLocationFilter("")} className="ml-1 hover:text-blue-900">
+                    <button
+                      onClick={() => setLocationFilter("")}
+                      className="ml-1 hover:text-blue-900"
+                    >
                       ×
                     </button>
                   </span>
@@ -288,7 +322,10 @@ export default function VolunteerBrowseOpportunities() {
                 {skillFilter && (
                   <span className="inline-flex items-center gap-1 px-3 py-1 bg-orange-100 text-orange-800 text-sm rounded-full">
                     Skill: {skillFilter}
-                    <button onClick={() => setSkillFilter("")} className="ml-1 hover:text-orange-900">
+                    <button
+                      onClick={() => setSkillFilter("")}
+                      className="ml-1 hover:text-orange-900"
+                    >
                       ×
                     </button>
                   </span>
@@ -296,7 +333,10 @@ export default function VolunteerBrowseOpportunities() {
                 {dateFilter && (
                   <span className="inline-flex items-center gap-1 px-3 py-1 bg-purple-100 text-purple-800 text-sm rounded-full">
                     Date: {new Date(dateFilter).toLocaleDateString()}
-                    <button onClick={() => setDateFilter("")} className="ml-1 hover:text-purple-900">
+                    <button
+                      onClick={() => setDateFilter("")}
+                      className="ml-1 hover:text-purple-900"
+                    >
                       ×
                     </button>
                   </span>
@@ -304,7 +344,10 @@ export default function VolunteerBrowseOpportunities() {
                 {statusFilter && (
                   <span className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 text-gray-800 text-sm rounded-full">
                     Status: {statusFilter}
-                    <button onClick={() => setStatusFilter("")} className="ml-1 hover:text-gray-900">
+                    <button
+                      onClick={() => setStatusFilter("")}
+                      className="ml-1 hover:text-gray-900"
+                    >
                       ×
                     </button>
                   </span>
@@ -318,7 +361,8 @@ export default function VolunteerBrowseOpportunities() {
             {/* Results Header */}
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900">
-                Available Opportunities {hasActiveFilters && `(${filteredCount})`}
+                Available Opportunities{" "}
+                {hasActiveFilters && `(${filteredCount})`}
               </h3>
             </div>
 
@@ -326,7 +370,10 @@ export default function VolunteerBrowseOpportunities() {
             {loading && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <div key={i} className="bg-white rounded-xl border border-gray-200 p-4 animate-pulse">
+                  <div
+                    key={i}
+                    className="bg-white rounded-xl border border-gray-200 p-4 animate-pulse"
+                  >
                     <div className="h-40 bg-gray-200 rounded-lg mb-3"></div>
                     <div className="h-4 bg-gray-200 rounded mb-2"></div>
                     <div className="h-3 bg-gray-200 rounded w-3/4 mb-3"></div>
@@ -345,7 +392,9 @@ export default function VolunteerBrowseOpportunities() {
                 <div className="max-w-md mx-auto">
                   <Search size={48} className="mx-auto text-gray-300 mb-4" />
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    {hasActiveFilters ? "No opportunities found" : "No opportunities available"}
+                    {hasActiveFilters
+                      ? "No opportunities found"
+                      : "No opportunities available"}
                   </h3>
                   <p className="text-gray-600 mb-6">
                     {hasActiveFilters

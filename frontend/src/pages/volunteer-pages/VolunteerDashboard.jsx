@@ -73,13 +73,13 @@ export default function VolunteerDashboard() {
 
   // Mark notification as read
   const markNotificationRead = (notificationId) => {
-    console.log(`📖 Marking notification as read: ${notificationId}`);
+    console.log(`Marking notification as read: ${notificationId}`);
     setNotifications((prev) => {
       const updated = prev.map((n) =>
         n._id === notificationId ? { ...n, isRead: true } : n
       );
       console.log(
-        `📖 Before: ${prev.length} notifications, After: ${updated.length} notifications`
+        `Before: ${prev.length} notifications, After: ${updated.length} notifications`
       );
       return updated;
     });
@@ -95,7 +95,7 @@ export default function VolunteerDashboard() {
     setSidebarOpen(false);
   };
 
-  // ✅ Validate session and ensure volunteer context
+  // Validate session and ensure volunteer context
   useEffect(() => {
     const volToken = localStorage.getItem("volToken");
     const activeRole = localStorage.getItem("activeRole");
@@ -123,7 +123,7 @@ export default function VolunteerDashboard() {
     // Register volunteer socket once
     registerUserSocket(volunteerId, role);
 
-    // --- 🔔 Notification listener ---
+    // Notification listener
     socket.off("newNotification").on("newNotification", (notif) => {
       if (!window._shownNotifs) window._shownNotifs = new Set();
       if (window._shownNotifs.has(notif._id)) return;
@@ -143,7 +143,7 @@ export default function VolunteerDashboard() {
       });
     });
 
-    // --- Suspension listener (no toast, just redirect) ---
+    // Suspension listener (no toast, just redirect)
     socket.off("suspended").on("suspended", (data) => {
       const reason = data.reason || "No reason provided.";
       console.warn(`Account suspended. Reason: ${reason}`);
@@ -151,7 +151,7 @@ export default function VolunteerDashboard() {
       window.location.href = "/suspended";
     });
 
-    // --- Reactivation listener ---
+    // Reactivation listener
     socket.off("reactivated").on("reactivated", () => {
       toast.success("✅ Your account has been reactivated!", {
         autoClose: 5000,
@@ -161,7 +161,7 @@ export default function VolunteerDashboard() {
 
     // --- Reconnect listener ---
     socket.off("connect").on("connect", () => {
-      console.log("🔄 Socket reconnected, refreshing dashboard...");
+      console.log("Socket reconnected, refreshing dashboard...");
       if (volunteerId) registerUserSocket(volunteerId, role);
     });
 
@@ -336,7 +336,7 @@ export default function VolunteerDashboard() {
       }
     }, 10000);
 
-    // Set up periodic cleanup every 30 minutes (less aggressive)
+    // Set up periodic cleanup every 30 minutes
     const cleanupInterval = setInterval(() => {
       cleanupOldNotifications();
     }, 1800000); // 30 minutes
@@ -468,7 +468,7 @@ export default function VolunteerDashboard() {
                 </div>
 
                 <div className="p-4 sm:p-6">
-                  {/* ✅ Active Tasks */}
+                  {/* Active Tasks */}
                   {activeTab === "active" && (
                     <div className="space-y-4">
                       {!loading && tasks.active.length === 0 && (
@@ -938,7 +938,7 @@ export default function VolunteerDashboard() {
         </div>
       )}
 
-      {/* ✅ Enhanced & Aligned View Proof Modal */}
+      {/* Enhanced & Aligned View Proof Modal */}
       {viewProofModal && selectedProof && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-scaleIn">
