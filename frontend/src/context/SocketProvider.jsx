@@ -19,8 +19,8 @@ export const SocketProvider = ({ children }) => {
 
     // Avoid duplicate listeners
     socket.off("newNotification").on("newNotification", (notif) => {
-      console.log("📢 New notification (global):", notif);
-      toast.info(`🔔 ${notif.title}: ${notif.message}`, {
+      console.log(" New notification (global):", notif);
+      toast.info(` ${notif.title}: ${notif.message}`, {
         position: "top-right",
         autoClose: 4000,
       });
