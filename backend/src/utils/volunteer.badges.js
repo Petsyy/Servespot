@@ -104,7 +104,7 @@ export const awardVolunteerRewards = async (volunteerId) => {
         // Add milestone bonus points
         volunteer.points += milestone.points;
         
-        console.log(`🎉 Badge earned: ${milestone.name} by volunteer ${volunteer.fullName}`);
+        console.log(` Badge earned: ${milestone.name} by volunteer ${volunteer.fullName}`);
       }
     }
 
@@ -134,7 +134,7 @@ export const awardVolunteerRewards = async (volunteerId) => {
     
     return newBadges;
   } catch (error) {
-    console.error("❌ Error awarding volunteer rewards:", error);
+    console.error(" Error awarding volunteer rewards:", error);
     return [];
   }
 };
