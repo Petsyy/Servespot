@@ -19,7 +19,7 @@ We chose the **MERN stack** because it’s modern, efficient, and supports a sea
 
 ### 👥 User Roles  
 - ✅ **Volunteers** – Browse, sign up, and track micro-volunteering activities  
-- ✅ **Organizations / NGOs** – Post and manage volunteer opportunities  
+- ✅ **Organizations** – Post and manage volunteer opportunities  
 - ✅ **Admin** – Manage users and reports  
 
 ---
