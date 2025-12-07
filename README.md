@@ -7,7 +7,7 @@ It enables organizations and individuals to post quick, low-commitment micro-tas
 
 ## 🛠️ Tech Stack  
 
-- **Frontend:** React, Tailwind CSS
+- **Frontend:** React, Tailwind
 - **Backend:** Node.js, Express.js  
 - **Database:** MongoDB  
 
