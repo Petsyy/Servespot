@@ -104,7 +104,11 @@ export const registerVolunteer = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ message: "Error registering volunteer", error });
+    console.error("Volunteer registration failed:", error);
+    res.status(500).json({
+      message: "Error registering volunteer",
+      error: error.message || String(error),
+    });
   }
 };
 
@@ -219,6 +223,7 @@ export const loginVolunteer = async (req, res) => {
       },
     });
   } catch (error) {
+    console.error("Volunteer login failed:", error);
     res.status(500).json({ message: "Error logging in volunteer", error });
   }
 };
@@ -256,6 +261,7 @@ export const loginOrganization = async (req, res) => {
       },
     });
   } catch (error) {
+    console.error("Organization login failed:", error);
     res.status(500).json({ message: "Error logging in organization", error });
   }
 };

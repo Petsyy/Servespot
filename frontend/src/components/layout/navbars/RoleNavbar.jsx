@@ -6,6 +6,8 @@ export default function RoleNavbar({ role }) {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  const profilePath = role === "volunteer" ? "/volunteer/profile" : "/organization/profile";
+
   const volunteerLinks = [
     { name: "Home", path: "/volunteer/homepage" },
     { name: "Opportunities", path: "/volunteer/opportunities" },
@@ -68,7 +70,7 @@ export default function RoleNavbar({ role }) {
           {/* Desktop Profile & Logout - Right */}
           <div className="hidden md:flex items-center space-x-4">
             <button
-              onClick={() => navigate("/organization/profile")}
+              onClick={() => navigate(profilePath)}
               className="text-green-600 px-4 py-2 hover:bg-green-50 rounded-lg transition cursor-pointer font-medium"
             >
               Profile
@@ -100,7 +102,7 @@ export default function RoleNavbar({ role }) {
               ))}
               <div className="border-t border-gray-200 pt-4 mt-2">
                 <button
-                  onClick={() => handleLinkClick("/organization/profile")}
+                  onClick={() => handleLinkClick(profilePath)}
                   className="w-full text-left px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-600 rounded-lg transition cursor-pointer font-medium"
                 >
                   Profile

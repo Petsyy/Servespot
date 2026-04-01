@@ -296,10 +296,22 @@ export default function ProfileStep({
       }, 1500);
     } catch (error) {
       console.error("Signup/Login error:", error);
+      console.error("Signup/Login error details:", {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data,
+      });
+
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        "Signup failed. Try again.";
+
       toast.error(
         <div>
           <span className="text-sm text-black">
-            {error.response?.data?.message || "Signup failed. Try again."}
+            {errorMessage}
           </span>
         </div>
       );

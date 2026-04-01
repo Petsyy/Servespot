@@ -13,11 +13,14 @@ export default function VolunteerSignup() {
     birthdate: "",
     gender: "",
     contact: "",
+    region: "",
+    province: "",
     city: "",
+    barangay: "",
     address: "",
     skills: [],
     interests: [],
-    availability: "",
+    availability: [],
     bio: "",
   });
 
