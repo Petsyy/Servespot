@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { showNewBadgeAlert } from "@/utils/badgeAlerts";
-import { io } from "socket.io-client";
 import {
   Eye,
   UploadCloud,
@@ -21,6 +20,7 @@ import VolunteerNavbar from "@/components/layout/navbars/VolunteerNavbar";
 import MetricCard from "@/components/volunteer-dashboard/metrics/MetricCard";
 import Notifications from "@/components/volunteer-dashboard/notifications/Notifications";
 import ProgressCard from "@/components/volunteer-dashboard/metrics/ProgressCard";
+import { buildFileUrl } from "@/utils/fileUrl";
 // import RecentBadges from "@/components/volunteer-dashboard/community/RecentBadges";
 // import TopVolunteers from "@/components/volunteer-dashboard/community/TopVolunteers";
 import ProofUploadModal from "@/components/volunteer-dashboard/opportunities/ProofUploadModal";
@@ -986,7 +986,7 @@ export default function VolunteerDashboard() {
                     {/* PDF Viewer */}
                     <div className="w-full bg-white rounded-xl border border-gray-300 shadow-lg overflow-hidden">
                       <iframe
-                        src={`http://localhost:5000${selectedProof}`}
+                        src={buildFileUrl(selectedProof)}
                         title="Proof PDF"
                         className="w-full h-[500px]"
                         loading="lazy"
@@ -1009,7 +1009,7 @@ export default function VolunteerDashboard() {
                     <div className="flex justify-center w-full">
                       <div className="relative rounded-xl overflow-hidden border-2 border-gray-300 shadow-lg bg-white max-w-2xl">
                         <img
-                          src={`http://localhost:5000${selectedProof}`}
+                          src={buildFileUrl(selectedProof)}
                           alt="Proof submission"
                           className="max-h-[500px] w-auto object-contain"
                           onError={(e) => {
@@ -1057,7 +1057,7 @@ export default function VolunteerDashboard() {
               <div className="flex gap-3">
                 {!selectedProof.endsWith(".pdf") && (
                   <a
-                    href={`http://localhost:5000${selectedProof}`}
+                    href={buildFileUrl(selectedProof)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="px-6 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 rounded-lg font-medium shadow hover:shadow-md transition-all duration-200 flex items-center gap-2"

@@ -2,8 +2,7 @@ import React, { useState } from "react";
 import { X, UploadCloud, CheckCircle } from "lucide-react";
 import { toast } from "react-toastify";
 import axios from "axios";
-
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000";
+import { API_URL } from "@/utils/runtime";
 
 export default function ProofUploadModal({
   opportunityId,
@@ -27,7 +26,7 @@ export default function ProofUploadModal({
       const token = localStorage.getItem("volToken");
 
       const res = await axios.post(
-        `${API_BASE}/api/opportunities/${opportunityId}/proof`,
+        `${API_URL}/opportunities/${opportunityId}/proof`,
         formData,
         {
           headers: {

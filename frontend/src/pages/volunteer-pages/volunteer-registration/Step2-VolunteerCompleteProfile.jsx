@@ -362,6 +362,7 @@ export default function ProfileStep({
         <div>
           <FormInput
             label="Contact Number"
+            placeholder="e.g., 09171234567"
             type="text"
             value={formData.contact}
             onChange={(val) => {

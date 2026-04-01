@@ -32,6 +32,8 @@ const opportunitySchema = new mongoose.Schema(
         volunteer: { type: mongoose.Schema.Types.ObjectId, ref: "Volunteer" },
         message: String, // optional text message or notes
         fileUrl: String, // uploaded image or document proof
+        filePublicId: String,
+        fileResourceType: String,
         status: {
           type: String,
           enum: ["Pending", "Approved", "Rejected"],
@@ -50,6 +52,8 @@ const opportunitySchema = new mongoose.Schema(
 
     points: { type: Number, default: 10 },
     fileUrl: String,
+    filePublicId: String,
+    fileResourceType: String,
 
     // Opportunity lifecycle
     status: {

@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import Opportunity from "../models/opportunity.model.js";
 
 // Use the new separated upload logic
-import { uploadImages } from "../middlewares/upload.middleware.js";
+import { uploadImages, uploadProofs } from "../middlewares/upload.middleware.js";
 import { verifyToken } from "../middlewares/auth.middleware.js";
 
 import {
@@ -113,7 +113,7 @@ router.patch("/:oppId/confirm/:volunteerId", confirmVolunteerCompletion);
 router.patch("/:id/complete", markOpportunityCompleted);
 
 // Submit and review proof
-router.post("/:id/proof", verifyToken, uploadImages.single("file"), submitCompletionProof);
+router.post("/:id/proof", verifyToken, uploadProofs.single("file"), submitCompletionProof);
 router.patch("/:id/proof/:volunteerId/review", verifyToken, reviewCompletionProof);
 
 // Force mark opportunity complete

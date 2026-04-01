@@ -14,7 +14,7 @@ import RoleSignup from "@/pages/user-selection/RoleSignup";
 
 // volunteer-pages
 import VolunteerLogin from "@/pages/volunteer-pages/auth/VolunteerLogin";
-import VolunteerSignup from "@/pages/volunteer-pages/auth/volunteerSignup";
+import VolunteerSignup from "@/pages/volunteer-pages/auth/VolunteerSignup";
 import VolunteerLanding from "@/pages/volunteer-pages/VolunteerLanding";
 import VolunteerDashboard from "@/pages/volunteer-pages/VolunteerDashboard";
 import BrowseOpportunities from "@/pages/volunteer-pages/VolunteerBrowseOpportunities";

@@ -1,8 +1,9 @@
 import axios from "axios";
 import { toast } from "react-toastify";
+import { API_URL } from "@/utils/runtime";
 
 const API = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: API_URL,
 });
 
 // Automatically attach Bearer token if present
@@ -80,9 +81,7 @@ export const resetPassword = (data) => API.post("/auth/reset-password", data);
 
 // Organization Confirmation
 export const confirmVolunteerCompletion = async (oppId, volunteerId) => {
-  return axios.patch(
-    `http://localhost:5000/api/opportunities/${oppId}/confirm/${volunteerId}`
-  );
+  return API.patch(`/opportunities/${oppId}/confirm/${volunteerId}`);
 };
 
 

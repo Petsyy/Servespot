@@ -1,16 +1,47 @@
 import express from "express";
 import cors from "cors";
-import path from "path";
 import fs from "fs";
 import { connectDB } from "./src/config/db.js";
+import { UPLOADS_DIR } from "./src/config/paths.js";
 
 // EXPRESS APP SETUP
 const app = express();
 
+const normalizeOrigin = (value) => value?.trim().replace(/\/+$/, "");
+
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  ...(process.env.CLIENT_URLS || "").split(","),
+  "http://localhost:5173",
+].map(normalizeOrigin).filter(Boolean);
+
+const isAllowedOrigin = (origin) => {
+  if (!origin) return true;
+
+  const normalizedOrigin = normalizeOrigin(origin);
+  if (allowedOrigins.includes(normalizedOrigin)) {
+    return true;
+  }
+
+  try {
+    const { hostname, protocol } = new URL(normalizedOrigin);
+    return protocol === "https:" &&
+      hostname.endsWith(".vercel.app") &&
+      hostname.startsWith("servespot");
+  } catch {
+    return false;
+  }
+};
+
 // Middleware
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: (origin, callback) => {
+      if (isAllowedOrigin(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error(`Not allowed by CORS: ${origin}`));
+    },
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
@@ -19,7 +50,15 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Database connection
-connectDB();
+if (process.env.MONGO_URI) {
+  connectDB().catch((error) => {
+    console.error("MongoDB boot error:", error.message);
+  });
+} else {
+  console.warn(
+    "MONGO_URI is not set. Database-backed routes will fail until it is configured."
+  );
+}
 
 // LOAD MODELS
 import "./src/models/volunteer.model.js";
@@ -29,7 +68,6 @@ import "./src/models/admin.model.js";
 import "./src/models/notification.model.js";
 
 // UPLOADS DIRECTORY
-const UPLOADS_DIR = path.join(process.cwd(), "uploads");
 if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 app.use("/uploads", express.static(UPLOADS_DIR));
 

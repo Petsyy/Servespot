@@ -22,6 +22,7 @@ import {
 } from "recharts";
 import AdminSidebar from "@/components/layout/sidebars/AdminSidebar";
 import AdminNavbar from "@/components/layout/navbars/AdminNavbar";
+import API from "@/services/api";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import * as XLSX from "xlsx";
@@ -35,18 +36,7 @@ export default function AdminReports() {
   // Fetch reports data from API
   const fetchReportsData = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/admin/reports", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
+      const { data } = await API.get("/admin/reports");
       return data;
     } catch (error) {
       console.error("Error fetching reports data:", error);

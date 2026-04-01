@@ -2,8 +2,8 @@ import React, { useEffect, useState, useCallback } from "react";
 import { X, CheckCircle, XCircle, Image, Loader2 } from "lucide-react";
 import axios from "axios";
 import { toast } from "react-toastify";
-
-const API_BASE = (import.meta.env.VITE_API_BASE || "http://localhost:5000").replace(/\/+$/, "");
+import { buildFileUrl } from "@/utils/fileUrl";
+import { API_URL } from "@/utils/runtime";
 
 function getVolunteerId(v) {
   if (!v) return "";
@@ -20,7 +20,7 @@ export default function ProofReviewModal({ opportunityId, onClose }) {
     let alive = true;
     (async () => {
       try {
-        const res = await axios.get(`${API_BASE}/api/opportunities/view/${opportunityId}`);
+        const res = await axios.get(`${API_URL}/opportunities/view/${opportunityId}`);
         if (!alive) return;
         setProofs(res.data.completionProofs || []);
       } catch (err) {
@@ -64,7 +64,7 @@ export default function ProofReviewModal({ opportunityId, onClose }) {
         "";
 
       const res = await axios.patch(
-        `${API_BASE}/api/opportunities/${opportunityId}/proof/${volunteerId}/review`,
+        `${API_URL}/opportunities/${opportunityId}/proof/${volunteerId}/review`,
         { action },
         {
           headers: token ? { Authorization: `Bearer ${token}` } : undefined,
@@ -218,12 +218,12 @@ export default function ProofReviewModal({ opportunityId, onClose }) {
                   {proof.fileUrl && (
                     <div className="relative group">
                       <img
-                        src={`${API_BASE}${proof.fileUrl}`}
+                        src={buildFileUrl(proof.fileUrl)}
                         alt="proof"
                         className="rounded-lg border border-gray-200 max-h-64 object-cover mx-auto"
                       />
                       <a
-                        href={`${API_BASE}${proof.fileUrl}`}
+                        href={buildFileUrl(proof.fileUrl)}
                         target="_blank"
                         rel="noreferrer"
                         className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-sm font-medium transition"

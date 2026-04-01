@@ -1,5 +1,5 @@
 import Notification from "../models/notification.model.js";
-import { io } from "../../server.js";
+import { emitToUser } from "../realtime/socketGateway.js";
 import { sendEmail } from "./sendEmail.js";
 
 /**
@@ -40,19 +40,7 @@ export const sendNotification = async ({
     if (channel === "inApp" || channel === "both") {
       notif = await Notification.create(baseData);
 
-      // Emit via socket
-      const idStr = String(userId);
-      let socketMap;
-      if (userModel === "Volunteer") {
-        socketMap = global.onlineVolunteers;
-      } else if (userModel === "Organization") {
-        socketMap = global.onlineOrganizations;
-      } else if (userModel === "Admin") {
-        socketMap = global.onlineAdmins;
-      }
-
-      const socketId = socketMap?.get(idStr);
-      if (socketId) io.to(socketId).emit("newNotification", notif);
+      emitToUser(userModel, userId, "newNotification", notif);
     }
 
     // Send email and also store a DB copy for the Email tab

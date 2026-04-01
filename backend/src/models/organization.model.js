@@ -26,6 +26,14 @@ const organizationSchema = new mongoose.Schema(
       type: String, // File path or URL of the uploaded verification document
       default: null,
     },
+    documentPublicId: {
+      type: String,
+      default: null,
+    },
+    documentResourceType: {
+      type: String,
+      default: null,
+    },
     status: {
       type: String,
       enum: ["pending", "active", "suspended"],

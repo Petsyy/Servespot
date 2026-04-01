@@ -8,7 +8,7 @@ import {
   emitToVolunteer,
   broadcastToAdmins,
   emitToOrganization,
-} from "../../server.js";
+} from "../realtime/socketGateway.js";
 import { sendNotification } from "../utils/sendNotification.js";
 
 /* =====================================================

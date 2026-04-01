@@ -5,6 +5,10 @@ import Notification from "../models/notification.model.js";
 import Admin from "../models/admin.model.js";
 import { awardVolunteerRewards } from "../utils/volunteer.badges.js";
 import { sendNotification } from "../utils/sendNotification.js";
+import {
+  deleteCloudinaryFile,
+  uploadFileToCloudinary,
+} from "../utils/cloudinaryUpload.js";
 
 // Fetch all opportunities for an organization
 export const getOpportunities = async (req, res) => {
@@ -40,7 +44,9 @@ export const createOpportunity = async (req, res) => {
     let skills = req.body.skills || req.body["skills[]"] || [];
     if (!Array.isArray(skills)) skills = [skills];
 
-    const fileUrl = req.file ? `/uploads/${req.file.filename}` : "";
+    const uploadedFile = req.file
+      ? await uploadFileToCloudinary(req.file, "servespot/opportunities")
+      : null;
 
     const opportunity = new Opportunity({
       title,
@@ -51,7 +57,9 @@ export const createOpportunity = async (req, res) => {
       volunteersNeeded: Number(volunteersNeeded) || 1,
       organization,
       skills,
-      fileUrl,
+      fileUrl: uploadedFile?.url || "",
+      filePublicId: uploadedFile?.publicId || "",
+      fileResourceType: uploadedFile?.resourceType || "",
       status: "Open",
       volunteers: [],
     });
@@ -149,11 +157,19 @@ export const updateOpportunity = async (req, res) => {
 
     // If new file uploaded
     if (req.file) {
-      const fs = await import("fs");
-      if (opportunity.fileUrl && fs.existsSync(`.${opportunity.fileUrl}`)) {
-        fs.unlinkSync(`.${opportunity.fileUrl}`);
-      }
-      opportunity.fileUrl = `/uploads/${req.file.filename}`;
+      const uploadedFile = await uploadFileToCloudinary(
+        req.file,
+        "servespot/opportunities"
+      );
+
+      await deleteCloudinaryFile(
+        opportunity.filePublicId,
+        opportunity.fileResourceType
+      );
+
+      opportunity.fileUrl = uploadedFile?.url || "";
+      opportunity.filePublicId = uploadedFile?.publicId || "";
+      opportunity.fileResourceType = uploadedFile?.resourceType || "";
     }
 
     // Save first — return success fast
@@ -642,7 +658,10 @@ export const submitCompletionProof = async (req, res) => {
     const { id } = req.params;
     const volunteerId = req.user?.id;
     const { message } = req.body;
-    const fileUrl = req.file ? `/uploads/${req.file.filename}` : "";
+    const uploadedFile = req.file
+      ? await uploadFileToCloudinary(req.file, "servespot/completion-proofs")
+      : null;
+    const fileUrl = uploadedFile?.url || "";
 
     const opportunity = await Opportunity.findById(id);
     if (!opportunity)
@@ -668,6 +687,10 @@ export const submitCompletionProof = async (req, res) => {
 
     // If there's a rejected proof, remove it before adding the new one
     if (existingProof && existingProof.status === "Rejected") {
+      await deleteCloudinaryFile(
+        existingProof.filePublicId,
+        existingProof.fileResourceType
+      );
       opportunity.completionProofs = opportunity.completionProofs.filter(
         (p) => p.volunteer.toString() !== volunteerId
       );
@@ -678,6 +701,8 @@ export const submitCompletionProof = async (req, res) => {
       volunteer: volunteerId,
       message,
       fileUrl,
+      filePublicId: uploadedFile?.publicId || "",
+      fileResourceType: uploadedFile?.resourceType || "",
       status: "Pending",
     });
 

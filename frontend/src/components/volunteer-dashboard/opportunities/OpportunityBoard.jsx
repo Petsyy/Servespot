@@ -23,6 +23,7 @@ import { signupForOpportunity } from "@/services/volunteer.api";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import ProofUploadModal from "@/components/volunteer-dashboard/opportunities/ProofUploadModal";
+import { buildFileUrl } from "@/utils/fileUrl";
 
 export default function OpportunityBoard({
   _id,
@@ -263,7 +264,7 @@ export default function OpportunityBoard({
         {/* Poster Image */}
         {fileUrl && (
           <img
-            src={`http://localhost:5000${fileUrl}`}
+            src={buildFileUrl(fileUrl)}
             alt={title}
             className="w-full h-[140px] object-cover"
           />

@@ -6,6 +6,7 @@ import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
 import { sendEmail } from "../utils/sendEmail.js";
 import { sendNotification } from "../utils/sendNotification.js";
+import { uploadFileToCloudinary } from "../utils/cloudinaryUpload.js";
 
 const generateToken = (id, role) => {
   return jwt.sign({ id, role }, process.env.JWT_SECRET, {
@@ -120,13 +121,19 @@ export const registerOrganization = async (req, res) => {
     // Hash provided or dummy password
     const hashedPassword = await bcrypt.hash(password || "temporary123", 10);
 
-    // handle uploaded document
-    const documentPath = req.file ? `/uploads/${req.file.filename}` : null;
+    const uploadedDocument = req.file
+      ? await uploadFileToCloudinary(
+          req.file,
+          "servespot/organization-documents"
+        )
+      : null;
 
     const organization = new Organization({
       ...req.body,
       password: hashedPassword,
-      document: documentPath,
+      document: uploadedDocument?.url || null,
+      documentPublicId: uploadedDocument?.publicId || null,
+      documentResourceType: uploadedDocument?.resourceType || null,
       status: "pending",
     });
 

@@ -1,5 +1,4 @@
 import API from "@/services/api";
-import axios from "axios";
 
 // Create new opportunity (Organization only)
 export const createOpportunity = (data) => {
@@ -25,9 +24,7 @@ export const createOpportunity = (data) => {
 
 // Mark entire opportunity completed (organization)
 export const markOpportunityCompleted = async (oppId) => {
-  return axios.patch(
-    `http://localhost:5000/api/opportunities/${oppId}/complete`
-  );
+  return API.patch(`/opportunities/${oppId}/complete`);
 };
 
 // Update opportunity

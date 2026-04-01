@@ -4,6 +4,13 @@ import { Server } from "socket.io";
 import app from "./app.js";
 import { sendEmail } from "./src/utils/sendEmail.js";
 import { sendNotification } from "./src/utils/sendNotification.js";
+import {
+  setSocketServer,
+  ensureSocketMaps,
+  emitToVolunteer,
+  emitToOrganization,
+  broadcastToAdmins,
+} from "./src/realtime/socketGateway.js";
 
 
 // ⚡ SOCKET.IO SERVER
@@ -11,11 +18,13 @@ const server = http.createServer(app);
 export const io = new Server(server, {
   cors: { origin: "http://localhost:5173" },
 });
+setSocketServer(io);
+ensureSocketMaps();
 
 // --- Track connected clients ---
-global.onlineVolunteers = new Map();
-global.onlineOrganizations = new Map();
-global.onlineAdmins = new Map();
+global.onlineVolunteers = global.onlineVolunteers || new Map();
+global.onlineOrganizations = global.onlineOrganizations || new Map();
+global.onlineAdmins = global.onlineAdmins || new Map();
 
 // --- Utility: Remove disconnected sockets ---
 function cleanSocket(map, socketId) {
@@ -70,38 +79,6 @@ io.on("connection", (socket) => {
     console.log("❌ Socket disconnected:", socket.id);
   });
 });
-
-
-// SOCKET HELPERS
-
-export function emitToVolunteer(volunteerId, event, payload) {
-  const socketId = global.onlineVolunteers.get(volunteerId);
-  if (socketId) {
-    io.to(socketId).emit(event, payload);
-    console.log(`Sent "${event}" to volunteer ${volunteerId}`);
-  } else {
-    console.log(`Volunteer ${volunteerId} not online`);
-  }
-}
-
-export function emitToOrganization(orgId, event, payload) {
-  const socketId = global.onlineOrganizations.get(orgId);
-  if (socketId) {
-    io.to(socketId).emit(event, payload);
-    console.log(`Sent "${event}" to organization ${orgId}`);
-  } else {
-    console.log(`Organization ${orgId} not online`);
-  }
-}
-
-export function broadcastToAdmins(event, payload) {
-  for (const [adminId, socketId] of global.onlineAdmins.entries()) {
-    io.to(socketId).emit(event, payload);
-  }
-  console.log(`Broadcasted "${event}" to all admins`);
-}
-
-
 //  START SERVER
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () =>
