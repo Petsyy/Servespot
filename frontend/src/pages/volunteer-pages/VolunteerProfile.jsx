@@ -557,10 +557,11 @@ export default function VolunteerProfile() {
                       />
                       <Field
                         label="Gender"
+                        type="radio"
                         value={me.gender}
                         editable={isEditing}
                         onChange={(v) => handleChange("gender", v)}
-                        placeholder="Male / Female / Other"
+                        options={["Male", "Female"]}
                       />
                     </div>
                     <Field
@@ -889,6 +890,7 @@ function Field({
   onChange,
   editable,
   type = "text",
+  options = [],
   placeholder = "",
   className = "",
   required = false,
@@ -901,6 +903,36 @@ function Field({
         {required && <span className="text-red-500">*</span>}
       </label>
       {editable ? (
+        type === "radio" ? (
+          <div className="flex flex-wrap gap-4 rounded-lg border border-gray-300 px-3 py-2">
+            {options.map((option, index) => {
+              const optionValue = option.value || option;
+              const optionLabel = option.label || option;
+              const inputId = `${label}-${optionValue}-${index}`
+                .replace(/\s+/g, "-")
+                .toLowerCase();
+
+              return (
+                <label
+                  key={inputId}
+                  htmlFor={inputId}
+                  className="flex items-center gap-2 cursor-pointer text-sm text-gray-700"
+                >
+                  <input
+                    id={inputId}
+                    type="radio"
+                    name={label}
+                    value={optionValue}
+                    checked={value === optionValue}
+                    onChange={() => onChange(optionValue)}
+                    className="h-4 w-4 text-green-600 focus:ring-green-500"
+                  />
+                  <span>{optionLabel}</span>
+                </label>
+              );
+            })}
+          </div>
+        ) : (
         <input
           type={type}
           value={value || ""}
@@ -908,6 +940,7 @@ function Field({
           placeholder={placeholder}
           className="w-full h-9 px-3 rounded-lg border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm"
         />
+        )
       ) : (
         <div className="w-full h-9 px-3 flex items-center rounded-lg bg-gray-50 border border-gray-200 text-gray-800 text-sm">
           {value || <span className="text-gray-500">Not set</span>}

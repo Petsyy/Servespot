@@ -1,4 +1,4 @@
-const LOCAL_API_ORIGIN = "http://localhost:5000";
+const LOCAL_API_ORIGIN = "http://localhost:5003";
 
 function stripTrailingSlash(value = "") {
   return value.replace(/\/+$/, "");

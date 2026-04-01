@@ -347,7 +347,7 @@ export default function ProfileStep({
           <div>
             <FormInput
               label="Gender"
-              type="select"
+              type="radio"
               options={["Male", "Female"]}
               value={formData.gender}
               onChange={(val) => updateField("gender", val)}

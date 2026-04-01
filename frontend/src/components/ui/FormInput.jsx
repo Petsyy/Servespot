@@ -87,6 +87,36 @@ export default function FormInput({
           placeholder={placeholder}
           disabled={disabled}
         />
+      ) : type === "radio" ? (
+        <div className="flex flex-wrap gap-4 rounded-md border px-3 py-2">
+          {options.map((opt, i) => {
+            const optionValue = opt.value || opt;
+            const optionLabel = opt.label || opt;
+            const inputId = `${label}-${optionValue}-${i}`.replace(/\s+/g, "-").toLowerCase();
+
+            return (
+              <label
+                key={inputId}
+                htmlFor={inputId}
+                className={`flex items-center gap-2 text-sm ${
+                  disabled ? "cursor-not-allowed text-gray-400" : "cursor-pointer text-gray-700"
+                }`}
+              >
+                <input
+                  id={inputId}
+                  type="radio"
+                  name={label}
+                  value={optionValue}
+                  checked={value === optionValue}
+                  onChange={() => onChange(optionValue)}
+                  disabled={disabled}
+                  className="h-4 w-4 text-green-600 focus:ring-green-500"
+                />
+                <span>{optionLabel}</span>
+              </label>
+            );
+          })}
+        </div>
       ) : type === "select" ? (
         multi ? (
           <select
