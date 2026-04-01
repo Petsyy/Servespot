@@ -7,13 +7,9 @@ It enables organizations and individuals to post quick, low-commitment micro-tas
 
 ## 🛠️ Tech Stack  
 
-- **Frontend:** React, Tailwind CSS
+- **Frontend:** React, Tailwind
 - **Backend:** Node.js, Express.js  
 - **Database:** MongoDB  
-
-We chose the **MERN stack** because it’s modern, efficient, and supports a seamless single-page web application experience. It’s also developer-friendly and scalable for future expansion.  
-
----
 
 ## ⚡ Features  
 
