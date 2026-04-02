@@ -10,6 +10,7 @@ import {
   Clock
 } from "lucide-react";
 import { getOpportunities, deleteOpportunity } from "@/services/organization.api";
+import { getSession } from "@/services/api";
 import OpportunityCard from "@/components/organization-dashboard/opportunities/OpportunityCard";
 import OrganizationSidebar from "@/components/layout/sidebars/OrganizationSidebar";
 import OrganizationNavbar from "@/components/layout/navbars/OrganizationNavbar";
@@ -18,13 +19,36 @@ import { useNavigate } from "react-router-dom";
 
 export default function OrganizationPostedOpportunities() {
   const navigate = useNavigate();
-  const orgId = localStorage.getItem("orgId");
+  const [orgId, setOrgId] = useState(localStorage.getItem("orgId") || "");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [opportunities, setOpportunities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await getSession();
+        if (res.data?.user?.role !== "organization") {
+          navigate("/organization/login");
+          return;
+        }
+
+        const id = res.data?.user?.id;
+        if (!id) {
+          navigate("/organization/login");
+          return;
+        }
+
+        setOrgId(id);
+        localStorage.setItem("orgId", id);
+      } catch {
+        navigate("/organization/login");
+      }
+    })();
+  }, [navigate]);
 
   // Toggle sidebar function
   const toggleSidebar = () => {

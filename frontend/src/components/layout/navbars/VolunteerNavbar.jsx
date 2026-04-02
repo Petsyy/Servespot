@@ -22,6 +22,7 @@ import {
 import API from "@/services/api";
 import { socket } from "@/utils/socket";
 import { getVolunteerProfile } from "@/services/volunteer.api";
+import { logout } from "@/utils/logout";
 
 export default function VolunteerNavbar({ onToggleSidebar }) {
   const navigate = useNavigate();
@@ -66,9 +67,6 @@ export default function VolunteerNavbar({ onToggleSidebar }) {
   useEffect(() => {
     const fetchVolunteerProfile = async () => {
       try {
-        const token = localStorage.getItem("volToken");
-        if (!token) return;
-
         const res = await getVolunteerProfile();
         const data = res.data;
 
@@ -262,7 +260,7 @@ export default function VolunteerNavbar({ onToggleSidebar }) {
   }, [volunteerName]);
 
   const handleLogout = () => {
-    localStorage.clear();
+    logout("volunteer");
     navigate("/volunteer/login");
   };
 

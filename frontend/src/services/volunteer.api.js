@@ -1,38 +1,34 @@
 import API from "@/services/api";
+import ENDPOINTS from "@/services/endpoints";
 
-// Get volunteer profile
-export const getVolunteerProfile = () => API.get("/volunteer/me");
+export const getVolunteerProfile = () => API.get(ENDPOINTS.volunteer.me);
 
-// Update volunteer profile
 export const updateVolunteerProfile = (data) =>
-  API.put("/volunteer/me", data, {
+  API.put(ENDPOINTS.volunteer.me, data, {
     headers: { "Content-Type": "application/json" },
   });
 
-// Get all public opportunities (for volunteers to browse)
-export const getAllOpportunities = () => API.get("/opportunities/all");
+export const getAllOpportunities = () => API.get(ENDPOINTS.opportunities.root);
 
-// Volunteer sign-up for an opportunity
 export const signupForOpportunity = (id) =>
-  API.post(`/opportunities/${id}/signup`);
+  API.post(ENDPOINTS.opportunities.signup(id));
 
+export const getVolunteerOverview = () => API.get(ENDPOINTS.volunteer.me);
 
-// VOLUNTEER DASHBOARD DATA
+export const getVolunteerTasks = () => API.get(ENDPOINTS.volunteer.tasks);
 
-// Badges & Points
-export const getVolunteerOverview = () => API.get("/volunteer/me");
+export const getVolunteerProgress = () => API.get(ENDPOINTS.volunteer.progress);
 
-export const getVolunteerTasks = () => API.get("/volunteer/me/tasks");
+export const getVolunteerBadges = () => API.get(ENDPOINTS.volunteer.badges, {
+  params: { limit: 6 },
+});
 
-export const getVolunteerProgress = () => API.get("/volunteer/me/progress");
-
-export const getVolunteerBadges = () => API.get("/volunteer/me/badges?limit=6");
-
-export const getTopVolunteers = () => API.get("/volunteer/top?limit=3");
+export const getTopVolunteers = () => API.get(ENDPOINTS.volunteer.top, {
+  params: { limit: 3 },
+});
 
 export const getVolunteerNotifications = () =>
-  API.get("/notifications/volunteer");
+  API.get(ENDPOINTS.notifications.volunteer);
   
-// Mark all notifications as read
 export const markVolunteerNotificationsRead = () =>
-  API.put("/notifications/volunteer/read-all");
+  API.put(ENDPOINTS.notifications.volunteerReadAll);

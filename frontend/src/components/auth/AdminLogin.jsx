@@ -42,18 +42,8 @@ const AdminLogin = () => {
       console.log('Login response:', response);
 
       // Handle different possible response structures
-      const token = response.data?.token || response.data?.data?.token || response.token;
       const adminData = response.data?.admin || response.data?.data?.admin || response.admin || response.data?.user;
 
-      if (!token) {
-        console.error('No token in response:', response);
-        throw new Error('No authentication token received from server');
-      }
-
-      // Store token and admin data in local storage
-      localStorage.setItem('adminToken', token);
-      localStorage.setItem('activeRole', 'admin');
-      
       if (adminData) {
         localStorage.setItem('adminUser', JSON.stringify(adminData));
         localStorage.setItem('adminId', adminData._id || adminData.id);

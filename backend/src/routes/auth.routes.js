@@ -7,6 +7,8 @@ import {
   sendOTP,
   verifyOTP,
   resetPassword,
+  logoutSession,
+  getSession,
 } from "../controllers/auth.controller.js";
 
 import { uploadDocs } from "../middlewares/upload.middleware.js";
@@ -25,5 +27,7 @@ router.post("/organization/login", loginOrganization);
 router.post("/send-otp", sendOTP);
 router.post("/verify-otp", verifyOTP);
 router.post("/reset-password", resetPassword);
+router.post("/logout", logoutSession);
+router.get("/session", getSession);
 
 export default router;

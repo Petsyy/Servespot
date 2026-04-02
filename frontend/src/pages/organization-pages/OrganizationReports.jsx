@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { getOpportunityVolunteers, getOpportunities } from "@/services/organization.api";
+import { getSession } from "@/services/api";
+import { useNavigate } from "react-router-dom";
 import {
   Download,
   Users,
@@ -29,6 +31,7 @@ import {
 } from "recharts";
 
 export default function Reports() {
+  const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [volunteersData, setVolunteersData] = useState([]);
   const [opportunities, setOpportunities] = useState([]);
@@ -36,6 +39,30 @@ export default function Reports() {
   const [timeRange, setTimeRange] = useState("last30days");
   const [loading, setLoading] = useState(true);
   const [selectedOpportunity, setSelectedOpportunity] = useState(null);
+  const [orgId, setOrgId] = useState(null);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await getSession();
+        if (res.data?.user?.role !== "organization") {
+          navigate("/organization/login");
+          return;
+        }
+
+        const id = res.data?.user?.id;
+        if (!id) {
+          navigate("/organization/login");
+          return;
+        }
+
+        setOrgId(id);
+        localStorage.setItem("orgId", id);
+      } catch {
+        navigate("/organization/login");
+      }
+    })();
+  }, [navigate]);
 
   // Generate dynamic chart data from real volunteer data
   const generateChartData = () => {
@@ -111,7 +138,6 @@ export default function Reports() {
     const fetchAllData = async () => {
       try {
         setLoading(true);
-        const orgId = localStorage.getItem("orgId");
         const response = await getOpportunities(orgId);
         const opportunitiesData = response.data || [];
         setOpportunities(opportunitiesData);
@@ -130,8 +156,9 @@ export default function Reports() {
       }
     };
 
+    if (!orgId) return;
     fetchAllData();
-  }, []);
+  }, [orgId]);
 
   // Fetch volunteers when opportunity is selected
   useEffect(() => {

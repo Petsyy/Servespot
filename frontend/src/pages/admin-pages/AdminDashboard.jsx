@@ -11,6 +11,7 @@ import {
 import AdminSidebar from "@/components/layout/sidebars/AdminSidebar";
 import AdminNavbar from "@/components/layout/navbars/AdminNavbar";
 import { getAdminDashboard } from "@/services/admin.api";
+import { getSession } from "@/services/api";
 import {
   ResponsiveContainer,
   BarChart,
@@ -41,16 +42,23 @@ export default function AdminDashboard() {
     setSidebarOpen(false);
   };
 
-  // SESSION & TOKEN VALIDATION
+  // SESSION VALIDATION VIA COOKIE-AUTH BACKEND
   useEffect(() => {
-    const adminToken = localStorage.getItem("adminToken");
-    const activeRole = localStorage.getItem("activeRole");
+    (async () => {
+      try {
+        const res = await getSession();
+        if (res.data?.user?.role !== "admin") {
+          navigate("/admin/login");
+          return;
+        }
 
-    if (!adminToken || activeRole !== "admin") {
-      console.warn("Admin access required — redirecting to login");
-      navigate("/admin/login");
-      return;
-    }
+        if (res.data?.user?.id) {
+          localStorage.setItem("adminId", res.data.user.id);
+        }
+      } catch {
+        navigate("/admin/login");
+      }
+    })();
   }, [navigate]);
 
   useEffect(() => {

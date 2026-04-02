@@ -35,6 +35,8 @@ import {
   confirmSuspension,
   confirmReactivation,
 } from "@/utils/swalAlerts";
+import { getSession } from "@/services/api";
+import { useNavigate } from "react-router-dom";
 
 /* ---------------------------------------------
    STATUS BADGE
@@ -208,6 +210,7 @@ const ViewUserModal = ({ user, onClose, onOpenDocument }) => (
    MAIN COMPONENT
 --------------------------------------------- */
 export default function UserManagement() {
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
   const [search, setSearch] = useState("");
@@ -217,6 +220,30 @@ export default function UserManagement() {
   const [volunteers, setVolunteers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingUserId, setLoadingUserId] = useState(null);
+  const [adminId, setAdminId] = useState(null);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await getSession();
+        if (res.data?.user?.role !== "admin") {
+          navigate("/admin/login");
+          return;
+        }
+
+        const id = res.data?.user?.id;
+        if (!id) {
+          navigate("/admin/login");
+          return;
+        }
+
+        setAdminId(id);
+        localStorage.setItem("adminId", id);
+      } catch {
+        navigate("/admin/login");
+      }
+    })();
+  }, [navigate]);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
   const closeSidebar = () => setSidebarOpen(false);
@@ -251,10 +278,11 @@ export default function UserManagement() {
       }
     };
     fetchData();
-  }, []);
+  }, [adminId]);
 
   useEffect(() => {
-    const adminId = localStorage.getItem("adminId") || "defaultAdmin";
+    if (!adminId) return;
+
     registerUserSocket(adminId, "admin");
 
     // Volunteer status updates

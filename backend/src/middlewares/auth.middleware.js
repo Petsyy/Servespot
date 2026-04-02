@@ -2,15 +2,42 @@ import jwt from "jsonwebtoken";
 import Volunteer from "../models/volunteer.model.js";
 import Organization from "../models/organization.model.js"; 
 
-export const protect = async (req, res, next) => {
-  let token;
+const getCookies = (req) => {
+  const raw = req.headers.cookie || "";
+  return raw
+    .split(";")
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .reduce((acc, part) => {
+      const [key, ...rest] = part.split("=");
+      acc[key] = decodeURIComponent(rest.join("="));
+      return acc;
+    }, {});
+};
 
+const getBearerToken = (req) => {
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer")
   ) {
+    return req.headers.authorization.split(" ")[1];
+  }
+  return "";
+};
+
+const getToken = (req, cookieName) => {
+  const bearerToken = getBearerToken(req);
+  if (bearerToken) return bearerToken;
+
+  const cookies = getCookies(req);
+  return cookies[cookieName] || "";
+};
+
+export const protect = async (req, res, next) => {
+  const token = getToken(req, "authToken");
+
+  if (token) {
     try {
-      token = req.headers.authorization.split(" ")[1];
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
       req.user = {
@@ -55,11 +82,10 @@ export const protect = async (req, res, next) => {
 };
 
 export const verifyToken = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader)
+  const token = getToken(req, "authToken");
+  if (!token)
     return res.status(401).json({ message: "No token provided" });
 
-  const token = authHeader.split(" ")[1];
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
@@ -77,7 +103,7 @@ export const verifyToken = (req, res, next) => {
 };
 
 export const protectAdmin = (req, res, next) => {
-  const token = req.header('Authorization')?.replace('Bearer ', '');
+  const token = getToken(req, "adminToken");
 
   if (!token) {
     return res.status(401).json({ message: "No token, authorization denied" });

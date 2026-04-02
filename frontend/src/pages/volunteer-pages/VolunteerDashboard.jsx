@@ -24,7 +24,7 @@ import { buildFileUrl } from "@/utils/fileUrl";
 // import RecentBadges from "@/components/volunteer-dashboard/community/RecentBadges";
 // import TopVolunteers from "@/components/volunteer-dashboard/community/TopVolunteers";
 import ProofUploadModal from "@/components/volunteer-dashboard/opportunities/ProofUploadModal";
-import { getOpportunityById } from "@/services/api";
+import { getOpportunityById, getSession } from "@/services/api";
 import { socket, registerUserSocket } from "@/utils/socket";
 import {
   getVolunteerOverview,
@@ -97,22 +97,21 @@ export default function VolunteerDashboard() {
 
   // Validate session and ensure volunteer context
   useEffect(() => {
-    const volToken = localStorage.getItem("volToken");
-    const activeRole = localStorage.getItem("activeRole");
+    (async () => {
+      try {
+        const res = await getSession();
+        if (res.data?.user?.role !== "volunteer") {
+          navigate("/volunteer/login");
+          return;
+        }
 
-    if (!volToken) {
-      console.warn("No volunteer token found — redirecting to login");
-      navigate("/volunteer/login");
-      return;
-    }
-
-    if (activeRole !== "volunteer") {
-      console.warn("Restoring volunteer session context...");
-      localStorage.setItem("token", volToken);
-      localStorage.setItem("activeRole", "volunteer");
-    }
-
-    localStorage.setItem("token", volToken);
+        if (res.data?.user?.id) {
+          localStorage.setItem("volunteerId", res.data.user.id);
+        }
+      } catch {
+        navigate("/volunteer/login");
+      }
+    })();
   }, [navigate]);
 
   useEffect(() => {

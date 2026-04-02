@@ -1,11 +1,8 @@
-export function logout(role) {
-  const currentRole = (
-    role ||
-    localStorage.getItem("activeRole") ||
-    ""
-  ).toLowerCase();
+import { logoutSession } from "@/services/api";
 
-  localStorage.removeItem("token");
+export function logout(role) {
+  const currentRole = (role || "").toLowerCase();
+
   localStorage.removeItem("activeRole");
 
   if (currentRole === "volunteer") {
@@ -14,7 +11,6 @@ export function logout(role) {
       localStorage.removeItem(`joinedTasks_${volunteerId}`);
     }
 
-    localStorage.removeItem("volToken");
     localStorage.removeItem("volunteerId");
     localStorage.removeItem("volUser");
     localStorage.removeItem("earnedBadges");
@@ -28,8 +24,10 @@ export function logout(role) {
   }
 
   if (currentRole === "organization") {
-    localStorage.removeItem("orgToken");
     localStorage.removeItem("orgId");
     localStorage.removeItem("orgUser");
   }
+
+  // Best effort cookie cleanup from server.
+  logoutSession().catch(() => {});
 }

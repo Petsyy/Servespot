@@ -19,6 +19,7 @@ import {
   getOrganizationById,
   updateOrganization,
 } from "@/services/organization.api";
+import { getSession } from "@/services/api";
 import OrganizationSidebar from "@/components/layout/sidebars/OrganizationSidebar";
 import OrganizationNavbar from "@/components/layout/navbars/OrganizationNavbar";
 
@@ -40,7 +41,7 @@ export default function OrganizationProfile() {
   const [loading, setLoading] = useState(true);
   const [profileIncomplete, setProfileIncomplete] = useState(false);
 
-  const orgId = localStorage.getItem("orgId");
+  const [orgId, setOrgId] = useState(localStorage.getItem("orgId") || "");
 
   const [org, setOrg] = useState({
     orgName: "",
@@ -118,6 +119,31 @@ export default function OrganizationProfile() {
 
   // Load organization data
   useEffect(() => {
+    (async () => {
+      try {
+        const res = await getSession();
+        if (res.data?.user?.role !== "organization") {
+          navigate("/organization/login");
+          return;
+        }
+
+        const id = res.data?.user?.id;
+        if (!id) {
+          navigate("/organization/login");
+          return;
+        }
+
+        setOrgId(id);
+        localStorage.setItem("orgId", id);
+      } catch {
+        navigate("/organization/login");
+      }
+    })();
+  }, [navigate]);
+
+  useEffect(() => {
+    if (!orgId) return;
+
     (async () => {
       try {
         setLoading(true);

@@ -19,6 +19,7 @@ import {
   deleteOpportunity,
   getOrganizationProfile,
 } from "@/services/organization.api";
+import { getSession } from "@/services/api";
 import OrganizationSidebar from "@/components/layout/sidebars/OrganizationSidebar";
 import OrganizationNavbar from "@/components/layout/navbars/OrganizationNavbar";
 import StatCard from "@/components/organization-dashboard/metrics/StatCard";
@@ -94,40 +95,35 @@ export default function OrganizationDashboard() {
   }, []);
 
   useEffect(() => {
-    const orgId = localStorage.getItem("orgId");
-    const orgToken = localStorage.getItem("orgToken");
-    const activeRole = localStorage.getItem("activeRole");
+    (async () => {
+      try {
+        const res = await getSession();
+        if (res.data?.user?.role !== "organization") {
+          navigate("/organization/login");
+          return;
+        }
 
-    // No credentials — must log in
-    if (!orgId || !orgToken) {
-      console.warn("No orgId/orgToken found — redirecting to login");
-      navigate("/organization/login");
-      return;
-    }
-
-    // If volunteer was last active, fix context
-    if (activeRole !== "organization") {
-      console.warn("Restoring organization session context...");
-      localStorage.setItem("token", orgToken);
-      localStorage.setItem("activeRole", "organization");
-    }
+        if (res.data?.user?.id) {
+          localStorage.setItem("orgId", res.data.user.id);
+        }
+      } catch {
+        navigate("/organization/login");
+      }
+    })();
   }, [navigate]);
 
   useEffect(() => {
-    const orgId = localStorage.getItem("orgId");
-    const orgToken = localStorage.getItem("orgToken");
-    const activeRole = localStorage.getItem("activeRole");
-
-    if (activeRole !== "organization" || !orgId || !orgToken) {
-      console.warn("Access denied: not an organization user");
-      navigate("/organization/login");
-      return;
-    }
-
-    localStorage.setItem("token", orgToken);
-
     async function fetchData() {
       try {
+        const session = await getSession();
+        const orgId = session.data?.user?.id || localStorage.getItem("orgId");
+        if (!orgId || session.data?.user?.role !== "organization") {
+          navigate("/organization/login");
+          return;
+        }
+
+        localStorage.setItem("orgId", orgId);
+
         // Fetch org profile first to know status/name
         const orgRes = await getOrganizationProfile(orgId);
         setOrg(orgRes.data);

@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { X, UploadCloud, CheckCircle } from "lucide-react";
 import { toast } from "react-toastify";
-import axios from "axios";
-import { API_URL } from "@/utils/runtime";
+import { submitOpportunityProof } from "@/services/api";
 
 export default function ProofUploadModal({
   opportunityId,
@@ -23,18 +22,7 @@ export default function ProofUploadModal({
       formData.append("file", file);
       formData.append("message", message);
 
-      const token = localStorage.getItem("volToken");
-
-      const res = await axios.post(
-        `${API_URL}/opportunities/${opportunityId}/proof`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await submitOpportunityProof(opportunityId, formData);
 
       toast.success(res.data.message || "Proof submitted!");
       if (onProofSubmitted) onProofSubmitted();

@@ -1,9 +1,8 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { X, CheckCircle, XCircle, Image, Loader2 } from "lucide-react";
-import axios from "axios";
 import { toast } from "react-toastify";
 import { buildFileUrl } from "@/utils/fileUrl";
-import { API_URL } from "@/utils/runtime";
+import { getOpportunityById, reviewOpportunityProof } from "@/services/api";
 
 function getVolunteerId(v) {
   if (!v) return "";
@@ -20,7 +19,7 @@ export default function ProofReviewModal({ opportunityId, onClose }) {
     let alive = true;
     (async () => {
       try {
-        const res = await axios.get(`${API_URL}/opportunities/view/${opportunityId}`);
+        const res = await getOpportunityById(opportunityId);
         if (!alive) return;
         setProofs(res.data.completionProofs || []);
       } catch (err) {
@@ -57,19 +56,7 @@ export default function ProofReviewModal({ opportunityId, onClose }) {
     );
 
     try {
-      const token =
-        localStorage.getItem("ic_org_token") ||
-        localStorage.getItem("ic_token") ||
-        localStorage.getItem("token") ||
-        "";
-
-      const res = await axios.patch(
-        `${API_URL}/opportunities/${opportunityId}/proof/${volunteerId}/review`,
-        { action },
-        {
-          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-        }
-      );
+      const res = await reviewOpportunityProof(opportunityId, volunteerId, action);
       toast.success(res?.data?.message || "Review updated");
     } catch (err) {
       console.error("Review failed:", err);

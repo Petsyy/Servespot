@@ -1,6 +1,4 @@
 import express from "express";
-import mongoose from "mongoose";
-import Opportunity from "../models/opportunity.model.js";
 
 // Use the new separated upload logic
 import { uploadImages, uploadProofs } from "../middlewares/upload.middleware.js";
@@ -8,8 +6,8 @@ import { verifyToken } from "../middlewares/auth.middleware.js";
 
 import {
   createOpportunity,
-  updateOpportunity,
   getOpportunities,
+  updateOpportunity,
   getStats,
   getOrgNotifications,
   getActivity,
@@ -25,66 +23,30 @@ import {
   getOpportunityById,
 } from "../controllers/opportunity.controller.js";
 
-import { triggerReminderTest } from "../utils/reminderNotifications.js";
-
 const router = express.Router();
 
-// Public (Volunteer)
-router.get("/all", async (req, res) => {
-  try {
-    const opportunities = await Opportunity.find()
-      .populate("organization", "orgName email location")
-      .sort({ createdAt: -1 })
-      .lean();
+const gone = (replacement) => (_req, res) => {
+  res.status(410).json({
+    message: "This endpoint has been deprecated.",
+    replacement,
+  });
+};
 
-    const withCounts = opportunities.map((o) => ({
-      ...o,
-      currentVolunteers: o.volunteers?.length || 0,
-    }));
+// Public opportunities list (primary REST route)
+router.get("/", getAllOpportunities);
 
-    res.status(200).json(withCounts);
-  } catch (err) {
-    console.error("Error fetching opportunities:", err);
-    res.status(500).json({ message: "Failed to fetch opportunities" });
-  }
-});
+// Legacy routes intentionally return 410 to prevent silent fallback to /:id
+router.get("/all", gone("/api/opportunities"));
 
 
-// Get opportunities posted by specific organization
-router.get("/organization/:orgId", async (req, res) => {
-  try {
-    const opportunities = await Opportunity.find({
-      organization: req.params.orgId,
-    })
-      .sort({ createdAt: -1 })
-      .lean();
+router.get("/organization/:orgId", gone("/api/opportunities/organizations/:orgId"));
 
-    const withCounts = opportunities.map((o) => ({
-      ...o,
-      currentVolunteers: o.volunteers?.length || 0,
-    }));
-
-    res.status(200).json(withCounts);
-  } catch (err) {
-    console.error("Error fetching org opportunities:", err);
-    res.status(500).json({ message: "Failed to load organization data" });
-  }
-});
+// Canonical organization-scoped routes
+router.get("/organizations/:orgId", getOpportunities);
 
 
-// Get single opportunity by ID
-
-router.get("/view/:id", async (req, res) => {
-  try {
-    const opportunity = await Opportunity.findById(req.params.id);
-    if (!opportunity)
-      return res.status(404).json({ message: "Opportunity not found" });
-    res.json(opportunity);
-  } catch (err) {
-    console.error("Error fetching opportunity:", err);
-    res.status(500).json({ message: "Server error" });
-  }
-});
+// Get single opportunity by ID (legacy alias)
+router.get("/view/:id", gone("/api/opportunities/:id"));
 
 // Create & Update (with Image Upload)
 
@@ -95,9 +57,12 @@ router.post("/", uploadImages.single("file"), createOpportunity);
 router.put("/:id", uploadImages.single("file"), updateOpportunity);
 
 // Dashboard routes (organization-specific)
-router.get("/organization/:orgId/stats", getStats);
-router.get("/organization/:orgId/notifications", getOrgNotifications);
-router.get("/organization/:orgId/activity", getActivity);
+router.get("/organization/:orgId/stats", gone("/api/opportunities/organizations/:orgId/stats"));
+router.get("/organization/:orgId/notifications", gone("/api/opportunities/organizations/:orgId/notifications"));
+router.get("/organization/:orgId/activity", gone("/api/opportunities/organizations/:orgId/activity"));
+router.get("/organizations/:orgId/stats", getStats);
+router.get("/organizations/:orgId/notifications", getOrgNotifications);
+router.get("/organizations/:orgId/activity", getActivity);
 router.get("/:id/volunteers", getOpportunityVolunteers);
 
 
@@ -120,6 +85,7 @@ router.patch("/:id/proof/:volunteerId/review", verifyToken, reviewCompletionProo
 router.patch("/:id/force-complete", forceCompleteOpportunity);
 
 
+// Get single opportunity by ID (primary REST route)
 router.get("/:id", getOpportunityById);
 
 /* ------------------------------------------------

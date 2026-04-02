@@ -36,8 +36,6 @@ export default function LoginForm({ role = "Volunteer", icon: Icon }) {
             );
 
       if (role.toLowerCase() === "volunteer") {
-        localStorage.setItem("volToken", data.token);
-
         //  backend returns "user", not "volunteer"
         const userId = data.user?.id || data.user?._id;
         localStorage.setItem("volunteerId", userId);
@@ -49,23 +47,15 @@ export default function LoginForm({ role = "Volunteer", icon: Icon }) {
         localStorage.setItem("volunteerName", volunteerName);
         console.log("Stored volunteerName in localStorage:", volunteerName);
 
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("activeRole", "volunteer");
-
         // Immediately register volunteer socket right after login
         registerUserSocket(userId, "volunteer");
         console.log("Volunteer socket registered after login:", userId);
 
         navigate("/volunteer/homepage");
       } else {
-        // unified token handling
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("activeRole", "organization");
-
         // save organization info
         const orgId = data.organization?._id || data.orgId;
         localStorage.setItem("orgId", orgId);
-        localStorage.setItem("orgToken", data.token);
 
         localStorage.setItem(
           "orgUser",

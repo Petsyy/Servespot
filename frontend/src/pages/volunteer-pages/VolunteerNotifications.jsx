@@ -13,18 +13,42 @@ import {
   getVolunteerNotifications,
   markVolunteerNotificationsRead,
 } from "@/services/volunteer.api";
+import { getSession } from "@/services/api";
 import { socket, registerUserSocket } from "@/utils/socket";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 export default function VolunteerNotifications() {
+  const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("inApp");
   const [filter, setFilter] = useState("All");
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState([]);
+  const [volunteerId, setVolunteerId] = useState(null);
 
-  const volunteerId =
-    typeof window !== "undefined" ? localStorage.getItem("volunteerId") : null;
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await getSession();
+        if (res.data?.user?.role !== "volunteer") {
+          navigate("/volunteer/login");
+          return;
+        }
+
+        const id = res.data?.user?.id;
+        if (!id) {
+          navigate("/volunteer/login");
+          return;
+        }
+
+        setVolunteerId(id);
+        localStorage.setItem("volunteerId", id);
+      } catch {
+        navigate("/volunteer/login");
+      }
+    })();
+  }, [navigate]);
 
   // =============================
   // Load notifications from API

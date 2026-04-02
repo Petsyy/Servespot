@@ -272,11 +272,8 @@ export default function ProfileStep({
         password: formData.password,
       });
 
-      localStorage.setItem("volToken", loginRes.data.token);
-      localStorage.setItem("token", loginRes.data.token);
       localStorage.setItem("volunteerId", loginRes.data.user.id);
       localStorage.setItem("volUser", JSON.stringify(loginRes.data.user));
-      localStorage.setItem("activeRole", "volunteer");
 
       const volunteerName = loginRes.data.user?.fullName || "Volunteer";
       localStorage.setItem("volunteerName", volunteerName);

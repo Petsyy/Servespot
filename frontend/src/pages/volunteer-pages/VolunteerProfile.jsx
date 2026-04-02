@@ -32,6 +32,7 @@ import {
   updateVolunteerProfile,
   getVolunteerBadges,
 } from "@/services/volunteer.api";
+import { getSession } from "@/services/api";
 import VolunteerSidebar from "@/components/layout/sidebars/VolunteerSidebar";
 import VolunteerNavbar from "@/components/layout/navbars/VolunteerNavbar";
 
@@ -84,10 +85,11 @@ export default function VolunteerProfile() {
 
   // Check if profile is incomplete
   const checkProfileCompletion = (profileData) => {
-    const requiredFields = ['fullName', 'contactNumber', 'birthdate'];
-    const isIncomplete = requiredFields.some(field => !profileData[field]) || 
-                        !profileData.fullName || 
-                        !profileData.contactNumber;
+    const requiredFields = ["fullName", "contactNumber", "birthdate"];
+    const isIncomplete =
+      requiredFields.some((field) => !profileData[field]) ||
+      !profileData.fullName ||
+      !profileData.contactNumber;
     setProfileIncomplete(isIncomplete);
     return isIncomplete;
   };
@@ -104,6 +106,22 @@ export default function VolunteerProfile() {
 
   // Fetch regions on mount
   useEffect(() => {
+    (async () => {
+      try {
+        const res = await getSession();
+        if (res.data?.user?.role !== "volunteer") {
+          navigate("/volunteer/login");
+          return;
+        }
+
+        if (res.data?.user?.id) {
+          localStorage.setItem("volunteerId", res.data.user.id);
+        }
+      } catch {
+        navigate("/volunteer/login");
+      }
+    })();
+
     const fetchRegions = async () => {
       try {
         const response = await axios.get("https://psgc.gitlab.io/api/regions/");
@@ -124,7 +142,9 @@ export default function VolunteerProfile() {
       const fetchProvinces = async () => {
         setLoadingProvinces(true);
         try {
-          const response = await axios.get(`https://psgc.gitlab.io/api/regions/${me.region}/provinces/`);
+          const response = await axios.get(
+            `https://psgc.gitlab.io/api/regions/${me.region}/provinces/`,
+          );
           setProvinces(response.data);
           setCities([]);
           setBarangays([]);
@@ -149,7 +169,9 @@ export default function VolunteerProfile() {
       const fetchCities = async () => {
         setLoadingCities(true);
         try {
-          const response = await axios.get(`https://psgc.gitlab.io/api/provinces/${me.province}/cities-municipalities/`);
+          const response = await axios.get(
+            `https://psgc.gitlab.io/api/provinces/${me.province}/cities-municipalities/`,
+          );
           setCities(response.data);
           setBarangays([]);
         } catch (error) {
@@ -172,7 +194,9 @@ export default function VolunteerProfile() {
       const fetchBarangays = async () => {
         setLoadingBarangays(true);
         try {
-          const response = await axios.get(`https://psgc.gitlab.io/api/cities-municipalities/${me.city}/barangays/`);
+          const response = await axios.get(
+            `https://psgc.gitlab.io/api/cities-municipalities/${me.city}/barangays/`,
+          );
           setBarangays(response.data);
         } catch (error) {
           console.error("Error fetching barangays:", error);
@@ -199,29 +223,44 @@ export default function VolunteerProfile() {
         const profileData = profileRes.data;
         setMe({
           ...profileData,
-          birthdate: profileData.birthdate ? profileData.birthdate.slice(0, 10) : "",
+          birthdate: profileData.birthdate
+            ? profileData.birthdate.slice(0, 10)
+            : "",
           skills: profileData.skills || [],
           interests: profileData.interests || [],
         });
 
         // Fetch location names if codes are present
-        if (profileData.region || profileData.province || profileData.city || profileData.barangay) {
+        if (
+          profileData.region ||
+          profileData.province ||
+          profileData.city ||
+          profileData.barangay
+        ) {
           const locationNames = {};
           try {
             if (profileData.region) {
-              const regionRes = await axios.get(`https://psgc.gitlab.io/api/regions/${profileData.region}/`);
+              const regionRes = await axios.get(
+                `https://psgc.gitlab.io/api/regions/${profileData.region}/`,
+              );
               locationNames.region = regionRes.data.name;
             }
             if (profileData.province) {
-              const provinceRes = await axios.get(`https://psgc.gitlab.io/api/provinces/${profileData.province}/`);
+              const provinceRes = await axios.get(
+                `https://psgc.gitlab.io/api/provinces/${profileData.province}/`,
+              );
               locationNames.province = provinceRes.data.name;
             }
             if (profileData.city) {
-              const cityRes = await axios.get(`https://psgc.gitlab.io/api/cities-municipalities/${profileData.city}/`);
+              const cityRes = await axios.get(
+                `https://psgc.gitlab.io/api/cities-municipalities/${profileData.city}/`,
+              );
               locationNames.city = cityRes.data.name;
             }
             if (profileData.barangay) {
-              const barangayRes = await axios.get(`https://psgc.gitlab.io/api/barangays/${profileData.barangay}/`);
+              const barangayRes = await axios.get(
+                `https://psgc.gitlab.io/api/barangays/${profileData.barangay}/`,
+              );
               locationNames.barangay = barangayRes.data.name;
             }
             setLocationNames(locationNames);
@@ -244,7 +283,11 @@ export default function VolunteerProfile() {
           badges: badgesData.badges || [],
           points: badgesData.points || 0,
           completedTasks: badgesData.completedTasks || 0,
-          level: badgesData.level || { level: "Beginner", color: "gray", icon: "🌱" },
+          level: badgesData.level || {
+            level: "Beginner",
+            color: "gray",
+            icon: "🌱",
+          },
           nextMilestone: badgesData.nextMilestone || null,
           volunteerName: badgesData.volunteerName || "",
         });
@@ -268,17 +311,19 @@ export default function VolunteerProfile() {
 
   const handleChange = (name, value) => {
     setMe((prev) => ({ ...prev, [name]: value }));
-    
+
     // Re-check profile completion when important fields change
-    if (['fullName', 'contactNumber', 'birthdate'].includes(name)) {
-      setTimeout(() => checkProfileCompletion({...me, [name]: value}), 100);
+    if (["fullName", "contactNumber", "birthdate"].includes(name)) {
+      setTimeout(() => checkProfileCompletion({ ...me, [name]: value }), 100);
     }
   };
 
   const handleSave = async () => {
     // Validate required fields
     if (!me.fullName || !me.contactNumber || !me.birthdate) {
-      toast.error("Please fill in all required fields: Full Name, Contact Number, and Birthdate");
+      toast.error(
+        "Please fill in all required fields: Full Name, Contact Number, and Birthdate",
+      );
       return;
     }
 
@@ -312,16 +357,11 @@ export default function VolunteerProfile() {
   return (
     <div className="flex min-h-screen bg-gray-50">
       {/* Sidebar with responsive controls */}
-      <VolunteerSidebar 
-        isOpen={sidebarOpen} 
-        onClose={closeSidebar} 
-      />
+      <VolunteerSidebar isOpen={sidebarOpen} onClose={closeSidebar} />
 
       <div className="flex-1 flex flex-col min-w-0">
         {/* Navbar with sidebar toggle */}
-        <VolunteerNavbar 
-          onToggleSidebar={toggleSidebar}
-        />
+        <VolunteerNavbar onToggleSidebar={toggleSidebar} />
 
         {/* 📜 Main Content */}
         <main className="flex-1 p-6 overflow-y-auto">
@@ -367,7 +407,9 @@ export default function VolunteerProfile() {
                     onClick={() => {
                       setIsEditing(false);
                       if (profileIncomplete) {
-                        toast.info("Please complete your profile setup to access all features.");
+                        toast.info(
+                          "Please complete your profile setup to access all features.",
+                        );
                       }
                     }}
                     className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 text-sm transition"
@@ -388,8 +430,9 @@ export default function VolunteerProfile() {
                       Profile Setup Required
                     </h3>
                     <p className="text-orange-700 text-xs">
-                      Please complete your volunteer profile to access all features. 
-                      Required fields: Full Name, Contact Number, and Birthdate.
+                      Please complete your volunteer profile to access all
+                      features. Required fields: Full Name, Contact Number, and
+                      Birthdate.
                     </p>
                   </div>
                 </div>
@@ -417,7 +460,9 @@ export default function VolunteerProfile() {
                         {me.barangay ? (
                           <div className="flex items-center gap-1">
                             <MapPin size={14} className="text-green-600" />
-                            <span className="text-sm">{locationNames.barangay || me.barangay}</span>
+                            <span className="text-sm">
+                              {locationNames.barangay || me.barangay}
+                            </span>
                           </div>
                         ) : (
                           <div className="flex items-center gap-1 text-gray-500">
@@ -461,9 +506,13 @@ export default function VolunteerProfile() {
                                 {item}
                               </span>
                             ))}
-                          {[...(me.skills || []), ...(me.interests || [])].length > 6 && (
+                          {[...(me.skills || []), ...(me.interests || [])]
+                            .length > 6 && (
                             <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600">
-                              +{[...(me.skills || []), ...(me.interests || [])].length - 6} more
+                              +
+                              {[...(me.skills || []), ...(me.interests || [])]
+                                .length - 6}{" "}
+                              more
                             </span>
                           )}
                         </div>
@@ -573,7 +622,7 @@ export default function VolunteerProfile() {
                       placeholder="Your phone number"
                       required={profileIncomplete}
                     />
-                    
+
                     {/* Location Fields */}
                     <SelectField
                       label="Region"
@@ -628,7 +677,8 @@ export default function VolunteerProfile() {
                   {isEditing && (
                     <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                       <p className="text-xs text-blue-700">
-                        <strong>Note:</strong> Fields marked with * are required to complete your profile setup.
+                        <strong>Note:</strong> Fields marked with * are required
+                        to complete your profile setup.
                       </p>
                     </div>
                   )}
@@ -637,7 +687,10 @@ export default function VolunteerProfile() {
 
               {/* RIGHT COLUMN (Enhanced Badges & Achievements) */}
               <div className="lg:col-span-4">
-                <EnhancedBadgesSection badgesData={badgesData} completedTasks={badgesData.completedTasks} />
+                <EnhancedBadgesSection
+                  badgesData={badgesData}
+                  completedTasks={badgesData.completedTasks}
+                />
               </div>
             </div>
           </div>
@@ -657,7 +710,7 @@ function EnhancedBadgesSection({ badgesData, completedTasks }) {
       milestone: 1,
       gradient: "from-yellow-400 to-yellow-600",
       bgGradient: "from-yellow-50 to-amber-50",
-      iconColor: "text-yellow-400"
+      iconColor: "text-yellow-400",
     },
     {
       name: "Active Helper",
@@ -666,7 +719,7 @@ function EnhancedBadgesSection({ badgesData, completedTasks }) {
       milestone: 2,
       gradient: "from-orange-400 to-orange-600",
       bgGradient: "from-orange-50 to-amber-50",
-      iconColor: "text-orange-500"
+      iconColor: "text-orange-500",
     },
     {
       name: "Helping Hand",
@@ -675,7 +728,7 @@ function EnhancedBadgesSection({ badgesData, completedTasks }) {
       milestone: 3,
       gradient: "from-blue-400 to-blue-600",
       bgGradient: "from-blue-50 to-cyan-50",
-      iconColor: "text-blue-500"
+      iconColor: "text-blue-500",
     },
     {
       name: "Community Hero",
@@ -684,7 +737,7 @@ function EnhancedBadgesSection({ badgesData, completedTasks }) {
       milestone: 4,
       gradient: "from-green-400 to-green-600",
       bgGradient: "from-green-50 to-emerald-50",
-      iconColor: "text-green-500"
+      iconColor: "text-green-500",
     },
     {
       name: "Neighborhood Legend",
@@ -693,7 +746,7 @@ function EnhancedBadgesSection({ badgesData, completedTasks }) {
       milestone: 5,
       gradient: "from-pink-400 to-pink-600",
       bgGradient: "from-pink-50 to-rose-50",
-      iconColor: "text-pink-500"
+      iconColor: "text-pink-500",
     },
     {
       name: "Volunteer Champion",
@@ -702,7 +755,7 @@ function EnhancedBadgesSection({ badgesData, completedTasks }) {
       milestone: 6,
       gradient: "from-purple-400 to-purple-600",
       bgGradient: "from-purple-50 to-violet-50",
-      iconColor: "text-purple-500"
+      iconColor: "text-purple-500",
     },
     {
       name: "Volunteer Master",
@@ -711,7 +764,7 @@ function EnhancedBadgesSection({ badgesData, completedTasks }) {
       milestone: 7,
       gradient: "from-indigo-400 to-indigo-600",
       bgGradient: "from-indigo-50 to-blue-50",
-      iconColor: "text-indigo-500"
+      iconColor: "text-indigo-500",
     },
     {
       name: "Volunteer Legend",
@@ -720,33 +773,40 @@ function EnhancedBadgesSection({ badgesData, completedTasks }) {
       milestone: 8,
       gradient: "from-yellow-400 to-yellow-600",
       bgGradient: "from-amber-50 to-yellow-50",
-      iconColor: "text-yellow-500"
+      iconColor: "text-yellow-500",
     },
   ];
 
-  const earnedNames = badgesData.badges.map(b => b.name);
-  const earnedBadges = ALL_BADGES.filter(badge => earnedNames.includes(badge.name));
-  const nextBadge = ALL_BADGES.find(badge => !earnedNames.includes(badge.name));
+  const earnedNames = badgesData.badges.map((b) => b.name);
+  const earnedBadges = ALL_BADGES.filter((badge) =>
+    earnedNames.includes(badge.name),
+  );
+  const nextBadge = ALL_BADGES.find(
+    (badge) => !earnedNames.includes(badge.name),
+  );
 
   return (
-    <Section
-      title="Badges & Achievements"
-      icon={<Trophy size={16} />}
-    >
+    <Section title="Badges & Achievements" icon={<Trophy size={16} />}>
       <div className="space-y-4">
         {/* Stats Overview */}
         <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-xl border border-green-100">
           <div className="grid grid-cols-3 gap-3 text-center">
             <div>
-              <div className="text-lg font-bold text-green-600">{badgesData.points}</div>
+              <div className="text-lg font-bold text-green-600">
+                {badgesData.points}
+              </div>
               <div className="text-xs text-gray-600 font-medium">Points</div>
             </div>
             <div>
-              <div className="text-lg font-bold text-green-600">{completedTasks}</div>
+              <div className="text-lg font-bold text-green-600">
+                {completedTasks}
+              </div>
               <div className="text-xs text-gray-600 font-medium">Tasks</div>
             </div>
             <div>
-              <div className="text-lg font-bold text-green-600">{earnedBadges.length}</div>
+              <div className="text-lg font-bold text-green-600">
+                {earnedBadges.length}
+              </div>
               <div className="text-xs text-gray-600 font-medium">Badges</div>
             </div>
           </div>
@@ -755,19 +815,23 @@ function EnhancedBadgesSection({ badgesData, completedTasks }) {
         {/* Level Display */}
         <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-3 rounded-xl border border-amber-100">
           <div className="text-center">
-            <div className="text-xs font-semibold text-gray-700 mb-1">Current Level</div>
+            <div className="text-xs font-semibold text-gray-700 mb-1">
+              Current Level
+            </div>
             <div className="flex items-center justify-center gap-2 mb-1">
-              {badgesData.level?.icon && <span className="text-lg">{badgesData.level.icon}</span>}
+              {badgesData.level?.icon && (
+                <span className="text-lg">{badgesData.level.icon}</span>
+              )}
               <span className="text-base font-bold text-amber-600">
                 {badgesData.level?.level || "Beginner"}
               </span>
             </div>
             {badgesData.nextMilestone && (
               <div className="text-xs text-gray-600">
-                {typeof badgesData.nextMilestone === 'object' 
-                  ? badgesData.nextMilestone.message || `Next: ${badgesData.nextMilestone.next || 0} tasks`
-                  : `Next: ${badgesData.nextMilestone} tasks`
-                }
+                {typeof badgesData.nextMilestone === "object"
+                  ? badgesData.nextMilestone.message ||
+                    `Next: ${badgesData.nextMilestone.next || 0} tasks`
+                  : `Next: ${badgesData.nextMilestone} tasks`}
               </div>
             )}
           </div>
@@ -777,20 +841,26 @@ function EnhancedBadgesSection({ badgesData, completedTasks }) {
         {nextBadge && (
           <div className="bg-white p-3 rounded-lg border border-gray-200">
             <div className="flex items-center gap-3 mb-2">
-              <div className={`flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br ${nextBadge.gradient}`}>
-                <div className="text-white">
-                  {nextBadge.icon}
-                </div>
+              <div
+                className={`flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br ${nextBadge.gradient}`}
+              >
+                <div className="text-white">{nextBadge.icon}</div>
               </div>
               <div className="flex-1">
-                <h4 className="font-semibold text-sm text-gray-900">Next: {nextBadge.name}</h4>
-                <p className="text-xs text-gray-600">{nextBadge.milestone - completedTasks} more tasks</p>
+                <h4 className="font-semibold text-sm text-gray-900">
+                  Next: {nextBadge.name}
+                </h4>
+                <p className="text-xs text-gray-600">
+                  {nextBadge.milestone - completedTasks} more tasks
+                </p>
               </div>
             </div>
             <div className="w-full bg-gray-100 rounded-full h-1.5">
               <div
                 className="h-1.5 rounded-full bg-gradient-to-r from-green-400 to-green-500 transition-all duration-700"
-                style={{ width: `${Math.min((completedTasks / nextBadge.milestone) * 100, 100)}%` }}
+                style={{
+                  width: `${Math.min((completedTasks / nextBadge.milestone) * 100, 100)}%`,
+                }}
               ></div>
             </div>
           </div>
@@ -799,12 +869,14 @@ function EnhancedBadgesSection({ badgesData, completedTasks }) {
         {/* Badges Grid */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h4 className="font-semibold text-gray-800 text-sm">Earned Badges</h4>
+            <h4 className="font-semibold text-gray-800 text-sm">
+              Earned Badges
+            </h4>
             <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
               {earnedBadges.length}/{ALL_BADGES.length}
             </span>
           </div>
-          
+
           {earnedBadges.length > 0 ? (
             <div className="grid grid-cols-2 gap-2">
               {earnedBadges.map((badge, index) => (
@@ -815,7 +887,9 @@ function EnhancedBadgesSection({ badgesData, completedTasks }) {
             <div className="text-center py-4 text-gray-500">
               <Trophy size={24} className="mx-auto mb-2 text-gray-300" />
               <p className="text-sm font-medium">No badges earned yet</p>
-              <p className="text-xs text-gray-400 mt-1">Complete tasks to earn your first badge!</p>
+              <p className="text-xs text-gray-400 mt-1">
+                Complete tasks to earn your first badge!
+              </p>
             </div>
           )}
         </div>
@@ -827,23 +901,29 @@ function EnhancedBadgesSection({ badgesData, completedTasks }) {
 // Enhanced Badge Card Component
 function EnhancedBadgeCard({ badge, earned }) {
   return (
-    <div className={`
+    <div
+      className={`
       relative p-3 rounded-lg border transition-all duration-200
-      ${earned 
-        ? `border-transparent bg-gradient-to-br ${badge.bgGradient} shadow-sm` 
-        : 'border-gray-200 bg-gray-50'
+      ${
+        earned
+          ? `border-transparent bg-gradient-to-br ${badge.bgGradient} shadow-sm`
+          : "border-gray-200 bg-gray-50"
       }
-    `}>
+    `}
+    >
       <div className="flex items-center gap-3">
         {/* Badge Icon */}
-        <div className={`
+        <div
+          className={`
           flex items-center justify-center w-10 h-10 rounded-lg transition-all
-          ${earned 
-            ? `bg-gradient-to-br ${badge.gradient} shadow` 
-            : 'bg-gray-200'
+          ${
+            earned
+              ? `bg-gradient-to-br ${badge.gradient} shadow`
+              : "bg-gray-200"
           }
-        `}>
-          <div className={earned ? 'text-white' : badge.iconColor}>
+        `}
+        >
+          <div className={earned ? "text-white" : badge.iconColor}>
             {badge.icon}
           </div>
           {earned && (
@@ -855,15 +935,15 @@ function EnhancedBadgeCard({ badge, earned }) {
 
         {/* Badge Info */}
         <div className="flex-1 min-w-0">
-          <h3 className={`
+          <h3
+            className={`
             font-semibold text-xs transition-colors truncate
-            ${earned ? 'text-gray-900' : 'text-gray-500'}
-          `}>
+            ${earned ? "text-gray-900" : "text-gray-500"}
+          `}
+          >
             {badge.name}
           </h3>
-          <p className="text-xs text-gray-500 truncate">
-            {badge.description}
-          </p>
+          <p className="text-xs text-gray-500 truncate">{badge.description}</p>
         </div>
       </div>
     </div>
@@ -933,13 +1013,13 @@ function Field({
             })}
           </div>
         ) : (
-        <input
-          type={type}
-          value={value || ""}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          className="w-full h-9 px-3 rounded-lg border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm"
-        />
+          <input
+            type={type}
+            value={value || ""}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder}
+            className="w-full h-9 px-3 rounded-lg border border-gray-300 focus:border-green-500 focus:ring-1 focus:ring-green-500 text-sm"
+          />
         )
       ) : (
         <div className="w-full h-9 px-3 flex items-center rounded-lg bg-gray-50 border border-gray-200 text-gray-800 text-sm">
@@ -1001,7 +1081,11 @@ function SelectField({
         </select>
       ) : (
         <div className="w-full h-9 px-3 flex items-center rounded-lg bg-gray-50 border border-gray-200 text-gray-800 text-sm">
-          {value ? options.find((o) => o.value === value)?.label || value : <span className="text-gray-500">Not set</span>}
+          {value ? (
+            options.find((o) => o.value === value)?.label || value
+          ) : (
+            <span className="text-gray-500">Not set</span>
+          )}
         </div>
       )}
     </div>

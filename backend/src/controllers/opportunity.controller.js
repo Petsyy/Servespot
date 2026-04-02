@@ -3,6 +3,7 @@ import Organization from "../models/organization.model.js";
 import Volunteer from "../models/volunteer.model.js";
 import Notification from "../models/notification.model.js";
 import Admin from "../models/admin.model.js";
+import mongoose from "mongoose";
 import { awardVolunteerRewards } from "../utils/volunteer.badges.js";
 import { sendNotification } from "../utils/sendNotification.js";
 import {
@@ -517,6 +518,10 @@ export const getOpportunityVolunteers = async (req, res) => {
 export const getOpportunityById = async (req, res) => {
   try {
     const { id } = req.params;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ message: "Invalid opportunity ID" });
+    }
 
     const opportunity = await Opportunity.findById(id)
       .populate("organization", "orgName email")

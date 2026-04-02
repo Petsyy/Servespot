@@ -19,6 +19,7 @@ import {
   getAdminProfile,
 } from "@/services/admin.api";
 import { toast } from "react-toastify";
+import { logout } from "@/utils/logout";
 
 export default function AdminNavbar({
   onToggleSidebar,
@@ -30,13 +31,12 @@ export default function AdminNavbar({
   const [adminName, setAdminName] = useState("Admin");
   const [adminEmail, setAdminEmail] = useState("admin@servespot.com");
   const adminId = localStorage.getItem("adminId");
-  const token = localStorage.getItem("adminToken");
 
   // Fetch admin profile
   useEffect(() => {
     const fetchAdminProfile = async () => {
       try {
-        if (!adminId || !token) return;
+        if (!adminId) return;
         const res = await getAdminProfile(adminId);
         const data = res.data.data;
         if (data) {
@@ -57,7 +57,7 @@ export default function AdminNavbar({
   useEffect(() => {
     const fetchAdminNotifs = async () => {
       try {
-        if (!adminId || !token) return;
+        if (!adminId) return;
         setLoadingNotif(true);
         const res = await getAdminNotifications(adminId);
         setNotifications(res.data.data || []);
@@ -74,7 +74,7 @@ export default function AdminNavbar({
     // Optional: refresh every 30s
     const interval = setInterval(fetchAdminNotifs, 30000);
     return () => clearInterval(interval);
-  }, [adminId, token]);
+  }, [adminId]);
 
   const computedCount = notifications.filter((n) => !n.isRead).length;
 
@@ -114,8 +114,7 @@ export default function AdminNavbar({
   }, [adminName]);
 
   const handleLogout = () => {
-    localStorage.removeItem("adminToken");
-    localStorage.removeItem("activeRole");
+    logout("admin");
     localStorage.removeItem("adminId");
     navigate("/admin/login");
   };

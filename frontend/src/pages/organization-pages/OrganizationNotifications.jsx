@@ -13,18 +13,42 @@ import {
   getOrgNotifications,
   markOrgNotificationsRead,
 } from "@/services/organization.api";
+import { getSession } from "@/services/api";
 import { socket, registerUserSocket } from "@/utils/socket";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 export default function OrganizationNotifications() {
+  const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("inApp");
   const [filter, setFilter] = useState("All");
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState([]);
+  const [orgId, setOrgId] = useState(null);
 
-  const orgId =
-    typeof window !== "undefined" ? localStorage.getItem("orgId") : null;
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await getSession();
+        if (res.data?.user?.role !== "organization") {
+          navigate("/organization/login");
+          return;
+        }
+
+        const id = res.data?.user?.id;
+        if (!id) {
+          navigate("/organization/login");
+          return;
+        }
+
+        setOrgId(id);
+        localStorage.setItem("orgId", id);
+      } catch {
+        navigate("/organization/login");
+      }
+    })();
+  }, [navigate]);
 
   // =============================
   // Load notifications from API

@@ -7,11 +7,25 @@ import nodemailer from "nodemailer";
 import { sendEmail } from "../utils/sendEmail.js";
 import { sendNotification } from "../utils/sendNotification.js";
 import { uploadFileToCloudinary } from "../utils/cloudinaryUpload.js";
+import { clearAuthCookies, setAuthCookie } from "../utils/authCookies.js";
 
 const generateToken = (id, role) => {
   return jwt.sign({ id, role }, process.env.JWT_SECRET, {
     expiresIn: "7d",
   });
+};
+
+const parseCookies = (req) => {
+  const raw = req.headers.cookie || "";
+  return raw
+    .split(";")
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .reduce((acc, part) => {
+      const [key, ...rest] = part.split("=");
+      acc[key] = decodeURIComponent(rest.join("="));
+      return acc;
+    }, {});
 };
 
 // VOLUNTEER SIGNUP
@@ -92,6 +106,7 @@ export const registerVolunteer = async (req, res) => {
 
     //  Generate token for auto-login
     const token = generateToken(volunteer._id, "volunteer");
+    setAuthCookie(res, token);
 
     res.status(201).json({
       message: "Volunteer registered successfully",
@@ -170,6 +185,7 @@ export const registerOrganization = async (req, res) => {
 
     // Generate token
     const token = generateToken(organization._id, "organization");
+    setAuthCookie(res, token);
 
     res.status(201).json({
       message: "Organization registered successfully",
@@ -212,6 +228,7 @@ export const loginVolunteer = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
 
     const token = generateToken(volunteer._id, "volunteer");
+    setAuthCookie(res, token);
 
     res.status(200).json({
       token,
@@ -249,6 +266,7 @@ export const loginOrganization = async (req, res) => {
     }
 
     const token = generateToken(organization._id, "organization");
+    setAuthCookie(res, token);
 
     res.status(200).json({
       token,
@@ -384,5 +402,44 @@ export const resetPassword = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Failed to reset password" });
+  }
+};
+
+export const logoutSession = (_req, res) => {
+  clearAuthCookies(res);
+  res.status(200).json({ message: "Logged out successfully" });
+};
+
+export const getSession = (req, res) => {
+  try {
+    const cookies = parseCookies(req);
+
+    if (cookies.adminToken) {
+      const decoded = jwt.verify(cookies.adminToken, process.env.JWT_SECRET);
+      return res.status(200).json({
+        authenticated: true,
+        user: {
+          id: decoded.id,
+          role: decoded.role || "admin",
+          email: decoded.email || null,
+        },
+      });
+    }
+
+    if (cookies.authToken) {
+      const decoded = jwt.verify(cookies.authToken, process.env.JWT_SECRET);
+      return res.status(200).json({
+        authenticated: true,
+        user: {
+          id: decoded.id,
+          role: decoded.role,
+          email: decoded.email || null,
+        },
+      });
+    }
+
+    return res.status(401).json({ authenticated: false, message: "No active session" });
+  } catch {
+    return res.status(401).json({ authenticated: false, message: "Invalid session" });
   }
 };

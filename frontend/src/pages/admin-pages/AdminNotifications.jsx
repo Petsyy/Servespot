@@ -16,18 +16,42 @@ import {
   getAdminNotifications,
   markAdminNotificationsRead,
 } from "@/services/admin.api"; // You'll need to create these API functions
+import { getSession } from "@/services/api";
 import { socket, registerUserSocket } from "@/utils/socket";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 export default function AdminNotifications() {
+  const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("inApp");
   const [filter, setFilter] = useState("All");
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState([]);
+  const [adminId, setAdminId] = useState(null);
 
-  const adminId =
-    typeof window !== "undefined" ? localStorage.getItem("adminId") : null;
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await getSession();
+        if (res.data?.user?.role !== "admin") {
+          navigate("/admin/login");
+          return;
+        }
+
+        const id = res.data?.user?.id;
+        if (!id) {
+          navigate("/admin/login");
+          return;
+        }
+
+        setAdminId(id);
+        localStorage.setItem("adminId", id);
+      } catch {
+        navigate("/admin/login");
+      }
+    })();
+  }, [navigate]);
 
   // =============================
   // Load notifications from API

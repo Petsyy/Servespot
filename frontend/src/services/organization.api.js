@@ -1,6 +1,6 @@
 import API from "@/services/api";
+import ENDPOINTS from "@/services/endpoints";
 
-// Create new opportunity (Organization only)
 export const createOpportunity = (data) => {
   const formData =
     data instanceof FormData
@@ -19,57 +19,50 @@ export const createOpportunity = (data) => {
           return fd;
         })();
 
-  return API.post("/opportunities", formData,);
+  return API.post(ENDPOINTS.opportunities.root, formData);
 };
 
-// Mark entire opportunity completed (organization)
 export const markOpportunityCompleted = async (oppId) => {
-  return API.patch(`/opportunities/${oppId}/complete`);
+  return API.patch(ENDPOINTS.opportunities.complete(oppId));
 };
 
-// Update opportunity
 export const updateOpportunity = (id, formData) =>
-  API.put(`/opportunities/${id}`, formData);
+  API.put(ENDPOINTS.opportunities.byId(id), formData);
 
 // Organiation Dashboard
 export const getOrgStats = (orgId) =>
-  API.get(`/opportunities/organization/${orgId}/stats`);
-
+  API.get(ENDPOINTS.opportunities.organizationStats(orgId));
 
 export const getOrgActivity = (orgId) =>
-  API.get(`/opportunities/organization/${orgId}/activity`);
+  API.get(ENDPOINTS.opportunities.organizationActivity(orgId));
 
 export const getOpportunityVolunteers = (id) =>
-  API.get(`/opportunities/${id}/volunteers`);
+  API.get(ENDPOINTS.opportunities.volunteers(id));
 
-// Get opportunities posted by a specific organization
 export const getOpportunities = (orgId) =>
-  API.get(`/opportunities/organization/${orgId}`);
+  API.get(ENDPOINTS.opportunities.byOrganization(orgId));
 
-// Delete a specific opportunity
-export const deleteOpportunity = (id) => API.delete(`/opportunities/${id}`);
+
+export const deleteOpportunity = (id) =>
+  API.delete(ENDPOINTS.opportunities.byId(id));
 
 export const getOrganizationProfile = (orgId) =>
-  API.get(`/organization/${orgId}`, {
-    headers: { Authorization: `Bearer ${localStorage.getItem("orgToken")}` },
+  API.get(ENDPOINTS.organization.byId(orgId));
+
+export const updateVolunteerStatus = (oppId, volunteerId, status) =>
+  API.put(ENDPOINTS.organization.volunteerStatus(oppId, volunteerId), {
+    status,
   });
 
-  // Update volunteer status (approve / reject / complete)
-export const updateVolunteerStatus = (oppId, volunteerId, status) =>
-  API.put(`/organization/volunteers/${oppId}/${volunteerId}/status`, { status });
-
-// ORGANIZATION PROFILE
-export const getOrganizationById = (id) => API.get(`/organization/${id}`);
+export const getOrganizationById = (id) =>
+  API.get(ENDPOINTS.organization.byId(id));
 export const updateOrganization = (id, data) =>
-  API.put(`/organization/${id}`, data, {
+  API.put(ENDPOINTS.organization.byId(id), data, {
     headers: { "Content-Type": "application/json" },
   });
 
-// Mark all organization notifications as read
 export const markOrgNotificationsRead = (orgId) =>
-  API.put(`/notifications/organization/${orgId}/read-all`);
+  API.put(ENDPOINTS.notifications.organizationReadAll(orgId));
 
-// Email Notifcation Tab
 export const getOrgNotifications = (orgId) =>
-  API.get(`/notifications/organization/${orgId}`);
-
+  API.get(ENDPOINTS.notifications.organization(orgId));

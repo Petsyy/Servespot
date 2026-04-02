@@ -18,6 +18,7 @@ import {
   getOrgNotifications,
   markOrgNotificationsRead,
 } from "@/services/organization.api";
+import { logout } from "@/utils/logout";
 
 export default function OrganizationNavbar({ onToggleSidebar }) {
   const navigate = useNavigate();
@@ -80,8 +81,7 @@ export default function OrganizationNavbar({ onToggleSidebar }) {
     const fetchProfile = async () => {
       try {
         const orgId = localStorage.getItem("orgId");
-        const token = localStorage.getItem("orgToken");
-        if (!orgId || !token) return;
+        if (!orgId) return;
 
         const res = await getOrganizationProfile(orgId);
         const data = res?.data?.data || res?.data;
@@ -210,7 +210,7 @@ export default function OrganizationNavbar({ onToggleSidebar }) {
 
   /* ------------------------- Logout ------------------------- */
   const handleLogout = () => {
-    localStorage.clear();
+    logout("organization");
     navigate("/organization/login");
   };
 

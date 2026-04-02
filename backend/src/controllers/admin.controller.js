@@ -10,6 +10,7 @@ import {
   emitToOrganization,
 } from "../realtime/socketGateway.js";
 import { sendNotification } from "../utils/sendNotification.js";
+import { setAdminCookie } from "../utils/authCookies.js";
 
 /* =====================================================
 ADMIN AUTHENTICATION
@@ -27,10 +28,11 @@ export const loginAdmin = async (req, res) => {
       return res.status(400).json({ message: "Invalid email or password" });
 
     const token = jwt.sign(
-      { id: admin._id, email: admin.email },
+      { id: admin._id, email: admin.email, role: "admin" },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
+    setAdminCookie(res, token);
 
     res.status(200).json({
       message: "Login successful",
