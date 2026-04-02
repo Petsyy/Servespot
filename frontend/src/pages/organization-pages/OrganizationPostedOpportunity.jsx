@@ -1,15 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { 
-  Plus, 
-  Filter, 
-  Search, 
+import {
+  Plus,
+  Filter,
+  Search,
   Download,
   Calendar,
   MapPin,
   Users,
-  Clock
+  Clock,
 } from "lucide-react";
-import { getOpportunities, deleteOpportunity } from "@/services/organization.api";
+import {
+  getOpportunities,
+  deleteOpportunity,
+} from "@/services/organization.api";
 import { getSession } from "@/services/api";
 import OpportunityCard from "@/components/organization-dashboard/opportunities/OpportunityCard";
 import OrganizationSidebar from "@/components/layout/sidebars/OrganizationSidebar";
@@ -92,28 +95,34 @@ export default function OrganizationPostedOpportunities() {
   const handleUpdate = (updatedOpp) => {
     setOpportunities((prev) =>
       prev.map((opp) =>
-        opp._id === updatedOpp._id ? { ...opp, ...updatedOpp } : opp
-      )
+        opp._id === updatedOpp._id ? { ...opp, ...updatedOpp } : opp,
+      ),
     );
   };
 
   // Filter and sort opportunities
   const filteredAndSortedOpportunities = opportunities
-    .filter(opp => {
-      const matchesSearch = opp.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           opp.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           opp.location?.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesStatus = statusFilter === "all" || opp.status === statusFilter;
-      
+    .filter((opp) => {
+      const matchesSearch =
+        opp.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        opp.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        opp.location?.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchesStatus =
+        statusFilter === "all" || opp.status === statusFilter;
+
       return matchesSearch && matchesStatus;
     })
     .sort((a, b) => {
       switch (sortBy) {
         case "newest":
-          return new Date(b.createdAt || b.date) - new Date(a.createdAt || a.date);
+          return (
+            new Date(b.createdAt || b.date) - new Date(a.createdAt || a.date)
+          );
         case "oldest":
-          return new Date(a.createdAt || a.date) - new Date(b.createdAt || b.date);
+          return (
+            new Date(a.createdAt || a.date) - new Date(b.createdAt || b.date)
+          );
         case "volunteers":
           return (b.volunteers?.length || 0) - (a.volunteers?.length || 0);
         case "title":
@@ -126,24 +135,22 @@ export default function OrganizationPostedOpportunities() {
   // Stats calculation
   const stats = {
     total: opportunities.length,
-    active: opportunities.filter(opp => opp.status === "Open").length,
-    completed: opportunities.filter(opp => opp.status === "Completed").length,
-    totalVolunteers: opportunities.reduce((sum, opp) => sum + (opp.volunteers?.length || 0), 0)
+    active: opportunities.filter((opp) => opp.status === "Open").length,
+    completed: opportunities.filter((opp) => opp.status === "Completed").length,
+    totalVolunteers: opportunities.reduce(
+      (sum, opp) => sum + (opp.volunteers?.length || 0),
+      0,
+    ),
   };
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Organization Sidebar */}
-      <OrganizationSidebar 
-        isOpen={sidebarOpen} 
-        onClose={closeSidebar} 
-      />
+      <OrganizationSidebar isOpen={sidebarOpen} onClose={closeSidebar} />
 
       <div className="flex-1 flex flex-col min-w-0">
         {/* Organization Navbar */}
-        <OrganizationNavbar 
-          onToggleSidebar={toggleSidebar}
-        />
+        <OrganizationNavbar onToggleSidebar={toggleSidebar} />
 
         <main className="flex-1 p-6">
           {/* Header Section */}
@@ -154,7 +161,8 @@ export default function OrganizationPostedOpportunities() {
                   Posted Opportunities
                 </h1>
                 <p className="text-gray-600 mt-2">
-                  Manage and track all volunteer opportunities posted by your organization
+                  Manage and track all volunteer opportunities posted by your
+                  organization
                 </p>
               </div>
             </div>
@@ -165,7 +173,10 @@ export default function OrganizationPostedOpportunities() {
             <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
               {/* Search Bar */}
               <div className="relative flex-1 w-full lg:max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                <Search
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                  size={20}
+                />
                 <input
                   type="text"
                   placeholder="Search opportunities by title, description, or location..."
@@ -209,11 +220,11 @@ export default function OrganizationPostedOpportunities() {
             {/* Results Count */}
             <div className="mt-4 flex items-center justify-between">
               <p className="text-sm text-gray-600">
-                Showing {filteredAndSortedOpportunities.length} of {opportunities.length} opportunities
+                Showing {filteredAndSortedOpportunities.length} of{" "}
+                {opportunities.length} opportunities
               </p>
               {filteredAndSortedOpportunities.length > 0 && (
-                <button className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors">
-                </button>
+                <button className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"></button>
               )}
             </div>
           </div>
@@ -256,12 +267,11 @@ export default function OrganizationPostedOpportunities() {
                   No opportunities found
                 </h3>
                 <p className="text-gray-600 mb-6">
-                  {searchTerm || statusFilter !== "all" 
+                  {searchTerm || statusFilter !== "all"
                     ? "Try adjusting your search or filters to find what you're looking for."
-                    : "Get started by posting your first volunteer opportunity."
-                  }
+                    : "Get started by posting your first volunteer opportunity."}
                 </p>
-                {(searchTerm || statusFilter !== "all") ? (
+                {searchTerm || statusFilter !== "all" ? (
                   <button
                     onClick={() => {
                       setSearchTerm("");

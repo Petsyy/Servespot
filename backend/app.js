@@ -50,6 +50,14 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Handle malformed JSON payloads before hitting route handlers.
+app.use((err, _req, res, next) => {
+  if (err instanceof SyntaxError && "body" in err) {
+    return res.status(400).json({ message: "Invalid JSON payload" });
+  }
+  return next(err);
+});
+
 // Database connection
 if (process.env.MONGO_URI) {
   connectDB().catch((error) => {
@@ -94,6 +102,9 @@ app.get("/api/health", (_req, res) => res.json({ ok: true }));
 // GLOBAL ERROR HANDLER
 app.use((err, _req, res, _next) => {
   console.error("GLOBAL ERROR:", err);
+  if (err instanceof SyntaxError && "body" in err) {
+    return res.status(400).json({ message: "Invalid JSON payload" });
+  }
   res.status(500).json({
     message: "Server error",
     error: err.message || String(err),

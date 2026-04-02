@@ -15,6 +15,15 @@ const generateToken = (id, role) => {
   });
 };
 
+const isDatabaseUnavailableError = (error) => {
+  const name = error?.name || "";
+  return (
+    name === "MongooseServerSelectionError" ||
+    name === "MongoNetworkError" ||
+    name === "MongoServerSelectionError"
+  );
+};
+
 const parseCookies = (req) => {
   const raw = req.headers.cookie || "";
   return raw
@@ -241,7 +250,16 @@ export const loginVolunteer = async (req, res) => {
     });
   } catch (error) {
     console.error("Volunteer login failed:", error);
-    res.status(500).json({ message: "Error logging in volunteer", error });
+    if (isDatabaseUnavailableError(error)) {
+      return res.status(503).json({
+        message: "Database unavailable. Please try again later.",
+      });
+    }
+
+    res.status(500).json({
+      message: "Error logging in volunteer",
+      error: error?.message || String(error),
+    });
   }
 };
 
@@ -280,7 +298,16 @@ export const loginOrganization = async (req, res) => {
     });
   } catch (error) {
     console.error("Organization login failed:", error);
-    res.status(500).json({ message: "Error logging in organization", error });
+    if (isDatabaseUnavailableError(error)) {
+      return res.status(503).json({
+        message: "Database unavailable. Please try again later.",
+      });
+    }
+
+    res.status(500).json({
+      message: "Error logging in organization",
+      error: error?.message || String(error),
+    });
   }
 };
 
