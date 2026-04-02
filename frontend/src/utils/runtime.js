@@ -34,8 +34,18 @@ export const FILE_BASE_URL = stripTrailingSlash(
   import.meta.env.VITE_FILE_BASE || API_BASE_URL
 );
 
+const socketFlag = import.meta.env.VITE_ENABLE_SOCKET;
+
+function isSocketEnabled() {
+  if (socketFlag === undefined) {
+    return false;
+  }
+
+  return String(socketFlag).toLowerCase() === "true";
+}
+
 export const SOCKET_URL = stripTrailingSlash(
   import.meta.env.VITE_SOCKET_URL || (isLocalhost() ? LOCAL_API_ORIGIN : "")
 );
 
-export const SOCKET_ENABLED = Boolean(SOCKET_URL);
+export const SOCKET_ENABLED = isSocketEnabled() && Boolean(SOCKET_URL);

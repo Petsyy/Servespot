@@ -4,6 +4,7 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter, useLocation } from "react-router-dom";
 import App from "./App";
 import { socket, registerUserSocket } from "@/utils/socket";
+import { SOCKET_ENABLED } from "@/utils/runtime";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./index.css";
@@ -14,6 +15,10 @@ function GlobalSocketHandler() {
   const location = useLocation();
 
   useEffect(() => {
+    if (!SOCKET_ENABLED) {
+      return;
+    }
+
     const role = localStorage.getItem("role");
     const volunteerId = localStorage.getItem("volunteerId");
     const organizationId = localStorage.getItem("organizationId");
