@@ -32,7 +32,11 @@ const parseCookies = (req) => {
     .filter(Boolean)
     .reduce((acc, part) => {
       const [key, ...rest] = part.split("=");
-      acc[key] = decodeURIComponent(rest.join("="));
+      try {
+        acc[key] = decodeURIComponent(rest.join("="));
+      } catch {
+        acc[key] = rest.join("=");
+      }
       return acc;
     }, {});
 };
@@ -70,7 +74,7 @@ export const registerVolunteer = async (req, res) => {
       return res.status(400).json({ message: "Email is required" });
     }
 
-    if (!password || password.length < 8) {
+    if (!password || typeof password !== "string" || password.length < 8) {
       return res.status(400).json({ message: "Password must be at least 8 characters long" });
     }
 
@@ -179,7 +183,7 @@ export const registerOrganization = async (req, res) => {
       return res.status(400).json({ message: "Email is required" });
     }
 
-    if (!password || password.length < 8) {
+    if (!password || typeof password !== "string" || password.length < 8) {
       return res.status(400).json({
         message: "Password is required and must be at least 8 characters long",
       });
@@ -560,7 +564,7 @@ export const getSession = (req, res) => {
 
 export const checkEmailAvailability = async (req, res) => {
   try {
-    const rawEmail = req.query.email;
+    const rawEmail = req.query?.email ?? req.body?.email;
     const email = normalizeEmail(rawEmail);
     if (!email) {
       return res.status(400).json({ available: false, message: "Valid email is required" });

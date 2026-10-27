@@ -11,7 +11,11 @@ const getCookies = (req) => {
     .filter(Boolean)
     .reduce((acc, part) => {
       const [key, ...rest] = part.split("=");
-      acc[key] = decodeURIComponent(rest.join("="));
+      try {
+        acc[key] = decodeURIComponent(rest.join("="));
+      } catch {
+        acc[key] = rest.join("=");
+      }
       return acc;
     }, {});
 };

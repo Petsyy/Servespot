@@ -1,11 +1,20 @@
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
 import fs from "fs";
 import { connectDB } from "./src/config/db.js";
 import { UPLOADS_DIR } from "./src/config/paths.js";
+import { generalLimiter } from "./src/middlewares/rateLimit.middleware.js";
 
 // EXPRESS APP SETUP
 const app = express();
+
+// Secure HTTP response headers (CSP, nosniff, HSTS, frame protection)
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  })
+);
 
 const normalizeOrigin = (value) => value?.trim().replace(/\/+$/, "");
 
@@ -15,7 +24,7 @@ const allowedOrigins = [
   "http://localhost:5173",
 ].map(normalizeOrigin).filter(Boolean);
 
-const isAllowedOrigin = (origin) => {
+export const isAllowedOrigin = (origin) => {
   if (!origin) return true;
 
   const normalizedOrigin = normalizeOrigin(origin);
@@ -25,9 +34,12 @@ const isAllowedOrigin = (origin) => {
 
   try {
     const { hostname, protocol } = new URL(normalizedOrigin);
-    return protocol === "https:" &&
-      hostname.endsWith(".vercel.app") &&
-      hostname.startsWith("servespot");
+    return (
+      protocol === "https:" &&
+      /^servespot(\.vercel\.app|(-[a-z0-9]+)*-petsyys-projects\.vercel\.app)$/.test(
+        hostname
+      )
+    );
   } catch {
     return false;
   }
@@ -89,6 +101,8 @@ import opportunityRoutes from "./src/modules/opportunities/opportunity.routes.js
 import notificationRoutes from "./src/modules/notifications/notification.routes.js";
 import testRoutes from "./src/tests/test.routes.js";
 
+app.use("/api", generalLimiter);
+
 app.use("/api/test", testRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/auth", authRoutes);
@@ -99,7 +113,6 @@ app.use("/api/notifications", notificationRoutes);
 
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
 
-// GLOBAL ERROR HANDLER
 app.use((err, _req, res, _next) => {
   console.error("GLOBAL ERROR:", err);
   if (err instanceof SyntaxError && "body" in err) {

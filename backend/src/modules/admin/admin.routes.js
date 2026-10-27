@@ -12,10 +12,11 @@ import {
   markAdminNotificationsRead,
 } from "./admin.controller.js";
 import { protectAdmin } from "../../middlewares/auth.middleware.js";
+import { authLimiter } from "../../middlewares/rateLimit.middleware.js";
 
 const router = express.Router();
 
-router.post("/login", loginAdmin);
+router.post("/login", authLimiter, loginAdmin);
 router.get("/profile/:id", protectAdmin, getAdminProfile);
 
 router.get("/dashboard", protectAdmin, getDashboardData);
