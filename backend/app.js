@@ -46,7 +46,6 @@ export const isAllowedOrigin = (origin) => {
   }
 };
 
-// Middleware
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -71,7 +70,6 @@ app.use((err, _req, res, next) => {
   return next(err);
 });
 
-// Database connection
 if (process.env.MONGO_URI) {
   connectDB().catch((error) => {
     console.error("MongoDB boot error:", error.message);
@@ -82,18 +80,15 @@ if (process.env.MONGO_URI) {
   );
 }
 
-// LOAD MODELS
 import "./src/modules/volunteers/volunteer.model.js";
 import "./src/modules/opportunities/opportunity.model.js";
 import "./src/modules/organizations/organization.model.js";
 import "./src/modules/admin/admin.model.js";
 import "./src/modules/notifications/notification.model.js";
 
-// UPLOADS DIRECTORY
 if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 app.use("/uploads", express.static(UPLOADS_DIR));
 
-// ROUTES
 import adminRoutes from "./src/modules/admin/admin.routes.js";
 import authRoutes from "./src/modules/auth/auth.routes.js";
 import volunteerRoutes from "./src/modules/volunteers/volunteer.routes.js";
@@ -104,7 +99,6 @@ import testRoutes from "./src/tests/test.routes.js";
 
 app.use("/api", generalLimiter);
 
-// Ensure MongoDB connection is active on serverless invocations before running DB queries
 app.use(async (_req, _res, next) => {
   if (process.env.MONGO_URI && mongoose.connection.readyState !== 1) {
     try {
@@ -124,7 +118,13 @@ app.use("/api/organization", organizationRoutes);
 app.use("/api/opportunities", opportunityRoutes);
 app.use("/api/notifications", notificationRoutes);
 
-app.get("/api/health", (_req, res) => res.json({ ok: true }));
+app.get("/api/health", (_req, res) =>
+  res.json({
+    ok: true,
+    mongoUriConfigured: Boolean(process.env.MONGO_URI),
+    dbReadyState: mongoose.connection.readyState,
+  })
+);
 
 app.use((err, _req, res, _next) => {
   console.error("GLOBAL ERROR:", err);
