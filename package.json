@@ -6,9 +6,13 @@
     "dev": "concurrently \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
     "install-all": "npm install --prefix backend && npm install --prefix frontend",
     "test": "npm --prefix backend test && npm --prefix frontend test",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
     "seed": "npm --prefix backend run seed"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "concurrently": "^9.1.0"
   }
 }

@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import monicaImg from "/public/images/monica.jpg";
+
+const monicaImg = "/images/monica.jpg";
 
 export default function NotFound() {
   return (

@@ -6,9 +6,11 @@ import { useLoginMutation } from "@/features/auth/hooks/useAuthMutations";
 import { loginSchema, loginDefaultValues } from "@/features/auth/schemas/login.schema";
 import { registerUserSocket } from "@/shared/utils/socket";
 import { setCookie, clearClientSessionCookies } from "@/shared/utils/cookies";
+import { useAuth } from "@/shared/context/AuthContext";
 
 export function useLoginForm(role = "Volunteer") {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const loginMutation = useLoginMutation(role);
 
@@ -40,6 +42,7 @@ export function useLoginForm(role = "Volunteer") {
         setCookie("volunteerName", volunteerName);
 
         registerUserSocket(userId, "volunteer");
+        login(data.user, "volunteer");
         navigate("/volunteer/homepage");
       } else {
         const orgId = data.organization?._id || data.orgId;
@@ -54,6 +57,7 @@ export function useLoginForm(role = "Volunteer") {
         setCookie("orgName", orgName);
 
         registerUserSocket(orgId, "organization");
+        login(data.organization || data.user, "organization");
         navigate("/organization/homepage");
       }
     } catch (err) {
