@@ -70,23 +70,23 @@ if (process.env.MONGO_URI) {
 }
 
 // LOAD MODELS
-import "./src/models/volunteer.model.js";
-import "./src/models/opportunity.model.js";
-import "./src/models/organization.model.js";
-import "./src/models/admin.model.js";
-import "./src/models/notification.model.js";
+import "./src/modules/volunteers/volunteer.model.js";
+import "./src/modules/opportunities/opportunity.model.js";
+import "./src/modules/organizations/organization.model.js";
+import "./src/modules/admin/admin.model.js";
+import "./src/modules/notifications/notification.model.js";
 
 // UPLOADS DIRECTORY
 if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 app.use("/uploads", express.static(UPLOADS_DIR));
 
 // ROUTES
-import adminRoutes from "./src/routes/admin.routes.js";
-import authRoutes from "./src/routes/auth.routes.js";
-import volunteerRoutes from "./src/routes/volunteer.routes.js";
-import organizationRoutes from "./src/routes/organization.routes.js";
-import opportunityRoutes from "./src/routes/opportunity.routes.js";
-import notificationRoutes from "./src/routes/notification.routes.js";
+import adminRoutes from "./src/modules/admin/admin.routes.js";
+import authRoutes from "./src/modules/auth/auth.routes.js";
+import volunteerRoutes from "./src/modules/volunteers/volunteer.routes.js";
+import organizationRoutes from "./src/modules/organizations/organization.routes.js";
+import opportunityRoutes from "./src/modules/opportunities/opportunity.routes.js";
+import notificationRoutes from "./src/modules/notifications/notification.routes.js";
 import testRoutes from "./src/tests/test.routes.js";
 
 app.use("/api/test", testRoutes);

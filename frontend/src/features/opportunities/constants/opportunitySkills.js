@@ -1,0 +1,20 @@
+export const OPPORTUNITY_SKILLS = [
+  "Event Organizing",
+  "Community Outreach",
+  "Public Speaking",
+  "Teaching & Tutoring",
+  "Health Assistance",
+  "Disaster Response",
+  "Environmental Cleanup",
+  "Graphic Design",
+  "Social Media Management",
+  "Cooking & Meal Prep",
+  "First Aid & CPR",
+  "Construction & Repair",
+  "Child Care",
+  "Animal Care",
+  "Translation & Interpretation",
+  "Photography & Documentation",
+  "Data Entry & Tech Support",
+];
+

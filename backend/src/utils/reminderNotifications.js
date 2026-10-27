@@ -1,7 +1,7 @@
 // src/utils/reminderNotifications.js
-import Opportunity from "../models/opportunity.model.js";
-import Volunteer from "../models/volunteer.model.js";
-import Organization from "../models/organization.model.js";
+import Opportunity from "../modules/opportunities/opportunity.model.js";
+import Volunteer from "../modules/volunteers/volunteer.model.js";
+import Organization from "../modules/organizations/organization.model.js";
 import { sendNotification } from "./sendNotification.js";
 
 /**

@@ -1,4 +1,4 @@
-import Notification from "../models/notification.model.js";
+import Notification from "../modules/notifications/notification.model.js";
 import { emitToUser } from "../realtime/socketGateway.js";
 import { sendEmail } from "./sendEmail.js";
 

@@ -1,52 +1,65 @@
-import { useEffect } from "react";
+import React, { lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import ProtectedRoute from "@/shared/components/layout/ProtectedRoute";
 
-// General
-import LandingPage from "@/pages/LandingPage";
-import NotFound from "@/pages/NotFound";
-import Suspended from "@/pages/Suspend";
+function PageLoader() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="flex flex-col items-center space-y-3">
+        <div className="w-10 h-10 border-4 border-green-600 border-t-transparent rounded-full animate-spin" />
+        <span className="text-xs text-gray-400 font-medium tracking-wide uppercase">
+          Loading
+        </span>
+      </div>
+    </div>
+  );
+}
 
-// Role Selection
-import RoleLogin from "@/pages/user-selection/RoleLogin";
-import RoleSignup from "@/pages/user-selection/RoleSignup";
+// Shared Pages
+const LandingPage = lazy(() => import("@/shared/pages/LandingPage"));
+const NotFound = lazy(() => import("@/shared/pages/NotFound"));
+const Suspended = lazy(() => import("@/shared/pages/Suspend"));
 
-// volunteer-pages
-import VolunteerLogin from "@/pages/volunteer-pages/auth/VolunteerLogin";
-import VolunteerSignup from "@/pages/volunteer-pages/auth/VolunteerSignup";
-import VolunteerLanding from "@/pages/volunteer-pages/VolunteerLanding";
-import VolunteerDashboard from "@/pages/volunteer-pages/VolunteerDashboard";
-import BrowseOpportunities from "@/pages/volunteer-pages/VolunteerBrowseOpportunities";
-import VolunteerProfile from "@/pages/volunteer-pages/VolunteerProfile";
-import VolunteerBadges from "@/pages/volunteer-pages/VolunteerBadges";
-import VolunteerNotifications from "@/pages/volunteer-pages/VolunteerNotifications";
-import VolunteerTasks from "@/pages/volunteer-pages/VolunteerTasks";
+// Features: Auth
+const RoleLogin = lazy(() => import("@/features/auth/pages/RoleLogin"));
+const RoleSignup = lazy(() => import("@/features/auth/pages/RoleSignup"));
+const VolunteerLogin = lazy(() => import("@/features/auth/pages/VolunteerLogin"));
+const VolunteerSignup = lazy(() => import("@/features/auth/pages/VolunteerSignup"));
+const OrganizationLogin = lazy(() => import("@/features/auth/pages/OrganizationLogin"));
+const OrganizationSignup = lazy(() => import("@/features/auth/pages/OrganizationSignup"));
+const AdminLogin = lazy(() => import("@/features/auth/pages/AdminLogin"));
+const ForgotPassword = lazy(() => import("@/features/auth/pages/ForgotPassword"));
 
-// Organization
-import OrganizationLogin from "@/pages/organization-pages/auth/OrganizationLogin";
-import OrganizationSignup from "@/pages/organization-pages/auth/OrganizationSignup";
-import OrganizationLanding from "@/pages/organization-pages/OrganizationLanding";
-import OrganizationDashboard from "@/pages/organization-pages/OrganizationDashboard";
-import MyOpportunity from "@/pages/organization-pages/OrganizationPostedOpportunity";
-import OrganizationProfile from "@/pages/organization-pages/OrganizationProfile";
-import OrganizationReports from "@/pages/organization-pages/OrganizationReports";
-import OrganizationNotifications from "@/pages/organization-pages/OrganizationNotifications";
+// Features: Volunteers
+const VolunteerLanding = lazy(() => import("@/features/volunteers/pages/VolunteerLanding"));
+const VolunteerDashboard = lazy(() => import("@/features/volunteers/pages/VolunteerDashboard"));
+const VolunteerProfile = lazy(() => import("@/features/volunteers/pages/VolunteerProfile"));
+const VolunteerBadges = lazy(() => import("@/features/volunteers/pages/VolunteerBadges"));
+const VolunteerTasks = lazy(() => import("@/features/volunteers/pages/VolunteerTasks"));
 
-// Admin
-import AdminLogin from "@/components/auth/AdminLogin";
-import AdminDashboard from "@/pages/admin-pages/AdminDashboard";
-import UserManagement from "@/pages/admin-pages/UserManagement";
-import AdminReports from "@/pages/admin-pages/AdminReports";
-import AdminNotifications from "@/pages/admin-pages/AdminNotifications";
+// Features: Opportunities
+const BrowseOpportunities = lazy(() => import("@/features/opportunities/pages/VolunteerBrowseOpportunities"));
+const MyOpportunity = lazy(() => import("@/features/opportunities/pages/OrganizationPostedOpportunity"));
 
-// Shared
-import ForgotPassword from "@/pages/auth-password/ForgotPassword";
+// Features: Organizations
+const OrganizationLanding = lazy(() => import("@/features/organizations/pages/OrganizationLanding"));
+const OrganizationDashboard = lazy(() => import("@/features/organizations/pages/OrganizationDashboard"));
+const OrganizationProfile = lazy(() => import("@/features/organizations/pages/OrganizationProfile"));
+const OrganizationReports = lazy(() => import("@/features/organizations/pages/OrganizationReports"));
+
+// Features: Admin
+const AdminDashboard = lazy(() => import("@/features/admin/pages/AdminDashboard"));
+const UserManagement = lazy(() => import("@/features/admin/pages/UserManagement"));
+const AdminReports = lazy(() => import("@/features/admin/pages/AdminReports"));
+
+// Features: Notifications
+const VolunteerNotifications = lazy(() => import("@/features/notifications/pages/VolunteerNotifications"));
+const OrganizationNotifications = lazy(() => import("@/features/notifications/pages/OrganizationNotifications"));
+const AdminNotifications = lazy(() => import("@/features/notifications/pages/AdminNotifications"));
 
 export default function App() {
-
   return (
-    <>
+    <Suspense fallback={<PageLoader />}>
       <Routes>
         {/* General */}
         <Route path="/" element={<LandingPage />} />
@@ -57,39 +70,161 @@ export default function App() {
         <Route path="/role/login" element={<RoleLogin />} />
         <Route path="/role/signup" element={<RoleSignup />} />
 
-        {/* Admin */}
+        {/* Admin Public */}
         <Route path="/admin/login" element={<AdminLogin />} />
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        <Route path="/admin/management" element={<UserManagement />} />
-        <Route path="/admin/reports" element={<AdminReports />} />
-        <Route path="/admin/notifications" element={<AdminNotifications />} />
 
-        {/* Volunteer */}
+        {/* Admin Protected */}
+        <Route
+          path="/admin/dashboard"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/management"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <UserManagement />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/reports"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminReports />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/notifications"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminNotifications />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Volunteer Public */}
         <Route path="/volunteer/login" element={<VolunteerLogin />} />
         <Route path="/volunteer/signup" element={<VolunteerSignup />} />
-        <Route path="/volunteer/homepage" element={<VolunteerLanding />} />
-        <Route path="/volunteer/dashboard" element={<VolunteerDashboard />} />
-        <Route path="/volunteer/opportunities" element={<BrowseOpportunities />} />
         <Route path="/volunteer/forgot-password" element={<ForgotPassword />} />
-        <Route path="/volunteer/tasks" element={<VolunteerTasks/>} />
-        <Route path="/volunteer/profile" element={<VolunteerProfile />} />
-        <Route path="/volunteer/badges" element={<VolunteerBadges />} />
-        <Route path="/volunteer/notifications" element={<VolunteerNotifications />} />
 
-        {/* Organization */}
+        {/* Volunteer Protected */}
+        <Route
+          path="/volunteer/homepage"
+          element={
+            <ProtectedRoute allowedRoles={["volunteer"]}>
+              <VolunteerLanding />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/volunteer/dashboard"
+          element={
+            <ProtectedRoute allowedRoles={["volunteer"]}>
+              <VolunteerDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/volunteer/opportunities"
+          element={
+            <ProtectedRoute allowedRoles={["volunteer"]}>
+              <BrowseOpportunities />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/volunteer/tasks"
+          element={
+            <ProtectedRoute allowedRoles={["volunteer"]}>
+              <VolunteerTasks />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/volunteer/profile"
+          element={
+            <ProtectedRoute allowedRoles={["volunteer"]}>
+              <VolunteerProfile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/volunteer/badges"
+          element={
+            <ProtectedRoute allowedRoles={["volunteer"]}>
+              <VolunteerBadges />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/volunteer/notifications"
+          element={
+            <ProtectedRoute allowedRoles={["volunteer"]}>
+              <VolunteerNotifications />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Organization Public */}
         <Route path="/organization/login" element={<OrganizationLogin />} />
         <Route path="/organization/signup" element={<OrganizationSignup />} />
-        <Route path="/organization/homepage" element={<OrganizationLanding />} />
-        <Route path="/organization/dashboard" element={<OrganizationDashboard />} />
-        <Route path="/organization/opportunities" element={<MyOpportunity />} />
         <Route path="/organization/forgot-password" element={<ForgotPassword />} />
-        <Route path="/organization/profile" element={<OrganizationProfile />} />
 
-        <Route path="/organization/reports" element={<OrganizationReports />} />
-        <Route path="/organization/notifications" element={<OrganizationNotifications />} />
+        {/* Organization Protected */}
+        <Route
+          path="/organization/homepage"
+          element={
+            <ProtectedRoute allowedRoles={["organization"]}>
+              <OrganizationLanding />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/organization/dashboard"
+          element={
+            <ProtectedRoute allowedRoles={["organization"]}>
+              <OrganizationDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/organization/opportunities"
+          element={
+            <ProtectedRoute allowedRoles={["organization"]}>
+              <MyOpportunity />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/organization/profile"
+          element={
+            <ProtectedRoute allowedRoles={["organization"]}>
+              <OrganizationProfile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/organization/reports"
+          element={
+            <ProtectedRoute allowedRoles={["organization"]}>
+              <OrganizationReports />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/organization/notifications"
+          element={
+            <ProtectedRoute allowedRoles={["organization"]}>
+              <OrganizationNotifications />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
-
-      <ToastContainer position="top-right" autoClose={2000} hideProgressBar />
-    </>
+    </Suspense>
   );
 }

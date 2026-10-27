@@ -1,10 +1,13 @@
-// src/main.jsx
 import React, { useEffect } from "react";
 import ReactDOM from "react-dom/client";
-import { BrowserRouter, useLocation } from "react-router-dom";
+import { BrowserRouter } from "react-router-dom";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "@/shared/services/queryClient";
 import App from "./App";
-import { socket, registerUserSocket } from "@/utils/socket";
-import { SOCKET_ENABLED } from "@/utils/runtime";
+import { AuthProvider } from "@/shared/context/AuthContext";
+import { socket, registerUserSocket } from "@/shared/utils/socket";
+import { getCookie } from "@/shared/utils/cookies";
+import { SOCKET_ENABLED } from "@/shared/utils/runtime";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./index.css";
@@ -12,16 +15,14 @@ import "./index.css";
 let isSocketBound = false;
 
 function GlobalSocketHandler() {
-  const location = useLocation();
-
   useEffect(() => {
     if (!SOCKET_ENABLED) {
       return;
     }
 
-    const role = localStorage.getItem("role");
-    const volunteerId = localStorage.getItem("volunteerId");
-    const organizationId = localStorage.getItem("organizationId");
+    const role = getCookie("role");
+    const volunteerId = getCookie("volunteerId");
+    const orgId = getCookie("orgId");
 
     // Always ensure socket is connected
     if (!socket.connected) socket.connect();
@@ -29,8 +30,8 @@ function GlobalSocketHandler() {
     // Register role-specific socket
     if (role === "volunteer" && volunteerId) {
       registerUserSocket(volunteerId, "volunteer");
-    } else if (role === "organization" && organizationId) {
-      registerUserSocket(organizationId, "organization");
+    } else if (role === "organization" && orgId) {
+      registerUserSocket(orgId, "organization");
     }
 
     // Only bind global listeners once
@@ -53,16 +54,7 @@ function GlobalSocketHandler() {
         });
       });
     }
-
-    // Auto refresh page on route change
-    if (!window._lastPath) {
-      window._lastPath = location.pathname;
-    } else if (window._lastPath !== location.pathname) {
-      console.log("Route changed → forcing reload:", location.pathname);
-      window._lastPath = location.pathname;
-      window.location.reload(); // full page reload
-    }
-  }, [location.pathname]);
+  }, []);
 
   return (
     <>
@@ -73,7 +65,11 @@ function GlobalSocketHandler() {
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <BrowserRouter>
-    <GlobalSocketHandler />
-  </BrowserRouter>
+  <QueryClientProvider client={queryClient}>
+    <BrowserRouter>
+      <AuthProvider>
+        <GlobalSocketHandler />
+      </AuthProvider>
+    </BrowserRouter>
+  </QueryClientProvider>
 );
