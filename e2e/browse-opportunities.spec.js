@@ -88,6 +88,20 @@ test.describe("Volunteer Browse Opportunities Flow", () => {
       }
     });
 
+    // Mock volunteer profile & endpoints
+    await page.route("**/api/volunteer/**", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          _id: "vol-12345",
+          fullName: "Juan Dela Cruz",
+          email: "volunteer@servespot.com",
+          role: "volunteer",
+        }),
+      });
+    });
+
     // Keep notifications quiet
     await page.route("**/api/notifications**", async (route) => {
       await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify([]) });
