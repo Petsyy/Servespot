@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import fs from "fs";
+import mongoose from "mongoose";
 import { connectDB } from "./src/config/db.js";
 import { UPLOADS_DIR } from "./src/config/paths.js";
 import { generalLimiter } from "./src/middlewares/rateLimit.middleware.js";
@@ -102,6 +103,18 @@ import notificationRoutes from "./src/modules/notifications/notification.routes.
 import testRoutes from "./src/tests/test.routes.js";
 
 app.use("/api", generalLimiter);
+
+// Ensure MongoDB connection is active on serverless invocations before running DB queries
+app.use(async (_req, _res, next) => {
+  if (process.env.MONGO_URI && mongoose.connection.readyState !== 1) {
+    try {
+      await connectDB();
+    } catch (err) {
+      console.warn("Serverless DB connection pending/failed:", err.message);
+    }
+  }
+  next();
+});
 
 app.use("/api/test", testRoutes);
 app.use("/api/admin", adminRoutes);
