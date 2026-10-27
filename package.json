@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "concurrently \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
     "install-all": "npm install --prefix backend && npm install --prefix frontend",
-    "test": "npm --prefix backend test && npm --prefix frontend test"
+    "test": "npm --prefix backend test && npm --prefix frontend test",
+    "seed": "npm --prefix backend run seed"
   },
   "devDependencies": {
     "concurrently": "^9.1.0"

@@ -42,12 +42,12 @@ const organizationSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: ["pending", "active", "suspended"],
-      default: "pending", // Automatically set to pending until admin approval
+      default: "pending",
     },
-
+    
     suspensionReason: { type: String, default: null },
     suspensionDate: { type: Date, default: null },
-    suspendedBy: { type: String, default: null }, // admin email/name
+    suspendedBy: { type: String, default: null },
   },
   { timestamps: true },
 );

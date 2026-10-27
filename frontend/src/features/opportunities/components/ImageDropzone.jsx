@@ -9,15 +9,13 @@ export default function ImageDropzone({ onFile }) {
 
   const handleFile = (file) => {
     if (file) {
-      // Validate file type
       const allowedTypes = ["image/jpeg", "image/png"];
-      
+
       if (!allowedTypes.includes(file.type)) {
         toast.error("Please select only JPG, PNG, or JPEG files.");
         return;
       }
 
-      // Validate file size (5MB max)
       if (file.size > 5 * 1024 * 1024) {
         toast.error("File size must be less than 5MB.");
         return;
@@ -28,16 +26,13 @@ export default function ImageDropzone({ onFile }) {
     }
   };
 
-  const onDrop = useCallback(
-    (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setHover(false);
-      const file = e.dataTransfer.files?.[0];
-      if (file) handleFile(file);
-    },
-    []
-  );
+  const onDrop = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setHover(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) handleFile(file);
+  }, []);
 
   const onPick = (e) => {
     const file = e.target.files?.[0];
@@ -84,9 +79,7 @@ export default function ImageDropzone({ onFile }) {
       ) : (
         <div className="flex flex-col items-center text-center text-gray-600">
           <UploadCloud size={32} className="text-green-500 mb-2" />
-          <p className="text-sm font-medium">
-            Click to upload or drag & drop
-          </p>
+          <p className="text-sm font-medium">Click to upload or drag & drop</p>
           <p className="text-xs text-gray-500 mt-1">
             JPG, PNG, JPEG files only (Max 5MB)
           </p>

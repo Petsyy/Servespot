@@ -257,7 +257,6 @@ export default function VolunteerBrowseOpportunities() {
               </div>
             </div>
 
-            {/* Active Filters Display */}
             {hasActiveFilters && (
               <div className="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t border-gray-200">
                 <span className="text-xs text-gray-500 font-medium">Active Filters:</span>
@@ -295,7 +294,6 @@ export default function VolunteerBrowseOpportunities() {
             )}
           </div>
 
-          {/* ---------- Opportunities Grid ---------- */}
           <div>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900">
@@ -303,7 +301,6 @@ export default function VolunteerBrowseOpportunities() {
               </h3>
             </div>
 
-            {/* Loading State */}
             {loading && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
@@ -323,7 +320,7 @@ export default function VolunteerBrowseOpportunities() {
               </div>
             )}
 
-            {/* Empty State */}
+
             {!loading && filtered.length === 0 && (
               <div className="text-center py-12">
                 <div className="max-w-md mx-auto">
@@ -351,7 +348,6 @@ export default function VolunteerBrowseOpportunities() {
               </div>
             )}
 
-            {/* Opportunities Grid */}
             {!loading && filtered.length > 0 && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {filtered.map((opp) => (
