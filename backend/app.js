@@ -3,7 +3,7 @@ import cors from "cors";
 import helmet from "helmet";
 import fs from "fs";
 import mongoose from "mongoose";
-import { connectDB } from "./src/config/db.js";
+import { connectDB, getLastDbError } from "./src/config/db.js";
 import { UPLOADS_DIR } from "./src/config/paths.js";
 import { generalLimiter } from "./src/middlewares/rateLimit.middleware.js";
 
@@ -118,13 +118,22 @@ app.use("/api/organization", organizationRoutes);
 app.use("/api/opportunities", opportunityRoutes);
 app.use("/api/notifications", notificationRoutes);
 
-app.get("/api/health", (_req, res) =>
+app.get("/api/health", async (_req, res) => {
+  if (process.env.MONGO_URI && mongoose.connection.readyState !== 1) {
+    try {
+      await connectDB();
+    } catch {
+      // Caught inside connectDB, lastDbError is stored
+    }
+  }
+
   res.json({
     ok: true,
     mongoUriConfigured: Boolean(process.env.MONGO_URI),
     dbReadyState: mongoose.connection.readyState,
-  })
-);
+    lastDbError: getLastDbError(),
+  });
+});
 
 app.use((err, _req, res, _next) => {
   console.error("GLOBAL ERROR:", err);
