@@ -87,6 +87,15 @@ test.describe("Organization Post Task / Opportunity Flow", () => {
       }
     });
 
+    // Mock opportunity volunteers and proofs
+    await page.route("**/api/opportunities/**/volunteers**", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ volunteers: [] }),
+      });
+    });
+
     // Mock notifications
     await page.route("**/api/notifications**", async (route) => {
       await route.fulfill({
@@ -163,7 +172,7 @@ test.describe("Organization Post Task / Opportunity Flow", () => {
     await page.locator('input[type="number"]').fill("15");
 
     // Select skill checkbox
-    const skillCheckbox = page.getByLabel("Environment");
+    const skillCheckbox = page.getByLabel("Environmental Cleanup");
     if (await skillCheckbox.isVisible()) {
       await skillCheckbox.check();
     }

@@ -24,6 +24,10 @@ import { useNavigate } from "react-router-dom";
 import ProofReviewModal from "@/features/opportunities/components/ProofPreviewModal";
 import EditOpportunityModal from "@/features/opportunities/components/EditOpportunityModal";
 import { toast } from "react-toastify";
+import {
+  useOpportunityVolunteers,
+  useCompleteOpportunity,
+} from "@/features/opportunities/hooks/useOpportunities";
 
 export default function OpportunityCard({
   _id,
