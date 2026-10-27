@@ -34,11 +34,20 @@ export const isAllowedOrigin = (origin) => {
   }
 
   try {
-    const { hostname, protocol } = new URL(normalizedOrigin);
+    const url = new URL(normalizedOrigin);
+    // Allow local development on localhost or 127.0.0.1 on any port
+    if (
+      url.protocol === "http:" &&
+      (url.hostname === "localhost" || url.hostname === "127.0.0.1")
+    ) {
+      return true;
+    }
+
+    // Allow legitimate Servespot production & preview Vercel domains
     return (
-      protocol === "https:" &&
+      url.protocol === "https:" &&
       /^servespot(\.vercel\.app|(-[a-z0-9]+)*-petsyys-projects\.vercel\.app)$/.test(
-        hostname
+        url.hostname
       )
     );
   } catch {
@@ -52,7 +61,7 @@ app.use(
       if (isAllowedOrigin(origin)) {
         return callback(null, true);
       }
-      return callback(new Error(`Not allowed by CORS: ${origin}`));
+      return callback(null, false);
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],

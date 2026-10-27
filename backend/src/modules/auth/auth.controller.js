@@ -17,10 +17,15 @@ const generateToken = (id, role, email = null) => {
 
 const isDatabaseUnavailableError = (error) => {
   const name = error?.name || "";
+  const message = error?.message || "";
   return (
     name === "MongooseServerSelectionError" ||
     name === "MongoNetworkError" ||
-    name === "MongoServerSelectionError"
+    name === "MongoServerSelectionError" ||
+    name === "MongooseError" ||
+    message.includes("buffering timed out") ||
+    message.includes("topology was destroyed") ||
+    message.includes("Server selection timed out")
   );
 };
 
@@ -269,8 +274,13 @@ export const registerOrganization = async (req, res) => {
 export const loginVolunteer = async (req, res) => {
   try {
     const { email, password } = req.body;
+    const normalizedEmail = normalizeEmail(email);
 
-    const volunteer = await Volunteer.findOne({ email });
+    if (!normalizedEmail || !password) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    const volunteer = await Volunteer.findOne({ email: normalizedEmail });
     if (!volunteer)
       return res.status(400).json({ message: "Invalid credentials" });
 
@@ -281,7 +291,7 @@ export const loginVolunteer = async (req, res) => {
       });
     }
 
-    const isMatch = await bcrypt.compare(password, volunteer.password);
+    const isMatch = await bcrypt.compare(String(password), volunteer.password || "");
     if (!isMatch)
       return res.status(400).json({ message: "Invalid credentials" });
 
@@ -316,12 +326,17 @@ export const loginVolunteer = async (req, res) => {
 export const loginOrganization = async (req, res) => {
   try {
     const { email, password } = req.body;
+    const normalizedEmail = normalizeEmail(email);
 
-    const organization = await Organization.findOne({ email });
+    if (!normalizedEmail || !password) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    const organization = await Organization.findOne({ email: normalizedEmail });
     if (!organization)
       return res.status(400).json({ message: "Invalid credentials" });
 
-    const isMatch = await bcrypt.compare(password, organization.password);
+    const isMatch = await bcrypt.compare(String(password), organization.password || "");
     if (!isMatch)
       return res.status(400).json({ message: "Invalid credentials" });
 

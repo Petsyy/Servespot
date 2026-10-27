@@ -394,6 +394,8 @@ describe("Security Test Suite: CORS Domain Whitelisting & Origin Isolation", () 
   it("allows verified localhost development origin", async () => {
     const { isAllowedOrigin } = await import("../../app.js");
     assert.equal(isAllowedOrigin("http://localhost:5173"), true);
+    assert.equal(isAllowedOrigin("http://127.0.0.1:5173"), true);
+    assert.equal(isAllowedOrigin("http://localhost:4173"), true);
   });
 
   it("allows legitimate Servespot production Vercel domains", async () => {

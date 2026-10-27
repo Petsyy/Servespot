@@ -10,9 +10,7 @@ import {
 import { queryClient } from "@/shared/services/queryClient";
 import { queryKeys } from "@/shared/services/queryKeys";
 
-/**
- * Hook for Volunteer / Organization login mutation
- */
+
 export function useLoginMutation(role = "Volunteer") {
   return useMutation({
     mutationFn: async (credentials) => {
@@ -34,9 +32,7 @@ export function useLoginMutation(role = "Volunteer") {
   });
 }
 
-/**
- * Hook for sending OTP in password reset
- */
+
 export function useSendOtpMutation() {
   return useMutation({
     mutationFn: async ({ email, role }) => {
@@ -54,9 +50,7 @@ export function useSendOtpMutation() {
   });
 }
 
-/**
- * Hook for verifying OTP in password reset
- */
+
 export function useVerifyOtpMutation() {
   return useMutation({
     mutationFn: async ({ email, role, otp }) => {
@@ -74,9 +68,6 @@ export function useVerifyOtpMutation() {
   });
 }
 
-/**
- * Hook for resetting password
- */
 export function useResetPasswordMutation() {
   return useMutation({
     mutationFn: async ({ email, role, newPassword, resetToken }) => {

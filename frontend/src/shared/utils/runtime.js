@@ -1,7 +1,19 @@
 const LOCAL_API_ORIGIN = "http://localhost:5003";
 
 function stripTrailingSlash(value = "") {
-  return String(value).trim().replace(/\/+$/, "");
+  return String(value)
+    .trim()
+    .replace(/[\r\n]/g, "")
+    .replace(/\/+$/, "");
+}
+
+function sanitizeApiUrl(url = "") {
+  const cleaned = stripTrailingSlash(url);
+  // servespot-api.vercel.app is a deprecated standalone deployment
+  if (cleaned.includes("servespot-api.vercel.app")) {
+    return "";
+  }
+  return cleaned;
 }
 
 function getBrowserOrigin() {
@@ -30,8 +42,8 @@ function isServespotVercelHost() {
 }
 
 const defaultApiBaseUrl = isLocalhost() ? LOCAL_API_ORIGIN : getBrowserOrigin();
-const envApiBaseUrl = stripTrailingSlash(import.meta.env.VITE_API_BASE || "");
-const envApiUrl = stripTrailingSlash(import.meta.env.VITE_API_URL || "");
+const envApiBaseUrl = sanitizeApiUrl(import.meta.env.VITE_API_BASE || "");
+const envApiUrl = sanitizeApiUrl(import.meta.env.VITE_API_URL || "");
 
 export const API_BASE_URL = stripTrailingSlash(
   isServespotVercelHost() ? getBrowserOrigin() : (envApiBaseUrl || defaultApiBaseUrl)
