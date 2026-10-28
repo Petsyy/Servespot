@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "@/shared/components/layout/ProtectedRoute";
 
 function PageLoader() {
@@ -21,8 +21,6 @@ const NotFound = lazy(() => import("@/shared/pages/NotFound"));
 const Suspended = lazy(() => import("@/shared/pages/Suspend"));
 
 // Features: Auth
-const RoleLogin = lazy(() => import("@/features/auth/pages/RoleLogin"));
-const RoleSignup = lazy(() => import("@/features/auth/pages/RoleSignup"));
 const VolunteerLogin = lazy(() => import("@/features/auth/pages/VolunteerLogin"));
 const VolunteerSignup = lazy(() => import("@/features/auth/pages/VolunteerSignup"));
 const OrganizationLogin = lazy(() => import("@/features/auth/pages/OrganizationLogin"));
@@ -31,7 +29,6 @@ const AdminLogin = lazy(() => import("@/features/auth/pages/AdminLogin"));
 const ForgotPassword = lazy(() => import("@/features/auth/pages/ForgotPassword"));
 
 // Features: Volunteers
-const VolunteerLanding = lazy(() => import("@/features/volunteers/pages/VolunteerLanding"));
 const VolunteerDashboard = lazy(() => import("@/features/volunteers/pages/VolunteerDashboard"));
 const VolunteerProfile = lazy(() => import("@/features/volunteers/pages/VolunteerProfile"));
 const VolunteerBadges = lazy(() => import("@/features/volunteers/pages/VolunteerBadges"));
@@ -42,7 +39,6 @@ const BrowseOpportunities = lazy(() => import("@/features/opportunities/pages/Vo
 const MyOpportunity = lazy(() => import("@/features/opportunities/pages/OrganizationPostedOpportunity"));
 
 // Features: Organizations
-const OrganizationLanding = lazy(() => import("@/features/organizations/pages/OrganizationLanding"));
 const OrganizationDashboard = lazy(() => import("@/features/organizations/pages/OrganizationDashboard"));
 const OrganizationProfile = lazy(() => import("@/features/organizations/pages/OrganizationProfile"));
 const OrganizationReports = lazy(() => import("@/features/organizations/pages/OrganizationReports"));
@@ -66,9 +62,11 @@ export default function App() {
         <Route path="*" element={<NotFound />} />
         <Route path="/suspended" element={<Suspended />} />
 
-        {/* Role Selection */}
-        <Route path="/role/login" element={<RoleLogin />} />
-        <Route path="/role/signup" element={<RoleSignup />} />
+        {/* Direct & Backward-Compatible Auth Routes */}
+        <Route path="/role/login" element={<Navigate to="/volunteer/login" replace />} />
+        <Route path="/role/signup" element={<Navigate to="/volunteer/signup" replace />} />
+        <Route path="/login" element={<Navigate to="/volunteer/login" replace />} />
+        <Route path="/signup" element={<Navigate to="/volunteer/signup" replace />} />
 
         {/* Admin Public */}
         <Route path="/admin/login" element={<AdminLogin />} />
@@ -115,11 +113,7 @@ export default function App() {
         {/* Volunteer Protected */}
         <Route
           path="/volunteer/homepage"
-          element={
-            <ProtectedRoute allowedRoles={["volunteer"]}>
-              <VolunteerLanding />
-            </ProtectedRoute>
-          }
+          element={<Navigate to="/volunteer/dashboard" replace />}
         />
         <Route
           path="/volunteer/dashboard"
@@ -178,11 +172,7 @@ export default function App() {
         {/* Organization Protected */}
         <Route
           path="/organization/homepage"
-          element={
-            <ProtectedRoute allowedRoles={["organization"]}>
-              <OrganizationLanding />
-            </ProtectedRoute>
-          }
+          element={<Navigate to="/organization/dashboard" replace />}
         />
         <Route
           path="/organization/dashboard"

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   confirmCompletion,
   successAlert,
@@ -9,7 +9,6 @@ import {
   MapPin,
   Users as UsersIcon,
   Trash2,
-  Eye,
   Edit3,
   CheckCircle2,
   X,
@@ -20,10 +19,8 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import ProofReviewModal from "@/features/opportunities/components/ProofPreviewModal";
 import EditOpportunityModal from "@/features/opportunities/components/EditOpportunityModal";
-import { toast } from "react-toastify";
 import {
   useOpportunityVolunteers,
   useCompleteOpportunity,
@@ -41,8 +38,6 @@ export default function OpportunityCard({
   onDelete,
   onUpdate,
 }) {
-  const navigate = useNavigate();
-
   const [cardData, setCardData] = useState({
     title,
     date,
@@ -60,7 +55,9 @@ export default function OpportunityCard({
   const [expanded, setExpanded] = useState(false);
 
   // TanStack Query for volunteers (loaded on demand)
-  const { data: volunteerData, isLoading: loadingVolunteers } = useOpportunityVolunteers(_id);
+  const { data: volunteerData, isLoading: loadingVolunteers } = useOpportunityVolunteers(
+    showModal ? _id : null
+  );
   const completeMutation = useCompleteOpportunity();
 
   const volList = Array.isArray(volunteerData?.volunteers)
@@ -74,25 +71,25 @@ export default function OpportunityCard({
   // Status badge configuration
   const statusConfig = {
     Open: {
-      color: "bg-emerald-50 border-emerald-200 text-emerald-700",
-      icon: <CheckCircle2 size={14} />,
-      label: "Open"
+      color: "bg-emerald-50 border-emerald-200/60 text-emerald-800",
+      icon: <CheckCircle2 size={13} className="text-emerald-600" />,
+      label: "Active (Open)",
     },
     "In Progress": {
-      color: "bg-amber-50 border-amber-200 text-amber-700",
-      icon: <Clock size={14} />,
-      label: "In Progress"
+      color: "bg-amber-50 border-amber-200/60 text-amber-800",
+      icon: <Clock size={13} className="text-amber-600" />,
+      label: "In Progress",
     },
     Completed: {
-      color: "bg-blue-50 border-blue-200 text-blue-700",
-      icon: <CheckCircle2 size={14} />,
-      label: "Completed"
+      color: "bg-sky-50 border-sky-200/60 text-sky-800",
+      icon: <CheckCircle2 size={13} className="text-sky-600" />,
+      label: "Completed",
     },
     Closed: {
-      color: "bg-gray-100 border-gray-300 text-gray-600",
-      icon: <X size={14} />,
-      label: "Closed"
-    }
+      color: "bg-gray-100 border-gray-200 text-gray-700",
+      icon: <X size={13} className="text-gray-500" />,
+      label: "Closed",
+    },
   };
 
   const currentStatus = statusConfig[status] || statusConfig.Open;
@@ -103,281 +100,293 @@ export default function OpportunityCard({
 
   const handleMarkCompleted = async () => {
     try {
-      const confirmed = await confirmCompletion(
-        `Are you sure you want to mark "${cardData.title}" as Completed?`
-      );
+      const confirmed = await confirmCompletion("Complete this Opportunity?");
       if (!confirmed) return;
 
-      setCompleting(true);
-      const res = await completeMutation.mutateAsync(_id);
-      setStatus("Completed");
-
-      await successAlert(
-        "Opportunity Completed!",
-        res.data?.message ||
-          "This opportunity is now marked as completed, and approved volunteers have been rewarded with points and badges."
-      );
-
-      if (onUpdate) onUpdate({ _id, status: "Completed" });
+      completeMutation.mutate(_id, {
+        onSuccess: async (data) => {
+          setStatus("Completed");
+          onUpdate?.({ _id, status: "Completed" });
+          await successAlert(
+            "Opportunity Completed!",
+            data?.message || "The opportunity is marked as completed."
+          );
+        },
+        onError: async (err) => {
+          console.error("Failed to mark completed:", err);
+          const msg =
+            err?.response?.data?.message ||
+            err?.message ||
+            "Failed to complete opportunity.";
+          await errorAlert("Action Failed", msg);
+        },
+      });
     } catch (err) {
-      console.error("Mark completed error:", err);
+      console.error("Complete opportunity error:", err);
       const msg =
-        err.response?.data?.message ||
-        "Something went wrong while marking this opportunity as completed.";
-      await errorAlert("Error", msg);
-    } finally {
-      setCompleting(false);
+        err?.response?.data?.message ||
+        err?.message ||
+        "Failed to complete opportunity.";
+      await errorAlert("Action Failed", msg);
     }
   };
 
   const progressPercentage = Math.min(
-    (cardData.currentVolunteers / cardData.volunteersNeeded) * 100,
+    (cardData.currentVolunteers / (cardData.volunteersNeeded || 1)) * 100,
     100
   );
 
   return (
     <>
-      <div className="group bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-lg hover:border-green-200 transition-all duration-300 p-6 font-sans">
-        {/* Header Section */}
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-3 mb-4">
-              <h3 className="font-bold text-xl text-gray-900 tracking-tight truncate">
-                {cardData.title}
-              </h3>
-              <span className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full font-semibold border ${currentStatus.color}`}>
-                {currentStatus.icon}
-                {currentStatus.label}
-              </span>
-            </div>
-            
-            {/* Progress Bar */}
-            <div className="mb-4">
-              <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
-                <span className="font-medium">Volunteer Progress</span>
-                <span className="font-semibold text-gray-900">
-                  {cardData.currentVolunteers}/{cardData.volunteersNeeded}
+      <div className="bg-white rounded-2xl border border-gray-200/80 shadow-xs hover:border-gray-300 transition-all p-5 flex flex-col justify-between">
+        <div>
+          {/* Card Top Row: Title + Status + Actions */}
+          <div className="flex items-start justify-between gap-3 mb-3">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1.5">
+                <span
+                  className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${currentStatus.color}`}
+                >
+                  {currentStatus.icon}
+                  <span>{currentStatus.label}</span>
                 </span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className="h-2 rounded-full bg-gradient-to-r from-green-500 to-green-600 transition-all duration-500"
-                  style={{ width: `${progressPercentage}%` }}
-                ></div>
-              </div>
+              <h3 className="font-bold text-gray-900 text-base leading-snug line-clamp-2">
+                {cardData.title}
+              </h3>
+            </div>
+
+            {/* Actions Menu */}
+            <div className="relative">
+              <button
+                onClick={() => setShowActions((prev) => !prev)}
+                className="p-1.5 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition cursor-pointer"
+                aria-label="Actions"
+              >
+                <MoreVertical size={18} />
+              </button>
+
+              {showActions && (
+                <div className="absolute right-0 top-9 bg-white rounded-xl shadow-lg border border-gray-200 py-1.5 z-10 min-w-[150px]">
+                  <button
+                    onClick={() => {
+                      setShowEditModal(true);
+                      setShowActions(false);
+                    }}
+                    className="flex items-center gap-2.5 w-full px-3.5 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition cursor-pointer"
+                  >
+                    <Edit3 size={15} />
+                    <span>Edit Opportunity</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      onDelete?.(_id);
+                      setShowActions(false);
+                    }}
+                    className="flex items-center gap-2.5 w-full px-3.5 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 transition cursor-pointer"
+                  >
+                    <Trash2 size={15} />
+                    <span>Delete</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Actions Dropdown */}
-          <div className="relative">
-            <button
-              onClick={() => setShowActions(!showActions)}
-              className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <MoreVertical size={18} />
-            </button>
-            
-            {showActions && (
-              <div className="absolute right-0 top-10 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-10 min-w-[160px]">
-                <button
-                  onClick={() => {
-                    setShowEditModal(true);
-                    setShowActions(false);
-                  }}
-                  className="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  <Edit3 size={16} />
-                  Edit
-                </button>
-                <button
-                  onClick={() => {
-                    onDelete(_id);
-                    setShowActions(false);
-                  }}
-                  className="flex items-center gap-3 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                >
-                  <Trash2 size={16} />
-                  Delete
-                </button>
+          {/* Volunteer Capacity Progress */}
+          <div className="mb-4">
+            <div className="flex items-center justify-between text-xs text-gray-500 font-medium mb-1.5">
+              <span>Volunteer Capacity</span>
+              <span className="font-bold text-gray-900">
+                {cardData.currentVolunteers} / {cardData.volunteersNeeded} filled
+              </span>
+            </div>
+            <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+              <div
+                className="h-2 rounded-full bg-emerald-600 transition-all duration-500"
+                style={{ width: `${progressPercentage}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Details Bar */}
+          <div className="flex flex-wrap items-center gap-3 mb-4 p-3 bg-gray-50/70 border border-gray-200/80 rounded-xl text-xs text-gray-700 font-medium">
+            {date && (
+              <div className="flex items-center gap-1.5">
+                <Calendar size={14} className="text-emerald-600 shrink-0" />
+                <span>
+                  {cardData.date
+                    ? new Date(cardData.date).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })
+                    : "—"}
+                </span>
+              </div>
+            )}
+
+            {cardData.duration && (
+              <div className="flex items-center gap-1.5">
+                <Clock size={14} className="text-emerald-600 shrink-0" />
+                <span>{cardData.duration}</span>
+              </div>
+            )}
+
+            {cardData.location && (
+              <div className="flex items-center gap-1.5 truncate max-w-[200px]">
+                <MapPin size={14} className="text-emerald-600 shrink-0" />
+                <span className="truncate">{cardData.location}</span>
               </div>
             )}
           </div>
         </div>
 
-        {/* Details Section - Horizontal Layout */}
-        <div className="flex flex-wrap items-center gap-4 mb-4 p-3 bg-green-50 rounded-xl">
-          {date && (
-            <div className="flex items-center gap-2 text-gray-700">
-              <Calendar size={16} className="text-green-500 flex-shrink-0" />
-              <span className="text-sm font-medium">
-                {cardData.date ? new Date(cardData.date).toLocaleDateString("en-US", {
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric'
-                }) : "—"}
-              </span>
-            </div>
-          )}
-          
-          {cardData.duration && (
-            <div className="flex items-center gap-2 text-gray-700">
-              <Clock size={16} className="text-green-500 flex-shrink-0" />
-              <span className="text-sm font-medium">{cardData.duration}</span>
-            </div>
-          )}
-          
-          {cardData.location && (
-            <div className="flex items-center gap-2 text-gray-700">
-              <MapPin size={16} className="text-green-500 flex-shrink-0" />
-              <span className="text-sm font-medium">{cardData.location}</span>
-            </div>
-          )}
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex flex-wrap gap-2 pt-4 border-t border-gray-100">
-          <button
-            onClick={handleViewVolunteers}
-            className="flex items-center gap-2 bg-green-50 hover:bg-green-100 text-green-700 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all hover:scale-105"
-          >
-            <UsersIcon size={16} />
-            View Volunteers
-          </button>
-
-          <button
-            onClick={() => setShowProofModal(true)}
-            className="flex items-center gap-2 bg-orange-50 hover:bg-orange-100 text-orange-700 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all hover:scale-105"
-          >
-            <FileText size={16} />
-            Review Proofs
-          </button>
-
-          {status === "In Progress" && (
+        {/* Action Buttons Row */}
+        <div>
+          <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-gray-100">
             <button
-              onClick={handleMarkCompleted}
-              disabled={completing}
-              className="flex items-center gap-2 bg-green-50 hover:bg-green-100 text-green-700 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={handleViewVolunteers}
+              className="flex items-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200/60 px-3.5 py-2 rounded-xl text-xs font-semibold shadow-xs transition cursor-pointer"
             >
-              <UserCheck size={16} />
-              {completing ? "Completing..." : "Mark Complete"}
+              <UsersIcon size={14} />
+              <span>Volunteers</span>
             </button>
-          )}
 
-          <button
-            onClick={() => setExpanded(!expanded)}
-            className="flex items-center gap-2 text-gray-500 hover:text-gray-700 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ml-auto"
-          >
-            {expanded ? "Show Less" : "Show More"}
-            {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-          </button>
-        </div>
+            <button
+              onClick={() => setShowProofModal(true)}
+              className="flex items-center gap-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200/60 px-3.5 py-2 rounded-xl text-xs font-semibold shadow-xs transition cursor-pointer"
+            >
+              <FileText size={14} />
+              <span>Review Proofs</span>
+            </button>
 
-        {/* Expanded Details */}
-        {expanded && (
-          <div className="mt-4 pt-4 border-t border-gray-100 animate-fadeIn">
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="text-gray-500">Status:</span>
-                <span className="ml-2 font-medium text-gray-900">{currentStatus.label}</span>
+            {status === "In Progress" && (
+              <button
+                onClick={handleMarkCompleted}
+                disabled={completing}
+                className="flex items-center gap-1.5 bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200/60 px-3.5 py-2 rounded-xl text-xs font-semibold shadow-xs transition cursor-pointer disabled:opacity-50"
+              >
+                <UserCheck size={14} />
+                <span>{completing ? "Completing..." : "Complete"}</span>
+              </button>
+            )}
+
+            <button
+              onClick={() => setExpanded(!expanded)}
+              className="flex items-center gap-1 text-gray-500 hover:text-gray-800 px-2 py-2 text-xs font-semibold transition ml-auto cursor-pointer"
+            >
+              <span>{expanded ? "Less" : "More"}</span>
+              {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            </button>
+          </div>
+
+          {/* Expanded Drawer */}
+          {expanded && (
+            <div className="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-600 space-y-1.5 animate-fadeIn">
+              <div className="flex justify-between">
+                <span>Status:</span>
+                <span className="font-semibold text-gray-900">{currentStatus.label}</span>
               </div>
-              <div>
-                <span className="text-gray-500">Volunteers Needed:</span>
-                <span className="ml-2 font-medium text-gray-900">{cardData.volunteersNeeded}</span>
+              <div className="flex justify-between">
+                <span>Volunteers Needed:</span>
+                <span className="font-semibold text-gray-900">{cardData.volunteersNeeded}</span>
               </div>
-              <div>
-                <span className="text-gray-500">Current Volunteers:</span>
-                <span className="ml-2 font-medium text-gray-900">{cardData.currentVolunteers}</span>
+              <div className="flex justify-between">
+                <span>Joined Volunteers:</span>
+                <span className="font-semibold text-gray-900">{cardData.currentVolunteers}</span>
               </div>
-              <div>
-                <span className="text-gray-500">Progress:</span>
-                <span className="ml-2 font-medium text-gray-900">{Math.round(progressPercentage)}%</span>
+              <div className="flex justify-between">
+                <span>Progress:</span>
+                <span className="font-semibold text-emerald-700">{Math.round(progressPercentage)}%</span>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Volunteers Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden border border-gray-200/80 animate-scaleIn flex flex-col">
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-green-50 to-indigo-50">
+            <div className="flex items-center justify-between p-5 sm:p-6 border-b border-gray-100">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <UsersIcon className="text-green-600" size={24} />
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-700">
+                  <UsersIcon size={20} />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Volunteers</h2>
-                  <p className="text-gray-600">{cardData.title}</p>
+                  <h2 className="text-lg font-bold text-gray-900 tracking-tight">
+                    Volunteers Roster
+                  </h2>
+                  <p className="text-xs text-gray-500 mt-0.5">{cardData.title}</p>
                 </div>
               </div>
               <button
-                onClick={() => {
-                  setShowModal(false);
-                  setVolList([]);
-                }}
-                className="p-2 rounded-lg hover:bg-white/50 text-gray-400 hover:text-gray-700 transition-colors"
+                onClick={() => setShowModal(false)}
+                className="p-1.5 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition cursor-pointer"
+                aria-label="Close modal"
               >
-                <X size={24} />
+                <X size={20} />
               </button>
             </div>
 
             {/* Modal Content */}
-            <div className="p-6 max-h-[60vh] overflow-y-auto">
+            <div className="p-5 sm:p-6 flex-1 overflow-y-auto">
               {loadingVolunteers ? (
                 <div className="flex flex-col items-center justify-center py-12">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mb-4"></div>
-                  <p className="text-gray-600 font-medium">Loading volunteers...</p>
+                  <div className="animate-spin rounded-full h-8 w-8 border-3 border-emerald-600 border-t-transparent mb-3" />
+                  <p className="text-gray-500 text-xs font-medium">Loading roster...</p>
                 </div>
               ) : volList.length === 0 ? (
-                <div className="text-center py-12">
-                  <UsersIcon size={48} className="mx-auto text-gray-300 mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No Volunteers Yet</h3>
-                  <p className="text-gray-500">No volunteers have signed up for this opportunity.</p>
+                <div className="text-center py-12 bg-gray-50/50 rounded-2xl border border-dashed border-gray-200">
+                  <UsersIcon size={36} className="mx-auto text-gray-300 mb-2" />
+                  <h3 className="text-sm font-bold text-gray-800">No Volunteers Yet</h3>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    No volunteers have signed up for this initiative yet.
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-sm text-gray-500">
-                      {volList.length} volunteer{volList.length !== 1 ? 's' : ''} signed up
-                    </span>
-                    <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+                  <div className="flex items-center justify-between text-xs text-gray-500 font-medium">
+                    <span>{volList.length} registered volunteer{volList.length !== 1 ? "s" : ""}</span>
+                    <span className="px-2.5 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-200/60 rounded-full font-semibold text-[11px]">
                       {cardData.currentVolunteers}/{cardData.volunteersNeeded} slots filled
                     </span>
                   </div>
-                  
-                  <div className="grid gap-3">
-                    {volList.map((v, index) => (
+
+                  <div className="space-y-2.5">
+                    {volList.map((v) => (
                       <div
                         key={v._id || v.email}
-                        className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+                        className="flex items-center justify-between p-3.5 bg-gray-50/70 border border-gray-200/80 rounded-xl"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                            {v.fullName?.[0]?.toUpperCase() || 
-                             v.firstName?.[0]?.toUpperCase() || 
-                             v.lastName?.[0]?.toUpperCase() || 
-                             v.email?.[0]?.toUpperCase() || 
-                             "V"}
+                          <div className="w-9 h-9 bg-emerald-700 text-white rounded-xl flex items-center justify-center font-extrabold text-xs shadow-xs border border-emerald-850/20">
+                            {v.fullName?.[0]?.toUpperCase() ||
+                              v.firstName?.[0]?.toUpperCase() ||
+                              v.lastName?.[0]?.toUpperCase() ||
+                              "V"}
                           </div>
                           <div>
-                            <h4 className="font-semibold text-gray-900">
-                              {v.fullName || 
-                               (v.firstName && v.lastName ? `${v.firstName} ${v.lastName}` : null) ||
-                               v.firstName || 
-                               v.lastName || 
-                               v.email?.split('@')[0] || 
-                               "Volunteer"}
+                            <h4 className="font-bold text-gray-900 text-xs">
+                              {v.fullName ||
+                                (v.firstName && v.lastName
+                                  ? `${v.firstName} ${v.lastName}`
+                                  : null) ||
+                                v.firstName ||
+                                v.lastName ||
+                                v.email ||
+                                "Volunteer"}
                             </h4>
-                            <p className="text-sm text-gray-600">{v.email}</p>
+                            <p className="text-[11px] text-gray-500">{v.email}</p>
                           </div>
                         </div>
                         <span
-                          className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${
                             v.status === "Completed"
-                              ? "bg-green-100 text-green-700"
-                              : "bg-amber-100 text-amber-700"
+                              ? "bg-emerald-50 text-emerald-800 border-emerald-200/60"
+                              : "bg-amber-50 text-amber-800 border-amber-200/60"
                           }`}
                         >
                           {v.status || "Joined"}
@@ -388,18 +397,29 @@ export default function OpportunityCard({
                 </div>
               )}
             </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t border-gray-100 bg-gray-50/50 flex justify-end">
+              <button
+                onClick={() => setShowModal(false)}
+                className="px-4 py-2 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-xl text-xs font-semibold shadow-xs transition cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Modals */}
+      {/* Proof Review Modal */}
       {showProofModal && (
         <ProofReviewModal
           opportunityId={_id}
           onClose={() => setShowProofModal(false)}
         />
       )}
-      
+
+      {/* Edit Opportunity Modal */}
       {showEditModal && (
         <EditOpportunityModal
           opportunityId={_id}

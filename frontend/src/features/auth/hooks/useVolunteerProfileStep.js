@@ -82,7 +82,7 @@ export function useVolunteerProfileStep({
       const welcomeName = user?.firstName || user?.fullName || "Volunteer";
       toast.success(`Welcome, ${welcomeName}! Profile created successfully.`);
 
-      navigate("/volunteer/homepage");
+      navigate("/volunteer/dashboard");
       if (onSubmit) onSubmit();
     } catch (err) {
       console.error("Signup error:", err);

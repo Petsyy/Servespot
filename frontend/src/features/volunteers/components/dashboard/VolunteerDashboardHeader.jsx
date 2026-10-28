@@ -10,13 +10,13 @@ export default function VolunteerDashboardHeader({
     <>
       {/* Welcome Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <div className="text-center sm:text-left">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+        <div className="text-left">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
             Welcome back,{" "}
-            <span className="text-green-700 font-semibold">{volunteerName}!</span>
+            <span className="text-emerald-700 font-semibold">{volunteerName}!</span>
           </h1>
-          <p className="text-gray-600 text-sm sm:text-base mt-1">
-            Ready to make a difference today?
+          <p className="text-gray-500 text-xs sm:text-sm mt-0.5">
+            Track your verified service impact, active tasks, and community recognition.
           </p>
         </div>
       </div>
@@ -26,26 +26,28 @@ export default function VolunteerDashboardHeader({
         <MetricCard
           title="Total Points"
           value={overview?.points}
-          gradient="from-green-500 to-emerald-500"
           icon="trending"
+          accent="emerald"
+          subtext="Community impact points"
           loading={loading}
         />
         <MetricCard
           title="Hours Contributed"
           value={overview?.hours}
-          gradient="from-green-400 to-teal-400"
           icon="timer"
+          accent="sky"
+          subtext="Verified hours served"
           loading={loading}
         />
         <MetricCard
           title="Badges Earned"
           value={overview?.badgesCount}
-          gradient="from-amber-400 to-orange-400"
           icon="badge"
+          accent="amber"
+          subtext="Milestones unlocked"
           loading={loading}
         />
       </div>
     </>
   );
 }
-

@@ -5,8 +5,8 @@ import VolunteerProfileHeader from "../components/profile/VolunteerProfileHeader
 import VolunteerProfileSummaryCard from "../components/profile/VolunteerProfileSummaryCard";
 import VolunteerAboutSection from "../components/profile/VolunteerAboutSection";
 import VolunteerPersonalInfoSection from "../components/profile/VolunteerPersonalInfoSection";
-import VolunteerBadgesSection from "../components/profile/VolunteerBadgesSection";
 import { useVolunteerProfilePage } from "../hooks/useVolunteerProfilePage";
+import { Loader2 } from "lucide-react";
 
 export default function VolunteerProfile() {
   const {
@@ -26,18 +26,18 @@ export default function VolunteerProfile() {
   } = useVolunteerProfilePage();
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar with responsive controls */}
+    <div className="flex min-h-screen bg-slate-50">
+      {/* Sidebar */}
       <VolunteerSidebar isOpen={sidebarOpen} onClose={closeSidebar} />
 
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Navbar with sidebar toggle */}
+        {/* Navbar */}
         <VolunteerNavbar onToggleSidebar={toggleSidebar} />
 
         {/* Main Content */}
-        <main className="flex-1 p-6 overflow-y-auto">
-          <div className="max-w-7xl mx-auto">
-            {/* Header & Action Controls */}
+        <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6 md:py-8 overflow-y-auto">
+          <div className="max-w-6xl mx-auto space-y-6">
+            {/* Header & Controls */}
             <VolunteerProfileHeader
               profileIncomplete={profileIncomplete}
               isEditing={isEditing}
@@ -46,16 +46,16 @@ export default function VolunteerProfile() {
               onSave={handleSave}
             />
 
-            {/* Profile Overview Card */}
+            {/* Profile Overview Card with Rewards Integration */}
             <VolunteerProfileSummaryCard
               me={me}
-              profileIncomplete={profileIncomplete}
+              badgesData={badgesData}
             />
 
-            {/* Three-Column Profile Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              {/* Left Column: About & Preferences */}
-              <div className="lg:col-span-4 space-y-6">
+            {/* Two-Column Form Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              {/* Left Column: About, Skills & Availability (5 Cols) */}
+              <div className="lg:col-span-5 space-y-6">
                 <VolunteerAboutSection
                   me={me}
                   isEditing={isEditing}
@@ -63,8 +63,8 @@ export default function VolunteerProfile() {
                 />
               </div>
 
-              {/* Middle Column: Personal Information & Location */}
-              <div className="lg:col-span-4">
+              {/* Right Column: Personal Information & Location (7 Cols) */}
+              <div className="lg:col-span-7">
                 <VolunteerPersonalInfoSection
                   me={me}
                   isEditing={isEditing}
@@ -73,15 +73,13 @@ export default function VolunteerProfile() {
                   profileIncomplete={profileIncomplete}
                 />
               </div>
-
-              {/* Right Column: Badges & Achievements */}
-              <div className="lg:col-span-4">
-                <VolunteerBadgesSection badgesData={badgesData} />
-              </div>
             </div>
 
             {loading && (
-              <div className="mt-6 text-sm text-gray-500">Loading profile…</div>
+              <div className="flex items-center justify-center gap-2 py-4 text-xs font-medium text-gray-400">
+                <Loader2 size={15} className="animate-spin text-emerald-600" />
+                <span>Loading profile details...</span>
+              </div>
             )}
           </div>
         </main>

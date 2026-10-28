@@ -58,7 +58,11 @@ export default function ImageDropzone({ onFile }) {
       role="button"
       tabIndex={0}
       className={`w-full rounded-xl border-2 border-dashed transition flex flex-col items-center justify-center p-6 cursor-pointer
-        ${hover ? "border-green-400 bg-blue-50" : "border-gray-300 bg-white hover:border-green-400"}
+        ${
+          hover
+            ? "border-emerald-500 bg-emerald-50/40"
+            : "border-gray-200 bg-white hover:border-emerald-400 hover:bg-slate-50/50"
+        }
       `}
     >
       {preview ? (
@@ -66,22 +70,27 @@ export default function ImageDropzone({ onFile }) {
           <img
             src={preview}
             alt="Preview"
-            className="w-full h-48 object-cover rounded-lg"
+            className="w-full h-44 object-cover rounded-xl border border-gray-200"
           />
           <button
             type="button"
             onClick={clearFile}
-            className="absolute top-2 right-2 bg-white/80 hover:bg-white text-gray-700 rounded-full p-1 shadow-sm"
+            className="absolute top-2 right-2 bg-white/90 hover:bg-white text-gray-700 rounded-xl p-1.5 shadow-sm border border-gray-200 cursor-pointer transition"
+            aria-label="Remove image"
           >
-            <X size={16} />
+            <X size={15} />
           </button>
         </div>
       ) : (
         <div className="flex flex-col items-center text-center text-gray-600">
-          <UploadCloud size={32} className="text-green-500 mb-2" />
-          <p className="text-sm font-medium">Click to upload or drag & drop</p>
-          <p className="text-xs text-gray-500 mt-1">
-            JPG, PNG, JPEG files only (Max 5MB)
+          <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-2">
+            <UploadCloud size={20} />
+          </div>
+          <p className="text-xs font-semibold text-gray-800">
+            Click to upload or drag and drop
+          </p>
+          <p className="text-[11px] text-gray-400 mt-0.5">
+            JPG, PNG, or JPEG up to 5MB
           </p>
         </div>
       )}

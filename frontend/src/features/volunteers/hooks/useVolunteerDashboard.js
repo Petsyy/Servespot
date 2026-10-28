@@ -103,7 +103,7 @@ export function useVolunteerDashboard() {
 
   // Categorize tasks
   const { allTasks, activeTasks, completedTasks } = useMemo(() => {
-    const list = tasksQuery.data || [];
+    const list = Array.isArray(tasksQuery.data) ? tasksQuery.data : [];
     return {
       allTasks: list,
       activeTasks: list.filter(
@@ -113,19 +113,26 @@ export function useVolunteerDashboard() {
     };
   }, [tasksQuery.data]);
 
+  // Normalized badges list (guaranteed array even if cached data was an object)
+  const badgesList = useMemo(() => {
+    const raw = badgesQuery.data;
+    if (Array.isArray(raw)) return raw;
+    if (Array.isArray(raw?.badges)) return raw.badges;
+    return [];
+  }, [badgesQuery.data]);
+
   // Check for new badges and alert user
   useEffect(() => {
-    const normalized = badgesQuery.data || [];
-    if (normalized.length === 0) return;
+    if (!Array.isArray(badgesList) || badgesList.length === 0) return;
 
-    localStorage.setItem("earnedBadges", JSON.stringify(normalized));
+    localStorage.setItem("earnedBadges", JSON.stringify(badgesList));
     const shownBadgeIds = JSON.parse(
       localStorage.getItem("shownBadgeIds") || "[]"
     );
 
-    const newBadges = normalized.filter((badge) => {
-      const badgeId = badge._id || badge.id || badge.name;
-      return !shownBadgeIds.includes(badgeId);
+    const newBadges = badgesList.filter((badge) => {
+      const badgeId = badge?._id || badge?.id || badge?.name;
+      return badgeId && !shownBadgeIds.includes(badgeId);
     });
 
     const firstLoad = sessionStorage.getItem("firstDashboardLoad");
@@ -136,7 +143,7 @@ export function useVolunteerDashboard() {
       if (newBadges.length > 0) {
         const updatedIds = [
           ...shownBadgeIds,
-          ...newBadges.map((b) => b._id || b.id || b.name),
+          ...newBadges.map((b) => b?._id || b?.id || b?.name).filter(Boolean),
         ];
         localStorage.setItem("shownBadgeIds", JSON.stringify(updatedIds));
       }
@@ -147,7 +154,7 @@ export function useVolunteerDashboard() {
     if (newBadges.length > 0) {
       const updatedShownBadgeIds = [
         ...shownBadgeIds,
-        ...newBadges.map((badge) => badge._id || badge.id || badge.name),
+        ...newBadges.map((badge) => badge?._id || badge?.id || badge?.name).filter(Boolean),
       ];
       localStorage.setItem(
         "shownBadgeIds",
@@ -155,7 +162,7 @@ export function useVolunteerDashboard() {
       );
       newBadges.forEach((badge) => showNewBadgeAlert(badge));
     }
-  }, [badgesQuery.data]);
+  }, [badgesList]);
 
   // Real-time WebSocket sync
   useEffect(() => {
@@ -243,7 +250,7 @@ export function useVolunteerDashboard() {
       completed: completedTasks,
     },
     progress: progressQuery.data || null,
-    badges: badgesQuery.data || [],
+    badges: badgesList,
     topVolunteers: topVolunteersQuery.data || [],
     notifications: notificationsQuery.data || [],
     isLoading,

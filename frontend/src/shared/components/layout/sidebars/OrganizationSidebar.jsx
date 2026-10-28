@@ -4,7 +4,6 @@ import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import {
   LayoutGrid,
   PlusSquare,
-  Users,
   BarChart2,
   Bell,
   User,
@@ -13,11 +12,11 @@ import {
 } from "lucide-react";
 
 const linkCls = ({ isActive }) =>
-  `flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 group
+  `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 group
    ${
      isActive
-       ? "bg-white text-green-600 shadow-md border border-green-200"
-       : "text-green-100 hover:bg-green-500 hover:text-white hover:shadow-sm"
+       ? "bg-emerald-850 text-white shadow-xs border border-emerald-700/60"
+       : "text-emerald-100/75 hover:bg-emerald-900/70 hover:text-white"
    }`;
 
 export default function OrganizationSidebar({ isOpen, onClose }) {
@@ -31,8 +30,8 @@ export default function OrganizationSidebar({ isOpen, onClose }) {
 
   const navItems = [
     { to: "/organization/dashboard", icon: LayoutGrid, label: "Dashboard" },
-    { to: "/organization/opportunities", icon: PlusSquare, label: "Posted Opportunities" },
-
+    { to: "/organization/opportunities", icon: PlusSquare, label: "Opportunities" },
+    { to: "/organization/reports", icon: BarChart2, label: "Reports & Analytics" },
     { to: "/organization/notifications", icon: Bell, label: "Notifications" },
     { to: "/organization/profile", icon: User, label: "Profile" },
   ];
@@ -41,36 +40,37 @@ export default function OrganizationSidebar({ isOpen, onClose }) {
     <>
       {/* Mobile Overlay */}
       {isOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden animate-fade-in"
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-xs z-40 md:hidden animate-fade-in"
           onClick={onClose}
         />
       )}
-      
+
       {/* Sidebar */}
-      <aside className={`fixed md:sticky z-50
-        w-64 bg-gradient-to-b from-green-600 to-green-700 text-white flex flex-col
-        transition-all duration-300 ease-in-out shadow-xl
-        ${isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
-        h-screen top-0 left-0
-      `}>
+      <aside
+        className={`fixed md:sticky z-50 w-64 bg-emerald-950 border-r border-emerald-900/60 text-white flex flex-col transition-all duration-300 ease-in-out shadow-xl md:shadow-none ${
+          isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        } h-screen top-0 left-0`}
+      >
         <div className="p-4 flex flex-col h-full">
           {/* Header Section */}
           <div className="flex-shrink-0">
             <div className="flex items-center justify-between px-2 py-3">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm border border-white/30 font-bold shadow-sm">
-                  SS
-                </div>
                 <div>
-                  <p className="font-bold text-white text-lg">ServeSpot</p>
-                  <p className="text-xs text-green-100 opacity-90">Organization Portal</p>
+                  <p className="font-extrabold text-white text-lg tracking-tight">
+                    ServeSpot
+                  </p>
+                  <p className="text-xs text-emerald-300/80 font-medium">
+                    Organization Portal
+                  </p>
                 </div>
               </div>
-              
-              <button 
+
+              <button
                 onClick={onClose}
-                className="md:hidden p-2 rounded-lg hover:bg-white/10 text-white transition-colors"
+                className="md:hidden p-2 rounded-xl hover:bg-emerald-900/70 text-emerald-300 transition-colors"
+                aria-label="Close sidebar"
               >
                 <X size={20} />
               </button>
@@ -78,24 +78,30 @@ export default function OrganizationSidebar({ isOpen, onClose }) {
           </div>
 
           {/* Navigation Links */}
-          <nav className="mt-8 space-y-2 flex-1 overflow-y-auto">
+          <nav className="mt-6 space-y-1.5 flex-1 overflow-y-auto">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.to;
-              
+
               return (
-                <NavLink 
+                <NavLink
                   key={item.to}
-                  to={item.to} 
+                  to={item.to}
                   className={linkCls}
                   onClick={onClose}
                 >
-                  <div className={`p-1.5 rounded-lg transition-colors ${isActive ? "bg-green-600 text-white" : "group-hover:bg-white/20"}`}>
+                  <div
+                    className={`p-1.5 rounded-lg transition-colors ${
+                      isActive
+                        ? "text-emerald-300"
+                        : "text-emerald-400 group-hover:text-emerald-200"
+                    }`}
+                  >
                     <Icon size={18} />
                   </div>
-                  <span className="font-medium">{item.label}</span>
+                  <span className="font-semibold text-sm">{item.label}</span>
                   {isActive && (
-                    <div className="ml-auto w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                    <div className="ml-auto w-1.5 h-1.5 bg-emerald-400 rounded-full" />
                   )}
                 </NavLink>
               );
@@ -103,23 +109,16 @@ export default function OrganizationSidebar({ isOpen, onClose }) {
           </nav>
 
           {/* Bottom Section */}
-          <div className="flex-shrink-0 space-y-3">
-
-            {/* Logout Button */}
+          <div className="flex-shrink-0 pt-4 border-t border-emerald-900/60">
             <button
               onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-3 py-3 text-green-100 hover:text-white hover:bg-red-500/20 rounded-lg transition-all duration-200 group border border-transparent hover:border-red-400/30"
+              className="w-full flex items-center gap-3 px-3.5 py-2.5 text-emerald-100/75 hover:text-rose-200 hover:bg-rose-950/40 rounded-xl transition-all duration-200 group border border-transparent hover:border-rose-900/50 cursor-pointer"
             >
-              <div className="p-1.5 rounded-lg bg-red-500/20 group-hover:bg-red-500/30 transition-colors">
+              <div className="p-1.5 rounded-lg text-emerald-400 group-hover:text-rose-400 transition-colors">
                 <LogOut size={18} />
               </div>
-              <span className="font-medium">Logout</span>
+              <span className="font-semibold text-sm">Sign Out</span>
             </button>
-
-            {/* Collapse indicator for desktop */}
-            <div className="hidden md:flex items-center justify-center pt-2">
-              <div className="w-8 h-1 bg-white/20 rounded-full" />
-            </div>
           </div>
         </div>
       </aside>

@@ -193,20 +193,22 @@ export function useSignupOpportunity() {
   return useMutation({
     mutationFn: (id) => signupForOpportunity(id),
     onSuccess: () => {
-      toast.success("Signed up successfully!");
       queryClient.invalidateQueries({ queryKey: queryKeys.opportunities.all });
-      const volunteerId = getCookie("volunteerId");
+      const volunteerId = getCookie("volunteerId") || localStorage.getItem("volunteerId");
       if (volunteerId) {
         queryClient.invalidateQueries({
           queryKey: queryKeys.volunteers.tasks(volunteerId),
+        });
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.volunteers.overview(volunteerId),
+        });
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.volunteers.progress(volunteerId),
         });
       }
     },
     onError: (err) => {
       console.error("Failed to sign up for opportunity:", err);
-      toast.error(
-        err.response?.data?.message || "Failed to sign up for opportunity"
-      );
     },
   });
 }
@@ -264,11 +266,31 @@ export function useSubmitOpportunityProof() {
         });
       }
       queryClient.invalidateQueries({ queryKey: queryKeys.opportunities.all });
-      const volunteerId = getCookie("volunteerId");
+      queryClient.invalidateQueries({ queryKey: queryKeys.opportunities.list() });
+      const volunteerId = getCookie("volunteerId") || localStorage.getItem("volunteerId");
       if (volunteerId) {
         queryClient.invalidateQueries({
           queryKey: queryKeys.volunteers.tasks(volunteerId),
         });
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.volunteers.overview(volunteerId),
+        });
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.volunteers.progress(volunteerId),
+        });
+
+        if (variables?.opportunityId) {
+          try {
+            const proofStorageKey = `proofStatus_${volunteerId}`;
+            const currentLocal = JSON.parse(
+              localStorage.getItem(proofStorageKey) || "{}"
+            );
+            currentLocal[variables.opportunityId] = "Pending";
+            localStorage.setItem(proofStorageKey, JSON.stringify(currentLocal));
+          } catch (e) {
+            console.warn("Could not save proof status locally", e);
+          }
+        }
       }
     },
     onError: (err) => {

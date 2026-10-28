@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { toast } from "react-toastify";
 import {
   useOrganizationOpportunities,
@@ -12,6 +12,8 @@ import {
   TrendingUp,
   Clock,
   Award,
+  BarChart3,
+  CheckCircle2,
 } from "lucide-react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -39,9 +41,7 @@ export default function Reports() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [timeRange, setTimeRange] = useState("last30days");
   const [selectedOpportunity, setSelectedOpportunity] = useState(null);
-  const [orgId, setOrgId] = useState(
-    () => getCookie("orgId") || null
-  );
+  const [orgId, setOrgId] = useState(() => getCookie("orgId") || null);
 
   useEffect(() => {
     (async () => {
@@ -81,7 +81,6 @@ export default function Reports() {
     }
   }, [opportunities, selectedOpportunity]);
 
-
   const handleDownloadCharts = async () => {
     const charts = document.getElementById("charts-section");
     if (!charts) return;
@@ -115,10 +114,10 @@ export default function Reports() {
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
-          <p className="font-semibold text-gray-900">{label}</p>
+        <div className="bg-white/95 backdrop-blur-xs p-3 border border-gray-200/80 rounded-xl shadow-lg text-xs">
+          <p className="font-bold text-gray-900 mb-1">{label}</p>
           {payload.map((entry, index) => (
-            <p key={index} className="text-sm" style={{ color: entry.color }}>
+            <p key={index} className="font-medium" style={{ color: entry.color }}>
               {entry.name}: {entry.value}
             </p>
           ))}
@@ -132,52 +131,140 @@ export default function Reports() {
     setSelectedOpportunity(opportunityId);
   };
 
-  // Helper function for status colors
-  const getStatusColor = (status) => {
+  const getStatusBadge = (status) => {
     switch (status?.toLowerCase()) {
       case "completed":
+        return "bg-emerald-50 text-emerald-800 border-emerald-200/60";
       case "approved":
-        return "bg-green-100 text-green-800";
+        return "bg-teal-50 text-teal-800 border-teal-200/60";
       case "pending":
-        return "bg-yellow-100 text-yellow-800";
+        return "bg-amber-50 text-amber-800 border-amber-200/60";
       case "joined":
-        return "bg-blue-100 text-blue-800";
+        return "bg-sky-50 text-sky-800 border-sky-200/60";
       case "rejected":
-        return "bg-red-100 text-red-800";
+        return "bg-rose-50 text-rose-800 border-rose-200/60";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-gray-100 text-gray-700 border-gray-200";
     }
   };
 
-  // Get selected opportunity name
-  const selectedOpportunityName = opportunities.find(
-    opp => opp._id === selectedOpportunity
-  )?.title || "Select an Opportunity";
+  // Calculate summary metrics
+  const summaryMetrics = useMemo(() => {
+    const totalVolunteers = volunteersData.length;
+    const activeVolunteers = volunteersData.filter((v) =>
+      ["Joined", "Completed", "Approved"].includes(v.status)
+    ).length;
+    const completedVolunteers = volunteersData.filter((v) => v.status === "Completed").length;
+    const completionRate =
+      totalVolunteers > 0
+        ? Math.round((completedVolunteers / totalVolunteers) * 100)
+        : 0;
+    const totalOpportunities = allOpportunitiesData.length;
+    const activeOpportunities = allOpportunitiesData.filter((opp) =>
+      ["Open", "In Progress"].includes(opp.status)
+    ).length;
+    const totalApplications = allOpportunitiesData.reduce(
+      (sum, opp) => sum + (opp.volunteers?.length || 0),
+      0
+    );
 
-  // Calculate summary metrics from real data
-  const summaryMetrics = {
-    totalVolunteers: volunteersData.length,
-    activeVolunteers: volunteersData.filter(v => 
-      v.status === "Joined" || v.status === "Completed" || v.status === "Approved"
-    ).length,
-    completedVolunteers: volunteersData.filter(v => 
-      v.status === "Completed"
-    ).length,
-    completionRate: volunteersData.length > 0 
-      ? Math.round((volunteersData.filter(v => v.status === "Completed").length / volunteersData.length) * 100)
-      : 0,
-    totalOpportunities: allOpportunitiesData.length,
-    activeOpportunities: allOpportunitiesData.filter(opp => 
-      opp.status === "Open" || opp.status === "In Progress"
-    ).length,
-    totalApplications: allOpportunitiesData.reduce((sum, opp) => sum + (opp.volunteers?.length || 0), 0),
-    avgVolunteersPerEvent: allOpportunitiesData.length > 0 
-      ? (allOpportunitiesData.reduce((sum, opp) => sum + (opp.volunteers?.length || 0), 0) / allOpportunitiesData.length).toFixed(1)
-      : 0,
-  };
+    return {
+      totalVolunteers,
+      activeVolunteers,
+      completedVolunteers,
+      completionRate,
+      totalOpportunities,
+      activeOpportunities,
+      totalApplications,
+    };
+  }, [volunteersData, allOpportunitiesData]);
+
+  // Calculate dynamic chart datasets
+  const chartData = useMemo(() => {
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const now = new Date();
+    const currentMonthIdx = now.getMonth();
+
+    const trendMap = {};
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), currentMonthIdx - i, 1);
+      const mName = months[d.getMonth()];
+      trendMap[mName] = 0;
+    }
+
+    allOpportunitiesData.forEach((opp) => {
+      if (opp.date) {
+        const oppDate = new Date(opp.date);
+        const mName = months[oppDate.getMonth()];
+        if (trendMap[mName] !== undefined) {
+          trendMap[mName] += (opp.volunteers?.length || 0);
+        }
+      }
+    });
+
+    const monthlyTrend = Object.entries(trendMap).map(([month, volunteers]) => ({
+      month,
+      volunteers,
+    }));
+
+    const statusCounts = {
+      Completed: 0,
+      Approved: 0,
+      Joined: 0,
+      Pending: 0,
+      Rejected: 0,
+    };
+
+    volunteersData.forEach((v) => {
+      const s = v.status || "Joined";
+      if (statusCounts[s] !== undefined) {
+        statusCounts[s]++;
+      } else {
+        statusCounts.Joined++;
+      }
+    });
+
+    const statusColors = {
+      Completed: "#059669",
+      Approved: "#0d9488",
+      Joined: "#0284c7",
+      Pending: "#d97706",
+      Rejected: "#e11d48",
+    };
+
+    const statusDistribution = Object.entries(statusCounts)
+      .filter(([_, value]) => value > 0)
+      .map(([name, value]) => ({
+        name,
+        value,
+        color: statusColors[name] || "#64748b",
+      }));
+
+    if (statusDistribution.length === 0) {
+      statusDistribution.push({ name: "No Data", value: 1, color: "#cbd5e1" });
+    }
+
+    const topOpportunities = allOpportunitiesData
+      .map((opp) => {
+        const apps = opp.volunteers?.length || 0;
+        const needed = opp.volunteersNeeded || 1;
+        const fillRate = Math.min(100, Math.round((apps / needed) * 100));
+        return {
+          name: opp.title?.length > 18 ? opp.title.slice(0, 16) + "..." : (opp.title || "Untitled"),
+          fullName: opp.title,
+          applications: apps,
+          needed,
+          fillRate,
+        };
+      })
+      .sort((a, b) => b.applications - a.applications)
+      .slice(0, 5);
+
+    return { monthlyTrend, statusDistribution, topOpportunities };
+  }, [allOpportunitiesData, volunteersData]);
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/20">
+    <div className="flex min-h-screen bg-slate-50">
       {/* Sidebar */}
       <OrganizationSidebar
         isOpen={isSidebarOpen}
@@ -188,110 +275,116 @@ export default function Reports() {
       <div className="flex-1 flex flex-col min-w-0">
         <OrgNavbar onToggleSidebar={() => setIsSidebarOpen(true)} />
 
-        <main className="flex-1 p-4 md:p-6">
-          <div className="max-w-7xl mx-auto w-full">
+        <main className="flex-1 p-4 md:p-6 lg:p-8">
+          <div className="max-w-7xl mx-auto w-full space-y-6">
             {/* Header Section */}
-            <div className="mb-6">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-                <div>
-                  <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-                    Volunteer Analytics
-                  </h1>
-                  <p className="text-gray-600 text-sm md:text-base">
-                    Comprehensive insights into your volunteer program performance
-                  </p>
-                </div>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  {/* Opportunity Selector */}
-                  <select
-                    value={selectedOpportunity || ""}
-                    onChange={(e) => handleOpportunitySelect(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white"
-                  >
-                    <option value="">All Opportunities</option>
-                    {opportunities.map((opp) => (
-                      <option key={opp._id} value={opp._id}>
-                        {opp.title}
-                      </option>
-                    ))}
-                  </select>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">
+                  Volunteer & Program Reports
+                </h1>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Actionable metrics and participation analytics across your community initiatives.
+                </p>
+              </div>
 
-                  <select
-                    value={timeRange}
-                    onChange={(e) => setTimeRange(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white"
-                  >
-                    <option value="last7days">Last 7 Days</option>
-                    <option value="last30days">Last 30 Days</option>
-                    <option value="last90days">Last 90 Days</option>
-                    <option value="thisYear">This Year</option>
-                  </select>
+              <div className="flex flex-wrap items-center gap-2.5">
+                <select
+                  value={selectedOpportunity || ""}
+                  onChange={(e) => handleOpportunitySelect(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 text-xs font-medium text-gray-700 bg-white transition cursor-pointer"
+                >
+                  <option value="">All Opportunities</option>
+                  {opportunities.map((opp) => (
+                    <option key={opp._id} value={opp._id}>
+                      {opp.title}
+                    </option>
+                  ))}
+                </select>
 
-                  <button
-                    onClick={handleDownloadCharts}
-                    className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-all shadow-sm hover:shadow-md"
-                  >
-                    <Download className="w-4 h-4" />
-                    Export Report
-                  </button>
+                <select
+                  value={timeRange}
+                  onChange={(e) => setTimeRange(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 text-xs font-medium text-gray-700 bg-white transition cursor-pointer"
+                >
+                  <option value="last7days">Last 7 Days</option>
+                  <option value="last30days">Last 30 Days</option>
+                  <option value="last90days">Last 90 Days</option>
+                  <option value="thisYear">This Year</option>
+                </select>
+
+                <button
+                  onClick={handleDownloadCharts}
+                  className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-semibold rounded-xl transition shadow-xs cursor-pointer"
+                >
+                  <Download size={14} />
+                  <span>Export PDF</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Summary Metrics */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-white rounded-2xl border border-gray-200/80 shadow-xs p-5">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-100/60">
+                    <Users size={18} />
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block">
+                      Total Volunteers
+                    </span>
+                    <span className="text-2xl font-black text-gray-900 tracking-tight">
+                      {summaryMetrics.totalVolunteers}
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              {/* Summary Metrics */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-100 rounded-lg">
-                      <Users className="w-5 h-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Total Volunteers</p>
-                      <p className="text-xl font-bold text-gray-900">
-                        {summaryMetrics.totalVolunteers}
-                      </p>
-                    </div>
+              <div className="bg-white rounded-2xl border border-gray-200/80 shadow-xs p-5">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-sky-50 text-sky-700 flex items-center justify-center border border-sky-100/60">
+                    <TrendingUp size={18} />
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block">
+                      Active Volunteers
+                    </span>
+                    <span className="text-2xl font-black text-gray-900 tracking-tight">
+                      {summaryMetrics.activeVolunteers}
+                    </span>
                   </div>
                 </div>
+              </div>
 
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-green-100 rounded-lg">
-                      <TrendingUp className="w-5 h-5 text-green-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Active Volunteers</p>
-                      <p className="text-xl font-bold text-gray-900">
-                        {summaryMetrics.activeVolunteers}
-                      </p>
-                    </div>
+              <div className="bg-white rounded-2xl border border-gray-200/80 shadow-xs p-5">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center border border-amber-100/60">
+                    <Clock size={18} />
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block">
+                      Applications
+                    </span>
+                    <span className="text-2xl font-black text-gray-900 tracking-tight">
+                      {summaryMetrics.totalApplications}
+                    </span>
                   </div>
                 </div>
+              </div>
 
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-purple-100 rounded-lg">
-                      <Clock className="w-5 h-5 text-purple-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Total Applications</p>
-                      <p className="text-xl font-bold text-gray-900">
-                        {summaryMetrics.totalApplications}
-                      </p>
-                    </div>
+              <div className="bg-white rounded-2xl border border-gray-200/80 shadow-xs p-5">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center border border-teal-100/60">
+                    <Award size={18} />
                   </div>
-                </div>
-
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-orange-100 rounded-lg">
-                      <Award className="w-5 h-5 text-orange-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Completion Rate</p>
-                      <p className="text-xl font-bold text-gray-900">
-                        {summaryMetrics.completionRate}%
-                      </p>
-                    </div>
+                  <div>
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block">
+                      Completion Rate
+                    </span>
+                    <span className="text-2xl font-black text-gray-900 tracking-tight">
+                      {summaryMetrics.completionRate}%
+                    </span>
                   </div>
                 </div>
               </div>
@@ -299,30 +392,46 @@ export default function Reports() {
 
             {/* Charts Section */}
             <div id="charts-section" className="space-y-6">
-              {/* Charts Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Volunteer Growth Trend - Line Chart */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-lg font-semibold text-gray-900">
-                      Volunteer Growth Trend
-                    </h2>
-                    <span className="text-sm text-gray-500">{timeRange}</span>
+                {/* Volunteer Growth Trend */}
+                <div className="bg-white rounded-2xl border border-gray-200/80 shadow-xs p-6">
+                  <div className="flex items-center justify-between mb-5">
+                    <div>
+                      <h2 className="text-base font-bold text-gray-900 tracking-tight">
+                        Volunteer Sign-Up Trend
+                      </h2>
+                      <p className="text-xs text-gray-400 mt-0.5">Monthly volunteer acquisition volume</p>
+                    </div>
+                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">
+                      {timeRange}
+                    </span>
                   </div>
                   <div className="w-full h-72">
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={chartData.monthlyTrend}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
-                        <XAxis dataKey="month" />
-                        <YAxis />
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                        <XAxis
+                          dataKey="month"
+                          stroke="#94a3b8"
+                          fontSize={12}
+                          tickLine={false}
+                          axisLine={false}
+                        />
+                        <YAxis
+                          stroke="#94a3b8"
+                          fontSize={12}
+                          tickLine={false}
+                          axisLine={false}
+                          allowDecimals={false}
+                        />
                         <Tooltip content={<CustomTooltip />} />
                         <Line
                           type="monotone"
                           dataKey="volunteers"
-                          stroke="#3b82f6"
-                          strokeWidth={3}
-                          dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
-                          activeDot={{ r: 6, fill: '#3b82f6' }}
+                          stroke="#059669"
+                          strokeWidth={2.5}
+                          dot={{ fill: "#059669", strokeWidth: 2, r: 4 }}
+                          activeDot={{ r: 6, fill: "#047857" }}
                           name="Volunteers"
                         />
                       </LineChart>
@@ -331,12 +440,17 @@ export default function Reports() {
                 </div>
 
                 {/* Status Distribution */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-lg font-semibold text-gray-900">
-                      Volunteer Status Distribution
-                    </h2>
-                    <span className="text-sm text-gray-500">{timeRange}</span>
+                <div className="bg-white rounded-2xl border border-gray-200/80 shadow-xs p-6">
+                  <div className="flex items-center justify-between mb-5">
+                    <div>
+                      <h2 className="text-base font-bold text-gray-900 tracking-tight">
+                        Status Breakdown
+                      </h2>
+                      <p className="text-xs text-gray-400 mt-0.5">Current state of volunteer commitments</p>
+                    </div>
+                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">
+                      {volunteersData.length} total
+                    </span>
                   </div>
                   <div className="w-full h-72">
                     <ResponsiveContainer width="100%" height="100%">
@@ -347,7 +461,9 @@ export default function Reports() {
                           nameKey="name"
                           cx="50%"
                           cy="50%"
+                          innerRadius={50}
                           outerRadius={80}
+                          paddingAngle={3}
                           label={({ name, value }) => `${name}: ${value}`}
                         >
                           {chartData.statusDistribution.map((entry, index) => (
@@ -355,46 +471,62 @@ export default function Reports() {
                           ))}
                         </Pie>
                         <Tooltip content={<CustomTooltip />} />
-                        <Legend />
+                        <Legend
+                          verticalAlign="bottom"
+                          height={36}
+                          iconType="circle"
+                          wrapperStyle={{ fontSize: "12px", paddingTop: "12px" }}
+                        />
                       </PieChart>
                     </ResponsiveContainer>
                   </div>
                 </div>
 
                 {/* Top Opportunities by Applications */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 lg:col-span-2">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-lg font-semibold text-gray-900">
-                      Top Opportunities by Applications
-                    </h2>
-                    <span className="text-sm text-gray-500">Most Popular Opportunities</span>
+                <div className="bg-white rounded-2xl border border-gray-200/80 shadow-xs p-6 lg:col-span-2">
+                  <div className="flex items-center justify-between mb-5">
+                    <div>
+                      <h2 className="text-base font-bold text-gray-900 tracking-tight">
+                        Top Initiatives by Volunteer Response
+                      </h2>
+                      <p className="text-xs text-gray-400 mt-0.5">Most engaged opportunities by sign-up count</p>
+                    </div>
+                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">
+                      Top 5
+                    </span>
                   </div>
                   <div className="w-full h-72">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={chartData.topOpportunities}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
-                        <XAxis 
-                          dataKey="name" 
-                          angle={-45} 
-                          textAnchor="end" 
-                          height={80}
-                          interval={0}
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                        <XAxis
+                          dataKey="name"
+                          stroke="#94a3b8"
+                          fontSize={12}
+                          tickLine={false}
+                          axisLine={false}
                         />
-                        <YAxis />
-                        <Tooltip 
+                        <YAxis
+                          stroke="#94a3b8"
+                          fontSize={12}
+                          tickLine={false}
+                          axisLine={false}
+                          allowDecimals={false}
+                        />
+                        <Tooltip
                           content={({ active, payload, label }) => {
                             if (active && payload && payload.length) {
                               const data = payload[0].payload;
                               return (
-                                <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
-                                  <p className="font-semibold text-gray-900">{label}</p>
-                                  <p className="text-sm text-blue-600">
+                                <div className="bg-white/95 backdrop-blur-xs p-3 border border-gray-200/80 rounded-xl shadow-lg text-xs">
+                                  <p className="font-bold text-gray-900 mb-1">{data.fullName || label}</p>
+                                  <p className="font-semibold text-emerald-600">
                                     Applications: {data.applications}
                                   </p>
-                                  <p className="text-sm text-gray-600">
-                                    Needed: {data.needed}
+                                  <p className="text-gray-500">
+                                    Capacity: {data.needed}
                                   </p>
-                                  <p className="text-sm text-green-600">
+                                  <p className="font-semibold text-sky-600">
                                     Fill Rate: {data.fillRate}%
                                   </p>
                                 </div>
@@ -403,11 +535,11 @@ export default function Reports() {
                             return null;
                           }}
                         />
-                        <Bar 
-                          dataKey="applications" 
-                          fill="#3b82f6" 
+                        <Bar
+                          dataKey="applications"
+                          fill="#059669"
                           name="Applications"
-                          radius={[4, 4, 0, 0]}
+                          radius={[6, 6, 0, 0]}
                         />
                       </BarChart>
                     </ResponsiveContainer>
@@ -416,104 +548,98 @@ export default function Reports() {
               </div>
 
               {/* Recent Volunteer Activity Table */}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-                  <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                    <Users className="w-5 h-5 text-gray-600" />
-                    Volunteer Activity
-                    <span className="text-sm text-gray-500 ml-2">
-                      ({volunteersData.length} volunteers)
+              <div className="bg-white rounded-2xl border border-gray-200/80 shadow-xs overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-100 bg-slate-50/50 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-lg bg-emerald-50 text-emerald-700">
+                      <Users size={16} />
+                    </div>
+                    <h2 className="text-sm font-bold text-gray-900">
+                      Roster & Participation Details
+                    </h2>
+                    <span className="text-xs text-gray-400 font-medium ml-1">
+                      ({volunteersData.length} records)
                     </span>
-                  </h2>
+                  </div>
                 </div>
 
                 <div className="overflow-x-auto">
-                  <table className="w-full min-w-[800px]">
-                    <thead className="bg-gray-50 border-b border-gray-200">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  <table className="w-full min-w-[700px] text-xs">
+                    <thead>
+                      <tr className="border-b border-gray-100 bg-slate-50/70 text-left">
+                        <th className="px-6 py-3 font-semibold text-gray-500 uppercase tracking-wider">
                           Volunteer
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        <th className="px-6 py-3 font-semibold text-gray-500 uppercase tracking-wider">
                           Email
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        <th className="px-6 py-3 font-semibold text-gray-500 uppercase tracking-wider">
                           Status
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        <th className="px-6 py-3 font-semibold text-gray-500 uppercase tracking-wider">
                           Skills
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        <th className="px-6 py-3 font-semibold text-gray-500 uppercase tracking-wider">
                           Location
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200">
+                    <tbody className="divide-y divide-gray-100">
                       {loading ? (
                         <tr>
-                          <td colSpan="5" className="px-6 py-8 text-center">
-                            <div className="flex justify-center">
-                              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                            </div>
-                            <p className="text-gray-500 mt-2">Loading volunteers...</p>
+                          <td colSpan="5" className="px-6 py-12 text-center text-gray-400">
+                            <div className="inline-block animate-spin rounded-full h-7 w-7 border-2 border-emerald-600 border-t-transparent mb-2"></div>
+                            <p className="text-xs font-medium text-gray-500">Loading volunteer rosters...</p>
                           </td>
                         </tr>
                       ) : volunteersData.length > 0 ? (
                         volunteersData.map((volunteer) => (
                           <tr
                             key={volunteer._id}
-                            className="hover:bg-gray-50 transition-colors"
+                            className="hover:bg-slate-50/60 transition"
                           >
-                            <td className="px-6 py-4">
+                            <td className="px-6 py-3.5">
                               <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-xs">
-                                  {volunteer.firstName ? 
-                                    `${volunteer.firstName.charAt(0)}${volunteer.lastName?.charAt(0) || ''}` :
-                                    volunteer.name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'V'
-                                  }
+                                <div className="w-8 h-8 rounded-full bg-emerald-950 text-emerald-300 font-bold text-xs flex items-center justify-center border border-emerald-800/40 shrink-0">
+                                  {volunteer.firstName
+                                    ? `${volunteer.firstName.charAt(0)}${volunteer.lastName?.charAt(0) || ""}`
+                                    : volunteer.name?.split(" ").map((n) => n[0]).join("").toUpperCase() || "V"}
                                 </div>
-                                <div>
-                                  <div className="font-medium text-gray-900 text-sm">
-                                    {volunteer.firstName && volunteer.lastName 
-                                      ? `${volunteer.firstName} ${volunteer.lastName}`
-                                      : volunteer.name || 'Unknown Volunteer'
-                                    }
-                                  </div>
-                                </div>
+                                <span className="font-semibold text-gray-900">
+                                  {volunteer.firstName && volunteer.lastName
+                                    ? `${volunteer.firstName} ${volunteer.lastName}`
+                                    : volunteer.name || "Volunteer"}
+                                </span>
                               </div>
                             </td>
-                            <td className="px-6 py-4">
-                              <div className="text-sm text-gray-900">
-                                {volunteer.email || 'No email provided'}
-                              </div>
+                            <td className="px-6 py-3.5 text-gray-600">
+                              {volunteer.email || "No email provided"}
                             </td>
-                            <td className="px-6 py-4">
+                            <td className="px-6 py-3.5">
                               <span
-                                className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(volunteer.status)}`}
+                                className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${getStatusBadge(
+                                  volunteer.status
+                                )}`}
                               >
-                                {volunteer.status || 'Unknown'}
+                                {volunteer.status || "Joined"}
                               </span>
                             </td>
-                            <td className="px-6 py-4">
-                              <div className="text-sm text-gray-900">
-                                {volunteer.skills?.join(', ') || 'No skills listed'}
-                              </div>
+                            <td className="px-6 py-3.5 text-gray-600">
+                              {volunteer.skills?.join(", ") || "No skills listed"}
                             </td>
-                            <td className="px-6 py-4">
-                              <div className="text-sm text-gray-900">
-                                {volunteer.city || volunteer.location || 'Not specified'}
-                              </div>
+                            <td className="px-6 py-3.5 text-gray-600">
+                              {volunteer.city || volunteer.location || "Not specified"}
                             </td>
                           </tr>
                         ))
                       ) : (
                         <tr>
-                          <td colSpan="5" className="px-6 py-8 text-center">
-                            <Users className="w-12 h-12 text-gray-300 mx-auto mb-2" />
-                            <p className="text-gray-500">
-                              {selectedOpportunity 
-                                ? "No volunteers found for this opportunity." 
-                                : "Please select an opportunity to view volunteers."}
+                          <td colSpan="5" className="px-6 py-12 text-center">
+                            <Users className="w-10 h-10 text-gray-300 mx-auto mb-2" />
+                            <p className="text-xs font-medium text-gray-500">
+                              {selectedOpportunity
+                                ? "No volunteer signups found for this opportunity."
+                                : "Please select an opportunity to view participants."}
                             </p>
                           </td>
                         </tr>

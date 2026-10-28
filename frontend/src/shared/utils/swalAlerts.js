@@ -18,10 +18,13 @@ export const confirmCompletion = async (title = "Mark as Completed") => {
 };
 
 /* Confirmation popup before joining */
-export const confirmJoin = async () => {
+export const confirmJoin = async (
+  title = "Join This Opportunity?",
+  text = "Are you sure you want to sign up for this volunteer activity?"
+) => {
   const result = await Swal.fire({
-    title: "Join This Opportunity?",
-    text: "Are you sure you want to sign up for this volunteer activity?",
+    title,
+    text,
     icon: "question",
     showCancelButton: true,
     confirmButtonText: "Yes, Join Now",
@@ -31,7 +34,7 @@ export const confirmJoin = async () => {
     cancelButtonColor: "#6b7280", // gray
     background: "#fff",
   });
-  return result.isConfirmed;
+  return Boolean(result.isConfirmed);
 };
 
 export const confirmDelete = async (title = "Delete Opportunity?") => {

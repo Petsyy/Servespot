@@ -1,6 +1,8 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import {
-  Info,
+  Compass,
+  ArrowRight,
   Calendar,
   Clock,
   MapPin,
@@ -10,6 +12,7 @@ import {
   Trophy,
   Medal,
   Award,
+  CheckCircle
 } from "lucide-react";
 import { getCookie } from "@/shared/utils/cookies";
 import { toast } from "react-toastify";
@@ -31,20 +34,21 @@ export default function VolunteerDashboardTabs({
   onSubmitProof,
   onViewProof,
 }) {
+  const navigate = useNavigate();
   const volunteerId = getCookie("volunteerId") || "";
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+    <div className="bg-white rounded-2xl border border-gray-200/80 overflow-hidden shadow-xs">
       {/* Tabs Header */}
-      <div className="flex space-x-1 p-2 border-b border-gray-200 bg-gray-50">
+      <div className="flex space-x-1 p-2 border-b border-gray-200/70 bg-slate-50/80">
         {TABS.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex-1 px-4 py-3 text-sm font-medium rounded-lg transition-colors cursor-pointer ${
+            className={`flex-1 px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-xl transition-all cursor-pointer ${
               activeTab === tab.id
-                ? "bg-white text-green-600 shadow-sm border border-gray-200"
-                : "text-gray-600 hover:text-gray-800 hover:bg-gray-100"
+                ? "bg-white text-emerald-800 shadow-xs border border-gray-200/80"
+                : "text-gray-500 hover:text-gray-900 hover:bg-gray-100/60"
             }`}
           >
             {tab.label}
@@ -52,45 +56,49 @@ export default function VolunteerDashboardTabs({
         ))}
       </div>
 
-      <div className="p-4 sm:p-6">
+      <div className="p-5 sm:p-6">
         {/* 1. Active Tasks Tab */}
         {activeTab === "active" && (
           <div className="space-y-4">
             {!loading && (!tasks?.active || tasks.active.length === 0) && (
-              <div className="flex items-start gap-3 p-4 border border-green-100 bg-green-50 rounded-xl">
-                <div className="shrink-0 w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-                  <Info size={18} className="text-green-600" />
+              <div className="text-center py-12 px-4 border border-dashed border-gray-200 rounded-2xl bg-slate-50/50">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-3 border border-emerald-100 shadow-xs">
+                  <Compass className="w-6 h-6" />
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-gray-800">
-                    You haven't joined any active opportunities yet
-                  </p>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Join an opportunity from the{" "}
-                    <span className="font-medium text-green-600">Browse</span>{" "}
-                    page to see it here.
-                  </p>
-                </div>
+                <h3 className="text-base font-bold text-gray-900 mb-1">
+                  No active tasks yet
+                </h3>
+                <p className="text-sm text-gray-500 max-w-sm mx-auto mb-5 leading-relaxed">
+                  Join micro-volunteering opportunities in your local community to start logging verified hours and earning points.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => navigate("/volunteer/opportunities")}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-semibold text-sm rounded-xl shadow-xs hover:shadow transition-all cursor-pointer"
+                >
+                  <span>Browse Opportunities</span>
+                  <ArrowRight size={16} />
+                </button>
               </div>
             )}
 
-            {loading && <div className="h-24 bg-gray-100 rounded-xl animate-pulse" />}
+            {loading && <div className="h-28 bg-gray-100 rounded-2xl animate-pulse" />}
 
             {tasks?.active?.map((t) => (
               <div
                 key={t._id}
-                className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-all bg-white relative overflow-hidden"
+                className="border border-gray-200/90 rounded-2xl p-5 hover:border-emerald-300/80 hover:shadow-xs transition-all bg-white relative overflow-hidden"
               >
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-400 to-green-600" />
-
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
-                  <h3 className="text-lg font-semibold text-gray-900">{t.title}</h3>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
+                  <h3 className="text-base sm:text-lg font-bold text-gray-900 tracking-tight">
+                    {t.title}
+                  </h3>
                   <span
-                    className={`px-3 py-1 text-xs font-medium rounded-full self-start sm:self-auto ${
+                    className={`px-3 py-1 text-xs font-semibold rounded-full self-start sm:self-auto ${
                       t.status === "Open"
-                        ? "bg-green-100 text-green-700"
+                        ? "bg-emerald-50 text-emerald-700 border border-emerald-200/60"
                         : t.status === "In Progress"
-                        ? "bg-orange-100 text-orange-700"
+                        ? "bg-amber-50 text-amber-700 border border-amber-200/60"
                         : "bg-gray-100 text-gray-600"
                     }`}
                   >
@@ -98,49 +106,101 @@ export default function VolunteerDashboardTabs({
                   </span>
                 </div>
 
-                <p className="text-sm text-gray-700 mb-3">
-                  <span className="font-medium">Organization:</span>{" "}
+                <p className="text-xs sm:text-sm text-gray-500 mb-3">
+                  <span className="font-medium text-gray-700">Organization:</span>{" "}
                   {t.organization?.orgName || "Community Partner"}
                 </p>
 
-                <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-4">
+                <div className="flex flex-wrap items-center gap-4 text-xs sm:text-sm text-gray-600 mb-4 font-medium">
                   {t.date && (
                     <span className="flex items-center gap-1.5">
-                      <Calendar size={16} className="text-green-600" />
+                      <Calendar size={15} className="text-emerald-600" />
                       {new Date(t.date).toLocaleDateString()}
                     </span>
                   )}
                   {t.duration && (
                     <span className="flex items-center gap-1.5">
-                      <Clock size={16} className="text-green-600" />
+                      <Clock size={15} className="text-emerald-600" />
                       {t.duration}
                     </span>
                   )}
                   {t.location && (
                     <span className="flex items-center gap-1.5">
-                      <MapPin size={16} className="text-green-600" />
+                      <MapPin size={15} className="text-emerald-600" />
                       {t.location}
                     </span>
                   )}
                   <span className="flex items-center gap-1.5">
-                    <Users size={16} className="text-green-600" />
+                    <Users size={15} className="text-emerald-600" />
                     {t.volunteers?.length || 0} / {t.volunteersNeeded || 1} volunteers
                   </span>
                 </div>
 
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2.5 pt-2 border-t border-gray-100">
                   <button
                     onClick={() => onViewOpportunity(t._id)}
-                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-green-700 bg-green-100 hover:bg-green-200 rounded-lg transition flex-1 sm:flex-none justify-center cursor-pointer"
+                    className="flex items-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/60 rounded-xl transition cursor-pointer"
                   >
-                    <Eye size={16} /> View
+                    <Eye size={15} /> <span>View Details</span>
                   </button>
-                  <button
-                    onClick={() => onSubmitProof(t._id)}
-                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-orange-700 bg-orange-100 hover:bg-orange-200 rounded-lg transition flex-1 sm:flex-none justify-center cursor-pointer"
-                  >
-                    <UploadCloud size={16} /> Submit Proof
-                  </button>
+                  {(() => {
+                    const volunteerProof = t.completionProofs?.find((p) => {
+                      const vId = p.volunteer?._id || p.volunteer?.id || p.volunteer;
+                      return vId && String(vId) === String(volunteerId);
+                    });
+                    let status = volunteerProof?.status;
+                    if (!status) {
+                      try {
+                        const localMap = JSON.parse(
+                          localStorage.getItem(`proofStatus_${volunteerId}`) || "{}"
+                        );
+                        status = localMap[t._id] || null;
+                      } catch (err) {
+                        console.warn("Failed to read local proof status in tabs:", err);
+                      }
+                    }
+
+                    if (status === "Pending") {
+                      return (
+                        <button
+                          disabled
+                          className="flex items-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-semibold text-amber-800 bg-amber-50 border border-amber-200/80 rounded-xl transition shadow-xs cursor-default"
+                        >
+                          <Clock size={15} className="text-amber-600" />{" "}
+                          <span>Proof In Review</span>
+                        </button>
+                      );
+                    }
+                    if (status === "Approved") {
+                      return (
+                        <button
+                          disabled
+                          className="flex items-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200/80 rounded-xl transition shadow-xs cursor-default"
+                        >
+                          <CheckCircle size={15} className="text-emerald-600" />{" "}
+                          <span>Approved</span>
+                        </button>
+                      );
+                    }
+                    if (status === "Rejected") {
+                      return (
+                        <button
+                          onClick={() => onSubmitProof(t._id)}
+                          className="flex items-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 active:bg-rose-800 rounded-xl transition shadow-xs cursor-pointer"
+                        >
+                          <UploadCloud size={15} /> <span>Resubmit Proof</span>
+                        </button>
+                      );
+                    }
+                    return (
+                      <button
+                        onClick={() => onSubmitProof(t._id)}
+                        className="flex items-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-xl transition shadow-xs cursor-pointer"
+                      >
+                        <UploadCloud size={15} /> <span>Submit Proof</span>
+                      </button>
+                    );
+                  })()}
                 </div>
               </div>
             ))}
@@ -151,81 +211,82 @@ export default function VolunteerDashboardTabs({
         {activeTab === "completed" && (
           <div className="space-y-4">
             {!loading && (!tasks?.completed || tasks.completed.length === 0) && (
-              <div className="flex items-start gap-3 p-4 border border-amber-100 bg-amber-50 rounded-xl">
-                <div className="shrink-0 w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center">
-                  <Trophy size={18} className="text-amber-600" />
+              <div className="text-center py-12 px-4 border border-dashed border-gray-200 rounded-2xl bg-slate-50/50">
+                <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto mb-3 border border-amber-200/80 shadow-xs">
+                  <Trophy className="w-6 h-6" />
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-gray-800">
-                    You haven't completed any tasks yet
-                  </p>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Keep going! Once you finish your first activity, it will appear
-                    here with your earned points and badges.
-                  </p>
-                </div>
+                <h3 className="text-base font-bold text-gray-900 mb-1">
+                  No completed tasks yet
+                </h3>
+                <p className="text-sm text-gray-500 max-w-sm mx-auto leading-relaxed">
+                  Keep going! Once you finish your first volunteering task and have your proof verified, it will appear here with points and badges.
+                </p>
               </div>
             )}
 
-            {loading && <div className="h-24 bg-gray-100 rounded-xl animate-pulse" />}
+            {loading && <div className="h-28 bg-gray-100 rounded-2xl animate-pulse" />}
 
             {tasks?.completed?.map((t) => (
               <div
                 key={t._id}
-                className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-all bg-white"
+                className="border border-gray-200/90 rounded-2xl p-5 hover:border-gray-300 transition-all bg-white"
               >
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
-                  <h3 className="text-lg font-semibold text-gray-900">{t.title}</h3>
-                  <span className="px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700 self-start sm:self-auto">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
+                  <h3 className="text-base sm:text-lg font-bold text-gray-900">
+                    {t.title}
+                  </h3>
+                  <span className="px-3 py-1 text-xs font-semibold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/60 self-start sm:self-auto">
                     Completed
                   </span>
                 </div>
 
-                <p className="text-sm text-gray-700 mb-3">
-                  <span className="font-medium">Organization:</span>{" "}
+                <p className="text-xs sm:text-sm text-gray-500 mb-3">
+                  <span className="font-medium text-gray-700">Organization:</span>{" "}
                   {t.organization?.orgName || "Community Partner"}
                 </p>
 
-                <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-4 font-medium">
+                <div className="flex flex-wrap items-center gap-4 text-xs sm:text-sm text-gray-600 mb-4 font-medium">
                   {t.date && (
                     <span className="flex items-center gap-1.5">
-                      <Calendar size={16} className="text-green-600" />
+                      <Calendar size={15} className="text-emerald-600" />
                       {new Date(t.date).toLocaleDateString()}
                     </span>
                   )}
                   {t.duration && (
                     <span className="flex items-center gap-1.5">
-                      <Clock size={16} className="text-green-600" />
+                      <Clock size={15} className="text-emerald-600" />
                       {t.duration}
                     </span>
                   )}
                   {t.location && (
                     <span className="flex items-center gap-1.5">
-                      <MapPin size={16} className="text-green-600" />
+                      <MapPin size={15} className="text-emerald-600" />
                       {t.location}
                     </span>
                   )}
                 </div>
 
-                <button
-                  onClick={() => {
-                    const proof =
-                      t.completionProofs?.find(
-                        (p) =>
-                          p.volunteer?._id === volunteerId ||
-                          p.volunteer === volunteerId
-                      )?.fileUrl || null;
+                <div className="pt-2 border-t border-gray-100">
+                  <button
+                    onClick={() => {
+                      const proof =
+                        t.completionProofs?.find(
+                          (p) =>
+                            p.volunteer?._id === volunteerId ||
+                            p.volunteer === volunteerId
+                        )?.fileUrl || null;
 
-                    if (!proof) {
-                      toast.info("No proof uploaded for this task yet.");
-                    } else {
-                      onViewProof(proof);
-                    }
-                  }}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-green-700 bg-green-100 hover:bg-green-200 rounded-lg transition w-full justify-center sm:w-auto cursor-pointer"
-                >
-                  <Eye size={16} /> View Proof
-                </button>
+                      if (!proof) {
+                        toast.info("No proof uploaded for this task yet.");
+                      } else {
+                        onViewProof(proof);
+                      }
+                    }}
+                    className="flex items-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition cursor-pointer"
+                  >
+                    <Eye size={15} /> <span>View Proof</span>
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -234,28 +295,36 @@ export default function VolunteerDashboardTabs({
         {/* 3. Badges & Points Tab */}
         {activeTab === "badges" && (
           <div className="space-y-6">
-            <div className="text-center sm:text-left">
-              <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2 justify-center sm:justify-start">
-                <Medal size={22} className="text-green-600" />
-                Your Achievements
+            <div className="text-left">
+              <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                <Medal size={20} className="text-emerald-600" />
+                <span>Your Community Achievements</span>
               </h3>
             </div>
 
             {/* Summary Metrics */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl p-4 text-center shadow-md">
-                <p className="text-sm opacity-90">Total Points</p>
-                <p className="text-3xl font-bold mt-1">{overview?.points || 0}</p>
+              <div className="bg-slate-50 border border-gray-200/80 rounded-2xl p-4 text-left">
+                <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Total Points
+                </p>
+                <p className="text-2xl font-extrabold text-gray-900 mt-1">
+                  {overview?.points || 0}
+                </p>
               </div>
-              <div className="bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-xl p-4 text-center shadow-md">
-                <p className="text-sm opacity-90">Completed Tasks</p>
-                <p className="text-3xl font-bold mt-1">
+              <div className="bg-slate-50 border border-gray-200/80 rounded-2xl p-4 text-left">
+                <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Completed Tasks
+                </p>
+                <p className="text-2xl font-extrabold text-gray-900 mt-1">
                   {overview?.completedTasks || 0}
                 </p>
               </div>
-              <div className="bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-xl p-4 text-center shadow-md">
-                <p className="text-sm opacity-90">Badges Earned</p>
-                <p className="text-3xl font-bold mt-1">
+              <div className="bg-slate-50 border border-gray-200/80 rounded-2xl p-4 text-left">
+                <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Badges Earned
+                </p>
+                <p className="text-2xl font-extrabold text-gray-900 mt-1">
                   {overview?.badgesCount || badges?.length || 0}
                 </p>
               </div>
@@ -263,18 +332,18 @@ export default function VolunteerDashboardTabs({
 
             {/* Earned Badges Grid */}
             <div>
-              <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2 justify-center sm:justify-start">
-                <Award size={22} className="text-amber-500" />
-                Earned Badges
+              <h4 className="text-sm font-bold uppercase tracking-wider text-gray-500 mb-3 flex items-center gap-2">
+                <Award size={18} className="text-amber-500" />
+                <span>Earned Badges</span>
               </h4>
 
               {!badges || badges.length === 0 ? (
-                <div className="bg-gray-50 border border-dashed border-gray-300 rounded-xl p-6 text-center">
-                  <p className="text-gray-600 italic">
-                    You haven't earned any badges yet.
+                <div className="bg-slate-50 border border-dashed border-gray-200 rounded-2xl p-8 text-center">
+                  <p className="text-sm font-semibold text-gray-700">
+                    No badges earned yet
                   </p>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Complete more volunteering opportunities to earn your first one!
+                  <p className="text-xs text-gray-500 mt-1">
+                    Complete your first volunteering activity to unlock your milestone badge!
                   </p>
                 </div>
               ) : (
@@ -282,11 +351,11 @@ export default function VolunteerDashboardTabs({
                   {badges.map((b) => (
                     <div
                       key={b._id || b.name}
-                      className="flex flex-col items-center justify-center p-4 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md transition text-center"
+                      className="flex flex-col items-center justify-center p-4 rounded-2xl bg-white border border-gray-200/80 shadow-xs hover:shadow-sm transition text-center"
                     >
                       <div className="text-3xl mb-2">{b.icon || "🏅"}</div>
-                      <p className="font-semibold text-gray-900 text-sm">{b.name}</p>
-                      <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                      <p className="font-bold text-gray-900 text-sm">{b.name}</p>
+                      <p className="text-xs text-gray-500 mt-1 line-clamp-2 leading-relaxed">
                         {b.description}
                       </p>
                     </div>
@@ -300,4 +369,3 @@ export default function VolunteerDashboardTabs({
     </div>
   );
 }
-

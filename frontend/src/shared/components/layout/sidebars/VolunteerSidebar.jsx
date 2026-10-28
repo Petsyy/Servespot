@@ -9,19 +9,15 @@ import {
   LogOut,
   ClipboardList,
   X,
-  ChevronLeft,
-  Settings,
   Bell,
 } from "lucide-react";
 
-// Updated color scheme with better contrast and visual hierarchy
 const linkCls = ({ isActive }) =>
-  `flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 group
-   ${
-     isActive
-       ? "bg-white text-green-600 shadow-md border border-green-200"
-       : "text-green-100 hover:bg-green-500 hover:text-white hover:shadow-sm"
-   }`;
+  `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 group cursor-pointer ${
+    isActive
+      ? "bg-emerald-850 text-white font-semibold border border-emerald-700/60 shadow-xs"
+      : "text-emerald-100/75 hover:text-white hover:bg-emerald-900/60"
+  }`;
 
 export default function VolunteerSidebar({ isOpen, onClose }) {
   const navigate = useNavigate();
@@ -50,31 +46,30 @@ export default function VolunteerSidebar({ isOpen, onClose }) {
       {/* Mobile Overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden animate-fade-in"
+          className="fixed inset-0 bg-black/50 backdrop-blur-xs z-40 md:hidden animate-fade-in"
           onClick={onClose}
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar Container */}
       <aside
-        className={`fixed md:sticky z-50
-        w-64 bg-gradient-to-b from-green-600 to-green-700 text-white flex flex-col
-        transition-all duration-300 ease-in-out shadow-xl
-        ${isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
-        h-screen top-0 left-0
-      `}
+        className={`fixed md:sticky z-50 w-64 bg-emerald-950 border-r border-emerald-900/60 text-white flex flex-col transition-all duration-300 ease-in-out shadow-xl md:shadow-none h-screen top-0 left-0 ${
+          isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        }`}
       >
-        <div className="p-4 flex flex-col h-full">
-          {/* Header Section */}
-          <div className="flex-shrink-0">
-            <div className="flex items-center justify-between px-2 py-3">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm border border-white/30 font-bold shadow-sm">
-                  SS
-                </div>
+        <div className="p-4 flex flex-col h-full justify-between">
+          <div>
+            {/* Brand Header */}
+            <div className="flex items-center justify-between px-2 py-3 border-b border-emerald-900/60 pb-4">
+              <div
+                onClick={() => navigate("/volunteer/dashboard")}
+                className="flex items-center gap-3 cursor-pointer group"
+              >
                 <div>
-                  <p className="font-bold text-white text-lg">ServeSpot</p>
-                  <p className="text-xs text-green-100 opacity-90">
+                  <p className="font-bold text-white text-base tracking-tight leading-tight">
+                    ServeSpot
+                  </p>
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-emerald-400/90 leading-tight">
                     Volunteer Portal
                   </p>
                 </div>
@@ -83,61 +78,56 @@ export default function VolunteerSidebar({ isOpen, onClose }) {
               {/* Close button for mobile */}
               <button
                 onClick={onClose}
-                className="md:hidden p-2 rounded-lg hover:bg-white/10 text-white transition-colors"
+                className="md:hidden p-2 rounded-lg hover:bg-emerald-900/60 text-emerald-300 hover:text-white transition-colors cursor-pointer"
+                aria-label="Close menu"
               >
-                <X size={20} />
+                <X size={18} />
               </button>
             </div>
+
+            {/* Navigation Links */}
+            <nav className="mt-6 space-y-1.5 overflow-y-auto">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = location.pathname === item.to;
+
+                return (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    className={linkCls}
+                    onClick={onClose}
+                  >
+                    <div
+                      className={`transition-colors ${
+                        isActive
+                          ? "text-emerald-300"
+                          : "text-emerald-300/70 group-hover:text-emerald-200"
+                      }`}
+                    >
+                      <Icon size={18} />
+                    </div>
+                    <span>{item.label}</span>
+                    {isActive && (
+                      <div className="ml-auto w-1.5 h-1.5 bg-emerald-400 rounded-full" />
+                    )}
+                  </NavLink>
+                );
+              })}
+            </nav>
           </div>
 
-          {/* Navigation Links */}
-          <nav className="mt-8 space-y-2 flex-1 overflow-y-auto">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = location.pathname === item.to;
-
-              return (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  className={linkCls}
-                  onClick={onClose}
-                >
-                  <div
-                    className={`p-1.5 rounded-lg transition-colors ${
-                      isActive
-                        ? "bg-green-600 text-white"
-                        : "group-hover:bg-white/20"
-                    }`}
-                  >
-                    <Icon size={18} />
-                  </div>
-                  <span className="font-medium">{item.label}</span>
-                  {isActive && (
-                    <div className="ml-auto w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                  )}
-                </NavLink>
-              );
-            })}
-          </nav>
-
-          {/* Bottom Section */}
-          <div className="flex-shrink-0 space-y-3">
-            {/* Logout Button */}
+          {/* Bottom Section: Clean Logout */}
+          <div className="flex-shrink-0 pt-4 border-t border-emerald-900/60">
             <button
               onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-3 py-3 text-green-100 hover:text-white hover:bg-red-500/20 rounded-lg transition-all duration-200 group border border-transparent hover:border-red-400/30"
+              className="w-full flex items-center gap-3 px-3.5 py-2.5 text-emerald-200/75 hover:text-rose-200 hover:bg-rose-950/40 rounded-xl transition-all duration-150 font-medium text-sm border border-transparent hover:border-rose-900/40 cursor-pointer group"
             >
-              <div className="p-1.5 rounded-lg bg-red-500/20 group-hover:bg-red-500/30 transition-colors">
+              <div className="text-emerald-300/70 group-hover:text-rose-300 transition-colors">
                 <LogOut size={18} />
               </div>
-              <span className="font-medium">Logout</span>
+              <span>Sign Out</span>
             </button>
-
-            {/* Collapse indicator for desktop */}
-            <div className="hidden md:flex items-center justify-center pt-2">
-              <div className="w-8 h-1 bg-white/20 rounded-full" />
-            </div>
           </div>
         </div>
       </aside>

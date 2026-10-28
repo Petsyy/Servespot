@@ -11,12 +11,12 @@ export default function VolunteerProfileHeader({
 }) {
   return (
     <>
-      <div className="flex flex-wrap items-center justify-between mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
             Volunteer Profile
           </h1>
-          <p className="text-gray-600 text-sm">
+          <p className="text-gray-600 text-sm mt-1">
             View and update your personal details, preferences, and skills.
           </p>
         </div>
@@ -27,14 +27,14 @@ export default function VolunteerProfileHeader({
               setIsEditing(true);
               toast.info("Please complete your volunteer profile setup.");
             }}
-            className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition text-sm shadow-sm hover:shadow-md cursor-pointer"
+            className="flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-xl hover:bg-amber-700 transition text-sm font-semibold shadow-xs cursor-pointer"
           >
             <Plus size={16} /> Setup Profile
           </button>
         ) : !isEditing ? (
           <button
             onClick={() => setIsEditing(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm shadow-sm hover:shadow-md cursor-pointer"
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition text-sm font-semibold shadow-xs cursor-pointer"
           >
             <Pencil size={16} /> Edit Profile
           </button>
@@ -43,7 +43,7 @@ export default function VolunteerProfileHeader({
             <button
               onClick={onSave}
               disabled={saving}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-60 text-sm shadow-sm hover:shadow-md transition cursor-pointer"
+              className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 disabled:opacity-60 text-sm font-semibold shadow-xs transition cursor-pointer"
             >
               <Check size={16} /> {saving ? "Saving..." : "Save Profile"}
             </button>
@@ -56,7 +56,7 @@ export default function VolunteerProfileHeader({
                   );
                 }
               }}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 text-sm transition cursor-pointer"
+              className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 text-sm font-semibold shadow-xs transition cursor-pointer"
             >
               <X size={16} /> Cancel
             </button>
@@ -66,15 +66,15 @@ export default function VolunteerProfileHeader({
 
       {/* Profile Setup Alert */}
       {profileIncomplete && (
-        <div className="mb-6 bg-orange-50 border border-orange-200 rounded-lg p-4">
+        <div className="mb-6 bg-amber-50/80 border border-amber-200/80 rounded-2xl p-4 shadow-xs">
           <div className="flex items-center gap-3">
-            <AlertCircle className="text-orange-500 shrink-0" size={20} />
+            <AlertCircle className="text-amber-600 shrink-0" size={20} />
             <div>
-              <h3 className="font-semibold text-orange-800 text-sm">
+              <h3 className="font-bold text-amber-900 text-sm">
                 Profile Setup Required
               </h3>
-              <p className="text-orange-700 text-xs">
-                Please complete your volunteer profile to access all features.
+              <p className="text-amber-800 text-xs mt-0.5 leading-relaxed">
+                Please complete your volunteer profile to access all platform features.
                 Required fields: Full Name, Contact Number, and Birthdate.
               </p>
             </div>
@@ -84,4 +84,3 @@ export default function VolunteerProfileHeader({
     </>
   );
 }
-

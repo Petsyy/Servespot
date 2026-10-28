@@ -23,7 +23,7 @@ export function useVolunteerProfile() {
   });
 
   const badgesQuery = useQuery({
-    queryKey: queryKeys.volunteers.badges(volunteerId),
+    queryKey: queryKeys.volunteers.badgesSummary(volunteerId),
     queryFn: async () => {
       const res = await getVolunteerBadges();
       const data = res?.data || {};

@@ -9,30 +9,32 @@ export default function OrganizationAboutSection({
   profileIncomplete,
 }) {
   return (
-    <section className="rounded-2xl border border-green-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow bg-white">
-      <div className="bg-gradient-to-r from-green-50 to-emerald-50 px-5 py-3 border-b border-green-200 flex items-center gap-2">
-        <FileText size={18} className="text-green-700" />
-        <h3 className="font-semibold text-gray-900">About Organization</h3>
+    <section className="rounded-2xl border border-gray-200/80 overflow-hidden shadow-xs bg-white">
+      <div className="bg-slate-50/60 px-5 py-3.5 border-b border-gray-100 flex items-center gap-2">
+        <div className="p-1.5 rounded-lg bg-emerald-50 text-emerald-700">
+          <FileText size={16} />
+        </div>
+        <h3 className="font-bold text-sm text-gray-900 tracking-tight">About Organization</h3>
       </div>
 
       <div className="p-5 space-y-4">
         {/* Description */}
         <div>
-          <label className="text-sm font-medium text-gray-700 block mb-1">
-            Description
+          <label className="text-xs font-semibold text-gray-700 uppercase tracking-wider block mb-1.5">
+            Mission & Description
           </label>
           {isEditing ? (
             <textarea
               rows={4}
               value={org.description || ""}
               onChange={(e) => onChange("description", e.target.value)}
-              className="w-full rounded-lg border border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 p-3 text-sm transition"
-              placeholder="Tell us about your organization..."
+              className="w-full rounded-xl border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 p-3 text-xs transition outline-none"
+              placeholder="Tell volunteers about your mission, background, and community impact..."
             />
           ) : (
-            <div className="rounded-lg bg-gray-50 border border-green-200 p-3 text-gray-800 text-sm min-h-[84px] whitespace-pre-wrap">
+            <div className="rounded-xl bg-slate-50/60 border border-gray-200/80 p-3.5 text-gray-800 text-xs min-h-[90px] whitespace-pre-wrap leading-relaxed">
               {org.description || (
-                <span className="text-gray-400">Not set</span>
+                <span className="text-gray-400">No mission or description provided yet.</span>
               )}
             </div>
           )}
@@ -40,14 +42,14 @@ export default function OrganizationAboutSection({
 
         {/* Organization Type */}
         <div>
-          <label className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
-            Organization Type {profileIncomplete && <span className="text-red-500">*</span>}
+          <label className="text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+            Organization Type {profileIncomplete && <span className="text-rose-500">*</span>}
           </label>
           {isEditing ? (
             <select
               value={org.orgType || ""}
               onChange={(e) => onChange("orgType", e.target.value)}
-              className="w-full h-10 px-3 rounded-lg border border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 text-sm transition"
+              className="w-full h-10 px-3 rounded-xl border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 text-xs transition outline-none bg-white cursor-pointer"
             >
               <option value="" disabled>
                 Select type...
@@ -59,7 +61,7 @@ export default function OrganizationAboutSection({
               ))}
             </select>
           ) : (
-            <div className="w-full h-10 px-3 flex items-center rounded-lg bg-gray-50 border border-green-200 text-gray-800 text-sm">
+            <div className="w-full h-10 px-3.5 flex items-center rounded-xl bg-slate-50/60 border border-gray-200/80 text-gray-800 text-xs font-medium">
               {org.orgType ? (
                 ORG_TYPES.find((o) => o.value === org.orgType)?.label || org.orgType
               ) : (
@@ -72,4 +74,3 @@ export default function OrganizationAboutSection({
     </section>
   );
 }
-

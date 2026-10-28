@@ -32,7 +32,7 @@ export default function ProtectedRoute({
         ? "/organization/login"
         : allowedRoles.length === 1 && allowedRoles[0] === "volunteer"
         ? "/volunteer/login"
-        : "/role/login");
+        : "/volunteer/login");
 
     return <Navigate to={fallback} state={{ from: location }} replace />;
   }

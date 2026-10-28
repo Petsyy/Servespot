@@ -2,11 +2,12 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Users,
-  Building,
-  CheckCircle,
   Building2,
-  ClipboardList,
   CheckCircle2,
+  ClipboardList,
+  TrendingUp,
+  LayoutGrid,
+  Sparkles,
 } from "lucide-react";
 import AdminSidebar from "@/shared/components/layout/sidebars/AdminSidebar";
 import AdminNavbar from "@/shared/components/layout/navbars/AdminNavbar";
@@ -33,15 +34,8 @@ export default function AdminDashboard() {
   // TanStack Query integration
   const { stats, chartData, isLoading: loading } = useAdminDashboard();
 
-  // Toggle sidebar function
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
-
-  // Close sidebar function
-  const closeSidebar = () => {
-    setSidebarOpen(false);
-  };
+  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+  const closeSidebar = () => setSidebarOpen(false);
 
   // SESSION VALIDATION VIA COOKIE-AUTH BACKEND
   useEffect(() => {
@@ -65,10 +59,10 @@ export default function AdminDashboard() {
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
-          <p className="font-semibold text-gray-900">{label}</p>
+        <div className="bg-white/95 backdrop-blur-xs p-3 border border-gray-200/80 rounded-xl shadow-lg text-xs">
+          <p className="font-bold text-gray-900 mb-1">{label}</p>
           {payload.map((entry, index) => (
-            <p key={index} className="text-sm" style={{ color: entry.color }}>
+            <p key={index} className="font-semibold" style={{ color: entry.color }}>
               {entry.name}: {entry.value}
             </p>
           ))}
@@ -81,10 +75,10 @@ export default function AdminDashboard() {
   const WeeklyTasksTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
-          <p className="font-semibold text-gray-900">{label}</p>
-          <p className="text-sm text-green-600">
-            Tasks Completed: {payload[0].value}
+        <div className="bg-white/95 backdrop-blur-xs p-3 border border-gray-200/80 rounded-xl shadow-lg text-xs">
+          <p className="font-bold text-gray-900 mb-1">{label}</p>
+          <p className="font-semibold text-emerald-600">
+            Tasks Completed: {payload[0]?.value}
           </p>
         </div>
       );
@@ -92,272 +86,259 @@ export default function AdminDashboard() {
     return null;
   };
 
-  // Helper function to format numbers with loading state
   const formatStat = (value) => {
-    if (loading) return "...";
+    if (loading) return "…";
     if (!stats || value === undefined || value === null) return "0";
     return value.toLocaleString();
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-slate-50 flex">
       <AdminSidebar isOpen={sidebarOpen} onClose={closeSidebar} />
 
       <div className="flex-1 flex flex-col min-w-0">
         <AdminNavbar onToggleSidebar={toggleSidebar} />
 
-        <main className="flex-1 p-6">
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+        <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto">
+          <div className="max-w-7xl mx-auto w-full space-y-6">
+            {/* Header */}
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                Admin Dashboard
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-emerald-50 text-emerald-800 text-xs font-semibold mb-1.5 border border-emerald-100">
+                <LayoutGrid size={12} className="text-emerald-600" />
+                <span>Executive Command</span>
+              </div>
+              <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">
+                Platform Operations Dashboard
               </h1>
-              <p className="text-gray-600">
-                Overview of platform performance and engagement
+              <p className="text-xs text-gray-500 mt-0.5">
+                Real-time operational overview, network engagement metrics, and completed initiatives.
               </p>
             </div>
-          </div>
 
-          {/* Summary Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white shadow-sm rounded-xl p-5 flex items-center justify-between border-l-4 border-green-500 hover:shadow-md transition-all duration-200">
-              <div>
-                <p className="text-sm text-gray-500 font-medium">
-                  Total Volunteers
-                </p>
-                <h3 className="text-2xl font-bold text-gray-800">
-                  {formatStat(stats?.totalVolunteers)}
-                </h3>
-                <p className="text-xs text-gray-500 mt-1">
-                  {loading ? "Loading..." : "Live count"}
-                </p>
-              </div>
-              <Users className="h-10 w-10 text-green-600" />
-            </div>
-
-            <div className="bg-white shadow-sm rounded-xl p-5 flex items-center justify-between border-l-4 border-indigo-500 hover:shadow-md transition-all duration-200">
-              <div>
-                <p className="text-sm text-gray-500 font-medium">
-                  Total Organizations
-                </p>
-                <h3 className="text-2xl font-bold text-gray-800">
-                  {formatStat(stats?.totalOrganizations)}
-                </h3>
-                <p className="text-xs text-green-600 mt-1">
-                  {loading
-                    ? "..."
-                    : stats
-                      ? "↑ 8% from last month"
-                      : "No data available"}
-                </p>
-              </div>
-              <Building2 className="h-10 w-10 text-indigo-600" />
-            </div>
-
-            <div className="bg-white shadow-sm rounded-xl p-5 flex items-center justify-between border-l-4 border-yellow-500 hover:shadow-md transition-all duration-200">
-              <div>
-                <p className="text-sm text-gray-500 font-medium">
-                  Active Opportunities
-                </p>
-                <h3 className="text-2xl font-bold text-gray-800">
-                  {formatStat(stats?.activeOpportunities)}
-                </h3>
-                <p className="text-xs text-green-600 mt-1">
-                  {loading
-                    ? "..."
-                    : stats
-                      ? "↑ 15% from last month"
-                      : "No data available"}
-                </p>
-              </div>
-              <ClipboardList className="h-10 w-10 text-yellow-600" />
-            </div>
-
-            <div className="bg-white shadow-sm rounded-xl p-5 flex items-center justify-between border-l-4 border-green-500 hover:shadow-md transition-all duration-200">
-              <div>
-                <p className="text-sm text-gray-500 font-medium">
-                  Completed Opportunities
-                </p>
-                <h3 className="text-2xl font-bold text-gray-800">
-                  {formatStat(stats?.completedOpportunities)}
-                </h3>
-                <p className="text-xs text-green-600 mt-1">
-                  {loading
-                    ? "..."
-                    : stats
-                      ? "↑ 18% from last month"
-                      : "No data available"}
-                </p>
-              </div>
-              <CheckCircle2 className="h-10 w-10 text-green-600" />
-            </div>
-          </div>
-
-          {/* Charts Section */}
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-            {/* Weekly Volunteer Activity - Line Chart */}
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-semibold text-gray-900">
-                  Weekly Volunteer Activity
-                </h2>
-                <span className="text-sm text-gray-500">Hours & Tasks</span>
-              </div>
-              <div className="w-full h-80">
-                {loading ? (
-                  <div className="h-full flex items-center justify-center">
-                    <div className="text-gray-500">Loading chart data...</div>
+            {/* Summary Metric Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-white rounded-2xl border border-gray-200/80 shadow-xs p-5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block mb-1">
+                      Total Volunteers
+                    </span>
+                    <h3 className="text-2xl font-black text-gray-900 tracking-tight">
+                      {formatStat(stats?.totalVolunteers)}
+                    </h3>
+                    <span className="text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md inline-block mt-2">
+                      Live Community
+                    </span>
                   </div>
-                ) : !chartData?.weeklyActivity ? (
-                  <div className="h-full flex items-center justify-center">
-                    <div className="text-gray-500 text-center">
-                      <p>No chart data available</p>
-                      <p className="text-sm mt-2">
-                        Connect to your data source to display analytics
-                      </p>
+                  <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-100/60">
+                    <Users size={20} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-2xl border border-gray-200/80 shadow-xs p-5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block mb-1">
+                      Total Organizations
+                    </span>
+                    <h3 className="text-2xl font-black text-gray-900 tracking-tight">
+                      {formatStat(stats?.totalOrganizations)}
+                    </h3>
+                    <span className="text-[11px] font-medium text-sky-700 bg-sky-50 px-2 py-0.5 rounded-md inline-block mt-2">
+                      Civic Partners
+                    </span>
+                  </div>
+                  <div className="w-11 h-11 rounded-xl bg-sky-50 text-sky-700 flex items-center justify-center border border-sky-100/60">
+                    <Building2 size={20} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-2xl border border-gray-200/80 shadow-xs p-5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block mb-1">
+                      Active Opportunities
+                    </span>
+                    <h3 className="text-2xl font-black text-gray-900 tracking-tight">
+                      {formatStat(stats?.activeOpportunities)}
+                    </h3>
+                    <span className="text-[11px] font-medium text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md inline-block mt-2">
+                      Open & In-Progress
+                    </span>
+                  </div>
+                  <div className="w-11 h-11 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center border border-amber-100/60">
+                    <ClipboardList size={20} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-2xl border border-gray-200/80 shadow-xs p-5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block mb-1">
+                      Completed Initiatives
+                    </span>
+                    <h3 className="text-2xl font-black text-gray-900 tracking-tight">
+                      {formatStat(stats?.completedOpportunities)}
+                    </h3>
+                    <span className="text-[11px] font-medium text-teal-700 bg-teal-50 px-2 py-0.5 rounded-md inline-block mt-2">
+                      Verified Impact
+                    </span>
+                  </div>
+                  <div className="w-11 h-11 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center border border-teal-100/60">
+                    <CheckCircle2 size={20} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Charts Section */}
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+              {/* Weekly Activity Line Chart */}
+              <div className="bg-white rounded-2xl border border-gray-200/80 shadow-xs p-6">
+                <div className="flex items-center justify-between mb-5">
+                  <div>
+                    <h2 className="text-base font-bold text-gray-900 tracking-tight">
+                      Weekly Participation Dynamics
+                    </h2>
+                    <p className="text-xs text-gray-400 mt-0.5">Hours logged vs. Tasks completed</p>
+                  </div>
+                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">
+                    Current Week
+                  </span>
+                </div>
+
+                <div className="w-full h-72">
+                  {loading ? (
+                    <div className="h-full flex items-center justify-center text-xs text-gray-400">
+                      Loading activity metrics…
                     </div>
-                  </div>
-                ) : (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={chartData.weeklyActivity}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
-                      <XAxis dataKey="day" fontSize={12} />
-                      <YAxis fontSize={12} />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Legend />
-                      <Line
-                        type="monotone"
-                        dataKey="hours"
-                        stroke="#3b82f6"
-                        strokeWidth={2}
-                        name="Volunteer Hours"
-                        dot={{ r: 4 }}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="tasks"
-                        stroke="#10b981"
-                        strokeWidth={2}
-                        name="Tasks Completed"
-                        dot={{ r: 4 }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                )}
-              </div>
-              <div className="mt-4 text-center">
-                <p className="text-sm text-gray-600">
-                  {loading
-                    ? "Loading..."
-                    : chartData?.weeklyActivity
-                      ? `Total hours this week: ${chartData.weeklyActivity.reduce((sum, d) => sum + d.hours, 0)}`
-                      : "Connect data source to see totals"}
-                </p>
-              </div>
-            </div>
-
-            {/* Tasks Completed This Week - Bar Chart */}
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-semibold text-gray-900">
-                  Tasks Completed This Week
-                </h2>
-                <span className="text-sm text-gray-500">Daily Progress</span>
-              </div>
-              <div className="w-full h-80">
-                {loading ? (
-                  <div className="h-full flex items-center justify-center">
-                    <div className="text-gray-500">Loading chart data...</div>
-                  </div>
-                ) : !chartData?.weeklyTasks ? (
-                  <div className="h-full flex items-center justify-center">
-                    <div className="text-gray-500 text-center">
-                      <p>No chart data available</p>
-                      <p className="text-sm mt-2">
-                        Connect to your data source to display analytics
-                      </p>
+                  ) : !chartData?.weeklyActivity ? (
+                    <div className="h-full flex items-center justify-center text-xs text-gray-400">
+                      No activity logs recorded for this period.
                     </div>
-                  </div>
-                ) : (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={chartData.weeklyTasks}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
-                      <XAxis dataKey="day" fontSize={12} />
-                      <YAxis fontSize={12} />
-                      <Tooltip content={<WeeklyTasksTooltip />} />
-                      <Bar
-                        dataKey="completed"
-                        fill="#10b981"
-                        radius={[4, 4, 0, 0]}
-                        name="Tasks Completed"
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
-                )}
+                  ) : (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={chartData.weeklyActivity}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                        <XAxis dataKey="day" fontSize={11} stroke="#94a3b8" tickLine={false} axisLine={false} />
+                        <YAxis fontSize={11} stroke="#94a3b8" tickLine={false} axisLine={false} />
+                        <Tooltip content={<CustomTooltip />} />
+                        <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} />
+                        <Line
+                          type="monotone"
+                          dataKey="hours"
+                          stroke="#0284c7"
+                          strokeWidth={2.5}
+                          name="Volunteer Hours"
+                          dot={{ fill: "#0284c7", r: 4 }}
+                          activeDot={{ r: 6 }}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="tasks"
+                          stroke="#059669"
+                          strokeWidth={2.5}
+                          name="Tasks Completed"
+                          dot={{ fill: "#059669", r: 4 }}
+                          activeDot={{ r: 6 }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  )}
+                </div>
               </div>
-              <div className="mt-4 text-center">
-                <p className="text-sm text-gray-600">
-                  {loading
-                    ? "Calculating..."
-                    : chartData?.weeklyTasks
-                      ? `Total tasks completed this week: ${chartData.weeklyTasks.reduce((sum, day) => sum + day.completed, 0)}`
-                      : "Connect data source to see totals"}
-                </p>
+
+              {/* Weekly Tasks Bar Chart */}
+              <div className="bg-white rounded-2xl border border-gray-200/80 shadow-xs p-6">
+                <div className="flex items-center justify-between mb-5">
+                  <div>
+                    <h2 className="text-base font-bold text-gray-900 tracking-tight">
+                      Daily Completion Velocity
+                    </h2>
+                    <p className="text-xs text-gray-400 mt-0.5">Daily breakdown of micro-volunteering outputs</p>
+                  </div>
+                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">
+                    Daily Progress
+                  </span>
+                </div>
+
+                <div className="w-full h-72">
+                  {loading ? (
+                    <div className="h-full flex items-center justify-center text-xs text-gray-400">
+                      Loading completion data…
+                    </div>
+                  ) : !chartData?.weeklyTasks ? (
+                    <div className="h-full flex items-center justify-center text-xs text-gray-400">
+                      No tasks completed in this window.
+                    </div>
+                  ) : (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={chartData.weeklyTasks}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                        <XAxis dataKey="day" fontSize={11} stroke="#94a3b8" tickLine={false} axisLine={false} />
+                        <YAxis fontSize={11} stroke="#94a3b8" tickLine={false} axisLine={false} allowDecimals={false} />
+                        <Tooltip content={<WeeklyTasksTooltip />} />
+                        <Bar
+                          dataKey="completed"
+                          fill="#059669"
+                          radius={[6, 6, 0, 0]}
+                          name="Tasks Completed"
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Platform Insights */}
-          <div className="mt-8 bg-white rounded-xl border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              Platform Insights
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div className="p-4 border border-gray-100 rounded-lg">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-medium text-gray-900">
-                    Volunteer Engagement
-                  </h3>
-                  <Users className="w-4 h-4 text-green-600" />
-                </div>
-                <p className="text-sm text-gray-600">
-                  {loading
-                    ? "Loading insights..."
-                    : stats
-                      ? `${stats.totalVolunteers?.toLocaleString()} registered volunteers on the platform.`
-                      : "No volunteer data available"}
-                </p>
+            {/* Platform Insights */}
+            <div className="bg-white rounded-2xl border border-gray-200/80 shadow-xs p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-base font-bold text-gray-900 tracking-tight">
+                  Platform Operational Insights
+                </h2>
+                <span className="text-xs text-gray-400 font-medium">System Telemetry</span>
               </div>
 
-              <div className="p-4 border border-gray-100 rounded-lg">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-medium text-gray-900">
-                    Organization Activity
-                  </h3>
-                  <Building className="w-4 h-4 text-green-600" />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="p-4 rounded-xl bg-slate-50/60 border border-gray-200/70">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold text-gray-900">Volunteer Community</span>
+                    <Users size={15} className="text-emerald-600" />
+                  </div>
+                  <p className="text-xs text-gray-600 leading-relaxed">
+                    {loading
+                      ? "Analyzing roster…"
+                      : `${stats?.totalVolunteers?.toLocaleString() || 0} registered volunteers actively participating across community initiatives.`}
+                  </p>
                 </div>
-                <p className="text-sm text-gray-600">
-                  {loading
-                    ? "Loading insights..."
-                    : stats
-                      ? `${stats.totalOrganizations?.toLocaleString()} total organizations actively posting opportunities.`
-                      : "No organization data available"}
-                </p>
-              </div>
 
-              <div className="p-4 border border-gray-100 rounded-lg">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-medium text-gray-900">Task Completion</h3>
-                  <CheckCircle className="w-4 h-4 text-green-600" />
+                <div className="p-4 rounded-xl bg-slate-50/60 border border-gray-200/70">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold text-gray-900">Organization Network</span>
+                    <Building2 size={15} className="text-sky-600" />
+                  </div>
+                  <p className="text-xs text-gray-600 leading-relaxed">
+                    {loading
+                      ? "Analyzing network…"
+                      : `${stats?.totalOrganizations?.toLocaleString() || 0} organizations verified and authorized to publish micro-volunteering programs.`}
+                  </p>
                 </div>
-                <p className="text-sm text-gray-600">
-                  {loading
-                    ? "Loading insights..."
-                    : stats
-                      ? `${stats.completedOpportunities?.toLocaleString()} opportunities completed with 18% monthly increase.`
-                      : "No completion data available"}
-                </p>
+
+                <div className="p-4 rounded-xl bg-slate-50/60 border border-gray-200/70">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold text-gray-900">Delivered Impact</span>
+                    <CheckCircle2 size={15} className="text-teal-600" />
+                  </div>
+                  <p className="text-xs text-gray-600 leading-relaxed">
+                    {loading
+                      ? "Aggregating outputs…"
+                      : `${stats?.completedOpportunities?.toLocaleString() || 0} completed volunteer opportunities verified by community organizers.`}
+                  </p>
+                </div>
               </div>
             </div>
           </div>

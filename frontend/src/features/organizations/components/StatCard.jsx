@@ -1,38 +1,57 @@
 import React from "react";
 
 export default function StatCard({ icon, title, value, delta, color = "green" }) {
-  const getGradient = (color) => {
+  const getTheme = (color) => {
     switch (color) {
       case "green":
-        return "linear-gradient(135deg, #22c55e, #16a34a)";
+        return {
+          iconBox: "bg-emerald-50 border-emerald-100 text-emerald-700",
+        };
       case "emerald":
-        return "linear-gradient(135deg, #10b981, #059669)";
+        return {
+          iconBox: "bg-sky-50 border-sky-100 text-sky-700",
+        };
       case "teal":
-        return "linear-gradient(135deg, #14b8a6, #0d9488)";
+        return {
+          iconBox: "bg-amber-50 border-amber-100 text-amber-700",
+        };
       case "lime":
-        return "linear-gradient(135deg, #84cc16, #65a30d)";
+        return {
+          iconBox: "bg-indigo-50 border-indigo-100 text-indigo-700",
+        };
       default:
-        return "linear-gradient(135deg, #22c55e, #16a34a)";
+        return {
+          iconBox: "bg-emerald-50 border-emerald-100 text-emerald-700",
+        };
     }
   };
 
+  const theme = getTheme(color);
+
   return (
-    <div
-      className="relative overflow-hidden rounded-xl shadow-md p-5 flex items-start gap-4 text-white transition-transform hover:scale-[1.02] duration-300"
-      style={{
-        background: getGradient(color),
-      }}
-    >
-      <div className="absolute inset-0 bg-black/10 rounded-xl"></div>
-      <div className="relative h-10 w-10 grid place-items-center rounded-lg bg-white/20 text-white">
-        {icon}
+    <div className="bg-white rounded-2xl border border-gray-200/80 p-5 shadow-xs flex items-center justify-between">
+      <div>
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+          {title}
+        </p>
+        <p className="text-3xl font-extrabold text-gray-900 mt-1">
+          {value || 0}
+        </p>
+        {delta && (
+          <p className="text-xs font-semibold text-emerald-600 mt-1">
+            {delta}
+          </p>
+        )}
       </div>
 
-      {/* TEXT */}
-      <div className="relative">
-        <p className="text-sm text-white/90">{title}</p>
-        <p className="text-2xl font-bold text-white">{value || 0}</p>
-        {delta && <p className="text-xs text-green-200 mt-1">{delta}</p>}
+      <div
+        className={`w-12 h-12 rounded-xl flex items-center justify-center border shadow-xs ${theme.iconBox}`}
+      >
+        {React.isValidElement(icon)
+          ? React.cloneElement(icon, {
+              className: "w-5 h-5",
+            })
+          : icon}
       </div>
     </div>
   );

@@ -12,10 +12,12 @@ export const queryKeys = {
   },
   volunteers: {
     all: ["volunteers"],
+    dashboard: (id) => ["volunteers", "overview", id],
     profile: (id) => ["volunteers", "profile", id],
     notifications: (id) => ["volunteers", "notifications", id],
     tasks: (id) => ["volunteers", "tasks", id],
     badges: (id) => ["volunteers", "badges", id],
+    badgesSummary: (id) => ["volunteers", "badges-summary", id],
     overview: (id) => ["volunteers", "overview", id],
     progress: (id) => ["volunteers", "progress", id],
     top: () => ["volunteers", "top"],

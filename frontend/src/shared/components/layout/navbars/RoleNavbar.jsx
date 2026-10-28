@@ -9,13 +9,13 @@ export default function RoleNavbar({ role }) {
   const profilePath = role === "volunteer" ? "/volunteer/profile" : "/organization/profile";
 
   const volunteerLinks = [
-    { name: "Home", path: "/volunteer/homepage" },
+    { name: "Dashboard", path: "/volunteer/dashboard" },
     { name: "Opportunities", path: "/volunteer/opportunities" },
     { name: "My Tasks", path: "/volunteer/tasks" },
   ];
 
   const organizationLinks = [
-    { name: "Home", path: "/organization/homepage" },
+    { name: "Dashboard", path: "/organization/dashboard" },
     { name: "Posted Opportunities", path: "/organization/opportunities" },
 
   ];
@@ -44,7 +44,7 @@ export default function RoleNavbar({ role }) {
             </button>
 
             <button
-              onClick={() => navigate(role === "volunteer" ? "/volunteer/homepage" : "/organization/homepage")}
+              onClick={() => navigate(role === "volunteer" ? "/volunteer/dashboard" : "/organization/dashboard")}
               className="text-xl sm:text-2xl font-bold text-green-600 hover:text-green-700 transition cursor-pointer"
             >
               ServeSpot

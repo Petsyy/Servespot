@@ -6,6 +6,7 @@ import OrganizationProfileSummaryCard from "../components/profile/OrganizationPr
 import OrganizationAboutSection from "../components/profile/OrganizationAboutSection";
 import OrganizationContactSection from "../components/profile/OrganizationContactSection";
 import { useOrganizationProfilePage } from "../hooks/useOrganizationProfilePage";
+import { Loader2 } from "lucide-react";
 
 export default function OrganizationProfile() {
   const {
@@ -24,7 +25,7 @@ export default function OrganizationProfile() {
   } = useOrganizationProfilePage();
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-slate-50 flex">
       {/* Organization Sidebar */}
       <OrganizationSidebar isOpen={sidebarOpen} onClose={closeSidebar} />
 
@@ -33,8 +34,8 @@ export default function OrganizationProfile() {
         <OrganizationNavbar onToggleSidebar={toggleSidebar} />
 
         {/* Main Content */}
-        <main className="flex-1 p-6 overflow-y-auto">
-          <div className="max-w-6xl mx-auto">
+        <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto">
+          <div className="max-w-6xl mx-auto space-y-6">
             {/* Header & Controls */}
             <OrganizationProfileHeader
               profileIncomplete={profileIncomplete}
@@ -75,7 +76,10 @@ export default function OrganizationProfile() {
             </div>
 
             {loading && (
-              <div className="mt-6 text-sm text-gray-500">Loading profile…</div>
+              <div className="flex items-center gap-2 text-xs font-medium text-gray-500 py-4">
+                <Loader2 size={16} className="animate-spin text-emerald-600" />
+                <span>Synchronizing profile details...</span>
+              </div>
             )}
           </div>
         </main>

@@ -48,7 +48,7 @@ export function useLoginForm(role = "Volunteer") {
 
         registerUserSocket(userId, "volunteer");
         login(data.user, "volunteer", data.token);
-        navigate("/volunteer/homepage");
+        navigate("/volunteer/dashboard");
       } else {
         const orgId = data.organization?._id || data.orgId;
         setCookie("role", "organization");
@@ -63,7 +63,7 @@ export function useLoginForm(role = "Volunteer") {
 
         registerUserSocket(orgId, "organization");
         login(data.organization || data.user, "organization", data.token);
-        navigate("/organization/homepage");
+        navigate("/organization/dashboard");
       }
     } catch (err) {
       console.error("Login submission error:", err);

@@ -101,7 +101,22 @@ export default function VolunteerDashboard() {
         <ProofUploadModal
           opportunityId={selectedTaskId}
           onClose={() => setShowProofModal(false)}
-          onProofSubmitted={() => setProofStatus("Pending")}
+          onProofSubmitted={() => {
+            setProofStatus("Pending");
+            const volunteerId = getCookie("volunteerId");
+            if (volunteerId && selectedTaskId) {
+              try {
+                const proofStorageKey = `proofStatus_${volunteerId}`;
+                const localMap = JSON.parse(
+                  localStorage.getItem(proofStorageKey) || "{}"
+                );
+                localMap[selectedTaskId] = "Pending";
+                localStorage.setItem(proofStorageKey, JSON.stringify(localMap));
+              } catch (err) {
+                console.warn("Failed to cache proof submission in dashboard:", err);
+              }
+            }
+          }}
         />
       )}
 

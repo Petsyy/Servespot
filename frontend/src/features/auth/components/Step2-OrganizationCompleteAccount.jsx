@@ -3,7 +3,6 @@ import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { Building2 } from "lucide-react";
 import axios from "axios";
-import Button from "@/shared/components/ui/Button";
 import FormInput from "@/shared/components/ui/FormInput";
 import { signupOrganization } from "@/shared/services/api";
 
@@ -284,109 +283,51 @@ export default function OrganizationProfileStep({
   };
 
   return (
-    <div className="w-2xl max-w-3xl">
-      {/* Heading */}
-      <div className="text-center mb-6">
-        <span className="text-gray-600">Step 2 of 2</span>
-        <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
+    <div className="w-full">
+      {/* Header */}
+      <div className="mb-6">
+        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold uppercase tracking-wider mb-3 border border-emerald-100">
+          <Building2 className="w-3.5 h-3.5" />
+          <span>Step 2 of 2 • Organization Profile</span>
+        </div>
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
           Complete Organization Profile
         </h2>
-        <p className="text-gray-600">
-          Help volunteers learn about your organization and mission
+        <p className="text-sm text-gray-500 mt-1 leading-relaxed">
+          Help volunteers learn about your organization's mission and operations.
         </p>
       </div>
 
-      {/* Card */}
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white rounded-xl shadow p-6 md:p-8 space-y-5"
-      >
-        <div className="w-12 h-12 mx-auto -mt-1 mb-2 rounded-full bg-green-100 flex items-center justify-center">
-          <Building2 className="w-6 h-6 text-green-600" />
-        </div>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Section 1: Contact & Type */}
+        <div className="space-y-4">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500 pb-1 border-b border-gray-100">
+            1. Contact & Classification
+          </h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormInput
-            label="Contact Person Name"
-            type="text"
-            placeholder="Enter the main contact person’s name"
-            value={formData.contactPerson}
-            onChange={(v) => updateField("contactPerson", v)}
-            error={errors.contactPerson}
-          />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormInput
+              label="Contact Person Name"
+              type="text"
+              placeholder="e.g. Juan Dela Cruz"
+              value={formData.contactPerson}
+              onChange={(v) => updateField("contactPerson", v)}
+              error={errors.contactPerson}
+            />
 
-          <FormInput
-            label="Contact Number"
-            type="text"
-            placeholder="Enter your organization's phone number"
-            value={formData.contactNumber}
-            onChange={(val) => {
-              // Allow only numbers and limit to exactly 11 digits
-              if (/^\d{0,11}$/.test(val)) {
-                updateField("contactNumber", val);
-              }
-            }}
-            error={errors.contactNumber}
-          />
-
-          <FormInput
-            label="Region"
-            type="select"
-            options={regions.map((r) => ({ value: r.code, label: r.name }))}
-            value={formData.regionCode}
-            onChange={handleRegionChange}
-            error={errors.region}
-            loading={loadingRegions}
-            placeholder="Select your region"
-          />
-
-          <FormInput
-            label="Province"
-            type="select"
-            options={provinces.map((p) => ({ value: p.code, label: p.name }))}
-            value={formData.province}
-            onChange={handleProvinceChange}
-            error={errors.province}
-            loading={loadingProvinces}
-            placeholder="Select your province"
-            disabled={!formData.region}
-          />
-
-          <FormInput
-            label="City/Municipality"
-            type="select"
-            options={cities.map((c) => ({ value: c.code, label: c.name }))}
-            value={formData.cityCode}
-            onChange={handleCityChange}
-            error={errors.city}
-            loading={loadingCities}
-            placeholder="Select your city/municipality"
-            disabled={!formData.provinceCode}
-          />
-
-          <FormInput
-            label="Barangay"
-            type="select"
-            options={barangays.map((b) => ({ value: b.code, label: b.name }))}
-            value={formData.barangayCode}
-            onChange={(v) => {
-              const barangayData = barangays.find(b => b.code === v);
-              updateField("barangay", barangayData ? barangayData.name : "");
-              updateField("barangayCode", v);
-            }}
-            error={errors.barangay}
-            loading={loadingBarangays}
-            placeholder="Select your barangay"
-            disabled={!formData.cityCode}
-          />
-
-          <FormInput
-            label="Address"
-            type="text"
-            placeholder="Enter your address (optional)"
-            value={formData.address}
-            onChange={(v) => updateField("address", v)}
-          />
+            <FormInput
+              label="Contact Number"
+              type="text"
+              placeholder="e.g. 09171234567"
+              value={formData.contactNumber}
+              onChange={(val) => {
+                if (/^\d{0,11}$/.test(val)) {
+                  updateField("contactNumber", val);
+                }
+              }}
+              error={errors.contactNumber}
+            />
+          </div>
 
           <FormInput
             label="Organization Type"
@@ -398,28 +339,123 @@ export default function OrganizationProfileStep({
           />
         </div>
 
-        <FormInput
-          label="Organization Description / Mission"
-          type="textarea"
-          placeholder="Describe your organization's mission and activities (optional)"
-          value={formData.description}
-          onChange={(v) => updateField("description", v)}
-        />
+        {/* Section 2: Location */}
+        <div className="space-y-4">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500 pb-1 border-b border-gray-100">
+            2. Headquarters Location
+          </h3>
 
-        <FormInput
-          label="Upload Verification Document"
-          type="file"
-          accept=".jpg,.jpeg,.png,.pdf,.docx" // only allowed types
-          onChange={(file) => updateField("document", file)}
-        />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormInput
+              label="Region"
+              type="select"
+              options={regions.map((r) => ({ value: r.code, label: r.name }))}
+              value={formData.regionCode}
+              onChange={handleRegionChange}
+              error={errors.region}
+              loading={loadingRegions}
+              placeholder="Select your region"
+            />
 
-        <div className="flex justify-between">
-          <Button type="button" variant="outline" onClick={onPrev}>
+            <FormInput
+              label="Province"
+              type="select"
+              options={provinces.map((p) => ({ value: p.code, label: p.name }))}
+              value={formData.province}
+              onChange={handleProvinceChange}
+              error={errors.province}
+              loading={loadingProvinces}
+              placeholder="Select your province"
+              disabled={!formData.region}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormInput
+              label="City / Municipality"
+              type="select"
+              options={cities.map((c) => ({ value: c.code, label: c.name }))}
+              value={formData.cityCode}
+              onChange={handleCityChange}
+              error={errors.city}
+              loading={loadingCities}
+              placeholder="Select your city/municipality"
+              disabled={!formData.provinceCode}
+            />
+
+            <FormInput
+              label="Barangay"
+              type="select"
+              options={barangays.map((b) => ({ value: b.code, label: b.name }))}
+              value={formData.barangayCode}
+              onChange={(v) => {
+                const barangayData = barangays.find(b => b.code === v);
+                updateField("barangay", barangayData ? barangayData.name : "");
+                updateField("barangayCode", v);
+              }}
+              error={errors.barangay}
+              loading={loadingBarangays}
+              placeholder="Select your barangay"
+              disabled={!formData.cityCode}
+            />
+          </div>
+
+          <FormInput
+            label="Address / Street (Optional)"
+            type="text"
+            placeholder="e.g. Unit 401, Building Name, Street"
+            value={formData.address}
+            onChange={(v) => updateField("address", v)}
+          />
+        </div>
+
+        {/* Section 3: Mission & Verification */}
+        <div className="space-y-4">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500 pb-1 border-b border-gray-100">
+            3. Mission & Verification
+          </h3>
+
+          <FormInput
+            label="Organization Description / Mission"
+            type="textarea"
+            placeholder="Describe your organization's mission, causes, and activities..."
+            value={formData.description}
+            onChange={(v) => updateField("description", v)}
+          />
+
+          <FormInput
+            label="Upload Verification Document (SEC, DTI, or Certificate)"
+            type="file"
+            accept=".jpg,.jpeg,.png,.pdf,.docx"
+            onChange={(file) => updateField("document", file)}
+          />
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
+          <button
+            type="button"
+            onClick={onPrev}
+            disabled={isSubmitting}
+            className="py-3 px-5 rounded-xl font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 active:bg-gray-300 disabled:opacity-50 transition-all duration-150 cursor-pointer"
+          >
             Back
-          </Button>
-          <Button type="submit" variant="primary" loading={isSubmitting}>
-            {isSubmitting ? "Submitting..." : "Submit"}
-          </Button>
+          </button>
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="flex-1 py-3 px-4 rounded-xl font-semibold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow transition-all duration-150 flex items-center justify-center gap-2 cursor-pointer"
+          >
+            {isSubmitting ? (
+              <>
+                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <span>Completing registration...</span>
+              </>
+            ) : (
+              "Complete Registration"
+            )}
+          </button>
         </div>
       </form>
     </div>

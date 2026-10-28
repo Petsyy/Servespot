@@ -1,58 +1,75 @@
 import React from "react";
 import { TrendingUp, Timer, Award } from "lucide-react";
 
-export default function MetricCard({ title, value, gradient, icon, loading = false }) {
-  // 🎨 Define gradient classes
-  const getGradientClass = (gradient) => {
-    switch (gradient) {
-      case "from-green-500 to-emerald-500":
-        return "bg-gradient-to-r from-green-500 to-emerald-500";
-      case "from-green-400 to-teal-400":
-        return "bg-gradient-to-r from-green-400 to-teal-400";
-      case "from-amber-400 to-orange-400":
-        return "bg-gradient-to-r from-amber-400 to-orange-400";
-      case "from-emerald-500 to-green-600":
-        return "bg-gradient-to-r from-emerald-500 to-green-600";
-      case "from-green-500 to-emerald-600":
-        return "bg-gradient-to-r from-green-500 to-emerald-600";
+export default function MetricCard({
+  title,
+  value,
+  icon,
+  accent = "emerald",
+  subtext,
+  loading = false,
+}) {
+  const getTheme = () => {
+    switch (accent) {
+      case "amber":
+        return {
+          iconBox: "bg-amber-50 text-amber-600 border-amber-200/80",
+          ring: "hover:border-amber-300",
+        };
+      case "sky":
+        return {
+          iconBox: "bg-sky-50 text-sky-600 border-sky-100",
+          ring: "hover:border-sky-300",
+        };
+      case "emerald":
       default:
-        return "bg-gradient-to-r from-green-500 to-emerald-500";
+        return {
+          iconBox: "bg-emerald-50 text-emerald-600 border-emerald-100",
+          ring: "hover:border-emerald-300",
+        };
     }
   };
 
-  // 🎨 Get icon component
-  const getIcon = (iconName) => {
-    switch (iconName) {
+  const getIcon = () => {
+    switch (icon) {
       case "trending":
-        return <TrendingUp size={20} className="text-white" />;
+        return <TrendingUp size={20} />;
       case "timer":
-        return <Timer size={20} className="text-white" />;
+        return <Timer size={20} />;
       case "badge":
-        return <Award size={20} className="text-white" />;
+        return <Award size={20} />;
       default:
-        return <TrendingUp size={20} className="text-white" />;
+        return <TrendingUp size={20} />;
     }
   };
+
+  const theme = getTheme();
 
   return (
     <div
-      className={`relative overflow-hidden rounded-xl shadow-md p-5 flex items-start gap-4 text-white transition-transform hover:scale-[1.02] duration-300 ${getGradientClass(gradient)}`}
+      className={`bg-white rounded-2xl border border-gray-200/80 p-5 shadow-xs transition-all duration-150 flex flex-col justify-between ${theme.ring}`}
     >
-      {/* Overlay for contrast */}
-      <div className="absolute inset-0 bg-black/10 rounded-xl"></div>
-
-      {/* ICON */}
-      <div className="relative h-10 w-10 grid place-items-center rounded-lg bg-white/20 text-white">
-        {getIcon(icon)}
+      <div className="flex items-center justify-between gap-3 mb-2">
+        <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+          {title}
+        </span>
+        <div
+          className={`h-10 w-10 grid place-items-center rounded-xl border ${theme.iconBox}`}
+        >
+          {getIcon()}
+        </div>
       </div>
 
-      {/* TEXT */}
-      <div className="relative">
-        <p className="text-sm text-white/90 font-medium">{title}</p>
+      <div>
         {loading ? (
-          <div className="h-6 w-16 bg-white/20 rounded animate-pulse mt-1"></div>
+          <div className="h-8 w-16 bg-gray-100 rounded-lg animate-pulse mt-1" />
         ) : (
-          <p className="text-2xl font-bold text-white mt-1">{value || 0}</p>
+          <p className="text-3xl font-extrabold text-gray-900 tracking-tight">
+            {value ?? 0}
+          </p>
+        )}
+        {subtext && (
+          <p className="text-xs font-medium text-gray-500 mt-1">{subtext}</p>
         )}
       </div>
     </div>

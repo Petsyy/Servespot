@@ -13,9 +13,9 @@ export default function PreviewCard({
 }) {
   const formattedDate = date
     ? new Date(date).toLocaleString("en-US", {
-        weekday: "long",
+        weekday: "short",
         year: "numeric",
-        month: "long",
+        month: "short",
         day: "numeric",
         hour: "2-digit",
         minute: "2-digit",
@@ -24,55 +24,58 @@ export default function PreviewCard({
 
   return (
     <div
-      className="sticky top-6 bg-white rounded-xl border border-gray-200 shadow-sm 
-                 overflow-hidden w-full max-w-sm self-start"
+      className="sticky top-6 bg-white rounded-2xl border border-gray-200/80 shadow-xs overflow-hidden w-full max-w-sm self-start"
       style={{
-        maxHeight: 'calc(100vh - 3rem)', // Prevent overflow
-        overflowY: 'auto', // Enable scrolling if content is too tall
+        maxHeight: "calc(100vh - 3rem)",
+        overflowY: "auto",
       }}
     >
       {/* Poster Image */}
-      {imageUrl && (
+      {imageUrl ? (
         <img
           src={imageUrl}
           alt="Poster"
-          className="w-full h-44 object-cover rounded-t-xl"
+          className="w-full h-44 object-cover"
         />
+      ) : (
+        <div className="w-full h-36 bg-gradient-to-br from-emerald-800 to-emerald-950 flex items-center justify-center text-white/40 text-xs font-semibold tracking-wider uppercase">
+          Opportunity Cover Preview
+        </div>
       )}
 
       {/* Content */}
       <div className="p-5 break-words">
-        <h3 className="text-lg font-semibold text-gray-900">
+        <h3 className="text-base font-bold text-gray-900 leading-snug">
           {title || "Opportunity Title"}
         </h3>
-        <p className="text-sm text-gray-600 mb-3 leading-relaxed">
+        <p className="text-xs text-gray-500 mt-1 mb-4 leading-relaxed line-clamp-3">
           {description || "Opportunity description will appear here..."}
         </p>
 
         {/* Info Section */}
-        <div className="space-y-2 text-sm text-gray-700">
+        <div className="space-y-2 text-xs text-gray-700 bg-slate-50/70 p-3 rounded-xl border border-gray-100 mb-4">
           {formattedDate && (
             <div className="flex items-center gap-2">
-              <Calendar size={16} className="text-green-600 shrink-0" />
-              <span>{formattedDate}</span>
+              <Calendar size={14} className="text-emerald-600 shrink-0" />
+              <span className="font-medium text-gray-700">{formattedDate}</span>
             </div>
           )}
           {duration && (
             <div className="flex items-center gap-2">
-              <Clock size={16} className="text-green-600 shrink-0" />
-              <span>{duration}</span>
+              <Clock size={14} className="text-emerald-600 shrink-0" />
+              <span className="font-medium text-gray-700">{duration}</span>
             </div>
           )}
           {location && (
             <div className="flex items-center gap-2">
-              <MapPin size={16} className="text-green-600 shrink-0" />
-              <span>{location}</span>
+              <MapPin size={14} className="text-emerald-600 shrink-0" />
+              <span className="font-medium text-gray-700">{location}</span>
             </div>
           )}
           {volunteersNeeded !== undefined && (
             <div className="flex items-center gap-2">
-              <UsersIcon size={16} className="text-green-600 shrink-0" />
-              <span>
+              <UsersIcon size={14} className="text-emerald-600 shrink-0" />
+              <span className="font-medium text-gray-700">
                 {volunteersNeeded === 1
                   ? "1 volunteer needed"
                   : `${volunteersNeeded} volunteers needed`}
@@ -83,15 +86,15 @@ export default function PreviewCard({
 
         {/* Skills Section */}
         {skills?.length > 0 && (
-          <div className="mt-4">
-            <p className="font-medium text-sm text-gray-800 mb-2">
-              Required Skills:
+          <div>
+            <p className="font-semibold text-[11px] uppercase tracking-wider text-gray-500 mb-2">
+              Required Skills
             </p>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5">
               {skills.map((s) => (
                 <span
                   key={s}
-                  className="text-xs px-3 py-1 rounded-full bg-green-50 text-green-700 border border-green-200"
+                  className="text-[11px] font-medium px-2.5 py-0.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200/60"
                 >
                   {s}
                 </span>

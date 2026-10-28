@@ -1,97 +1,95 @@
-import React, { useEffect, useState } from "react";
-import { Star, Zap, Award, Trophy, Flame, Crown, Medal, Sparkles } from "lucide-react";
+import React, { useState } from "react";
+import { Star, Zap, Award, Trophy, Flame, Crown, Medal, Sparkles, Check } from "lucide-react";
 import { useVolunteerOverview } from "@/features/volunteers/hooks/useVolunteerOverview";
 import VolunteerSidebar from "@/shared/components/layout/sidebars/VolunteerSidebar";
 import VolunteerNavbar from "@/shared/components/layout/navbars/VolunteerNavbar";
+
+const ALL_BADGES = [
+  {
+    name: "First Step",
+    description: "Completed your first volunteering task!",
+    icon: <Star className="w-6 h-6" />,
+    milestone: 1,
+    bgGradient: "bg-amber-50/70 border-amber-200/80",
+    iconColor: "text-amber-500",
+    pillColor: "bg-amber-100 text-amber-800",
+  },
+  {
+    name: "Active Helper",
+    description: "Completed 2 volunteering tasks",
+    icon: <Zap className="w-6 h-6" />,
+    milestone: 2,
+    bgGradient: "bg-emerald-50/70 border-emerald-200/80",
+    iconColor: "text-emerald-600",
+    pillColor: "bg-emerald-100 text-emerald-800",
+  },
+  {
+    name: "Helping Hand",
+    description: "Completed 3 volunteering tasks",
+    icon: <Award className="w-6 h-6" />,
+    milestone: 3,
+    bgGradient: "bg-sky-50/70 border-sky-200/80",
+    iconColor: "text-sky-600",
+    pillColor: "bg-sky-100 text-sky-800",
+  },
+  {
+    name: "Community Hero",
+    description: "Completed 4 volunteering tasks",
+    icon: <Trophy className="w-6 h-6" />,
+    milestone: 4,
+    bgGradient: "bg-amber-50/90 border-amber-300",
+    iconColor: "text-amber-600",
+    pillColor: "bg-amber-200/80 text-amber-900",
+  },
+  {
+    name: "Neighborhood Legend",
+    description: "Completed 5 volunteering tasks",
+    icon: <Flame className="w-6 h-6" />,
+    milestone: 5,
+    bgGradient: "bg-rose-50/70 border-rose-200/80",
+    iconColor: "text-rose-600",
+    pillColor: "bg-rose-100 text-rose-800",
+  },
+  {
+    name: "Volunteer Champion",
+    description: "Completed 6 volunteering tasks",
+    icon: <Crown className="w-6 h-6" />,
+    milestone: 6,
+    bgGradient: "bg-purple-50/70 border-purple-200/80",
+    iconColor: "text-purple-600",
+    pillColor: "bg-purple-100 text-purple-800",
+  },
+  {
+    name: "Volunteer Master",
+    description: "Completed 7 volunteering tasks",
+    icon: <Medal className="w-6 h-6" />,
+    milestone: 7,
+    bgGradient: "bg-indigo-50/70 border-indigo-200/80",
+    iconColor: "text-indigo-600",
+    pillColor: "bg-indigo-100 text-indigo-800",
+  },
+  {
+    name: "Volunteer Legend",
+    description: "Completed 8 volunteering tasks",
+    icon: <Sparkles className="w-6 h-6" />,
+    milestone: 8,
+    bgGradient: "bg-amber-100/60 border-amber-300",
+    iconColor: "text-amber-600",
+    pillColor: "bg-amber-200 text-amber-900",
+  },
+];
 
 export default function VolunteerBadges() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { data: volunteer, isLoading: loading } = useVolunteerOverview();
 
-  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+  const toggleSidebar = () => setSidebarOpen((prev) => !prev);
   const closeSidebar = () => setSidebarOpen(false);
 
-  const ALL_BADGES = [
-    {
-      name: "First Step",
-      description: "Completed your first volunteering task!",
-      icon: <Star className="w-6 h-6" />,
-      milestone: 1,
-      gradient: "from-yellow-400 to-yellow-600",
-      bgGradient: "from-yellow-50 to-amber-50",
-      iconColor: "text-yellow-400"
-    },
-    {
-      name: "Active Helper",
-      description: "Completed 2 volunteering tasks",
-      icon: <Zap className="w-6 h-6" />,
-      milestone: 2,
-      gradient: "from-orange-400 to-orange-600",
-      bgGradient: "from-orange-50 to-amber-50",
-      iconColor: "text-orange-500"
-    },
-    {
-      name: "Helping Hand",
-      description: "Completed 3 volunteering tasks",
-      icon: <Award className="w-6 h-6" />,
-      milestone: 3,
-      gradient: "from-blue-400 to-blue-600",
-      bgGradient: "from-blue-50 to-cyan-50",
-      iconColor: "text-blue-500"
-    },
-    {
-      name: "Community Hero",
-      description: "Completed 4 volunteering tasks",
-      icon: <Trophy className="w-6 h-6" />,
-      milestone: 4,
-      gradient: "from-green-400 to-green-600",
-      bgGradient: "from-green-50 to-emerald-50",
-      iconColor: "text-green-500"
-    },
-    {
-      name: "Neighborhood Legend",
-      description: "Completed 5 volunteering tasks",
-      icon: <Flame className="w-6 h-6" />,
-      milestone: 5,
-      gradient: "from-pink-400 to-pink-600",
-      bgGradient: "from-pink-50 to-rose-50",
-      iconColor: "text-pink-500"
-    },
-    {
-      name: "Volunteer Champion",
-      description: "Completed 6 volunteering tasks",
-      icon: <Crown className="w-6 h-6" />,
-      milestone: 6,
-      gradient: "from-purple-400 to-purple-600",
-      bgGradient: "from-purple-50 to-violet-50",
-      iconColor: "text-purple-500"
-    },
-    {
-      name: "Volunteer Master",
-      description: "Completed 7 volunteering tasks",
-      icon: <Medal className="w-6 h-6" />,
-      milestone: 7,
-      gradient: "from-indigo-400 to-indigo-600",
-      bgGradient: "from-indigo-50 to-blue-50",
-      iconColor: "text-indigo-500"
-    },
-    {
-      name: "Volunteer Legend",
-      description: "Completed 8 volunteering tasks",
-      icon: <Sparkles className="w-6 h-6" />,
-      milestone: 8,
-      gradient: "from-yellow-400 to-yellow-600",
-      bgGradient: "from-amber-50 to-yellow-50",
-      iconColor: "text-yellow-500"
-    },
-  ];
-
-
-
   const completed = volunteer?.completedTasks || 0;
-  const earnedNames = (volunteer?.badges || []).map((b) => b.name);
-  const earnedBadges = ALL_BADGES.filter(badge => earnedNames.includes(badge.name));
-  const lockedBadges = ALL_BADGES.filter(badge => !earnedNames.includes(badge.name));
+  const earnedNames = (volunteer?.badges || []).map((b) => (typeof b === "string" ? b : b.name));
+  const earnedBadges = ALL_BADGES.filter((badge) => earnedNames.includes(badge.name));
+  const lockedBadges = ALL_BADGES.filter((badge) => !earnedNames.includes(badge.name));
 
   if (loading) {
     return (
@@ -99,10 +97,10 @@ export default function VolunteerBadges() {
         <VolunteerSidebar isOpen={sidebarOpen} onClose={closeSidebar} />
         <div className="flex-1 flex flex-col min-w-0">
           <VolunteerNavbar onToggleSidebar={toggleSidebar} />
-          <main className="flex-1 flex items-center justify-center">
+          <main className="flex-1 flex items-center justify-center p-6">
             <div className="flex flex-col items-center gap-3">
-              <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
-              <p className="text-gray-600 text-sm">Loading your achievements...</p>
+              <div className="animate-spin rounded-full h-10 w-10 border-3 border-emerald-600 border-t-transparent" />
+              <p className="text-gray-500 text-sm font-medium">Loading your achievements...</p>
             </div>
           </main>
         </div>
@@ -116,68 +114,73 @@ export default function VolunteerBadges() {
       <div className="flex-1 flex flex-col min-w-0">
         <VolunteerNavbar onToggleSidebar={toggleSidebar} />
 
-        <main className="flex-1 px-4 sm:px-6 py-6 overflow-y-auto">
-          <div className="max-w-6xl mx-auto">
+        <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6 md:py-8 overflow-y-auto">
+          <div className="max-w-6xl mx-auto space-y-6">
             {/* Header Section */}
-            <div className="text-center mb-8">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl shadow mb-4">
-                <span className="text-2xl">🏅</span>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
+                  Your Rewards & Badges
+                </h1>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Earn verifiable milestone badges as you complete tasks and make a positive difference in your community.
+                </p>
               </div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                Your Rewards & Badges
-              </h1>
-              <p className="text-sm text-gray-600 max-w-md mx-auto">
-                Earn badges as you complete more tasks and make a difference.
-              </p>
             </div>
 
             {/* Stats Overview */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-              <StatCard 
-                label="Points" 
-                value={volunteer?.points || 0} 
-                gradient="from-blue-500 to-cyan-500"
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <StatCard
+                label="Total Points"
+                value={volunteer?.points || 0}
+                icon={<Sparkles className="w-5 h-5 text-emerald-600" />}
+                iconBg="bg-emerald-50 border-emerald-100"
               />
-              <StatCard 
-                label="Tasks Done" 
-                value={completed} 
-                gradient="from-green-500 to-emerald-500"
+              <StatCard
+                label="Completed Tasks"
+                value={completed}
+                icon={<Award className="w-5 h-5 text-sky-600" />}
+                iconBg="bg-sky-50 border-sky-100"
               />
-              <StatCard 
-                label="Badges" 
-                value={earnedNames.length} 
-                gradient="from-purple-500 to-pink-500"
+              <StatCard
+                label="Badges Earned"
+                value={earnedBadges.length}
+                icon={<Trophy className="w-5 h-5 text-amber-600" />}
+                iconBg="bg-amber-50 border-amber-100"
               />
             </div>
 
-            {/* Progress Overview */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-8">
+            {/* Progress Overview Card */}
+            <div className="bg-white rounded-2xl shadow-xs border border-gray-200/80 p-5">
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-base font-semibold text-gray-900">Your Progress</h2>
-                <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                  {completed}/{ALL_BADGES.length} milestones
+                <div>
+                  <h2 className="text-base font-bold text-gray-900">Milestone Progress</h2>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    {ALL_BADGES.length - earnedBadges.length === 0
+                      ? "All milestones completed! You've unlocked every badge."
+                      : `${ALL_BADGES.length - earnedBadges.length} more milestones to unlock all badges`}
+                  </p>
+                </div>
+                <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-3 py-1 rounded-full">
+                  {earnedBadges.length} of {ALL_BADGES.length} Unlocked
                 </span>
               </div>
-              <div className="w-full bg-gray-100 rounded-full h-2 mb-2">
-                <div 
-                  className="h-2 rounded-full bg-gradient-to-r from-green-400 to-blue-500 transition-all duration-700"
-                  style={{ width: `${(completed / ALL_BADGES.length) * 100}%` }}
-                ></div>
+              <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                <div
+                  className="h-2.5 rounded-full bg-emerald-600 transition-all duration-500"
+                  style={{ width: `${(earnedBadges.length / ALL_BADGES.length) * 100}%` }}
+                />
               </div>
-              <p className="text-xs text-gray-600 text-center">
-                {ALL_BADGES.length - earnedNames.length} more to unlock all badges
-              </p>
             </div>
 
-            {/* Badges Grid */}
+            {/* Badges Sections */}
             <div className="space-y-8">
               {/* Earned Badges Section */}
               {earnedBadges.length > 0 && (
                 <section>
                   <div className="flex items-center gap-2 mb-4">
-                    <div className="w-1.5 h-6 bg-gradient-to-b from-green-400 to-emerald-600 rounded-full"></div>
-                    <h2 className="text-lg font-semibold text-gray-900">Earned Badges</h2>
-                    <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-0.5 rounded">
+                    <h2 className="text-lg font-bold text-gray-900">Earned Badges</h2>
+                    <span className="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">
                       {earnedBadges.length}
                     </span>
                   </div>
@@ -189,13 +192,12 @@ export default function VolunteerBadges() {
                 </section>
               )}
 
-              {/* Locked Badges Section */}
+              {/* Locked / Upcoming Badges Section */}
               {lockedBadges.length > 0 && (
                 <section>
                   <div className="flex items-center gap-2 mb-4">
-                    <div className="w-1.5 h-6 bg-gradient-to-b from-gray-400 to-gray-600 rounded-full"></div>
-                    <h2 className="text-lg font-semibold text-gray-900">Upcoming Badges</h2>
-                    <span className="bg-gray-100 text-gray-800 text-xs font-medium px-2 py-0.5 rounded">
+                    <h2 className="text-lg font-bold text-gray-900">Upcoming Badges</h2>
+                    <span className="bg-gray-100 text-gray-700 text-xs font-semibold px-2.5 py-0.5 rounded-full">
                       {lockedBadges.length}
                     </span>
                   </div>
@@ -214,87 +216,74 @@ export default function VolunteerBadges() {
   );
 }
 
-// Compact Stat Card Component
-function StatCard({ label, value, gradient }) {
+function StatCard({ label, value, icon, iconBg }) {
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
-      <p className={`text-2xl font-bold bg-gradient-to-r ${gradient} bg-clip-text text-transparent mb-1`}>
-        {value}
-      </p>
-      <p className="text-xs font-medium text-gray-600">{label}</p>
+    <div className="bg-white rounded-2xl border border-gray-200/80 p-5 shadow-xs flex items-center justify-between">
+      <div>
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{label}</p>
+        <p className="text-3xl font-extrabold text-gray-900 mt-1">{value}</p>
+      </div>
+      <div className={`w-12 h-12 rounded-xl flex items-center justify-center border shadow-xs ${iconBg}`}>
+        {icon}
+      </div>
     </div>
   );
 }
 
-// Fixed Badge Card Component with visible icons
 function BadgeCard({ badge, earned, completed }) {
   const progress = Math.min((completed / badge.milestone) * 100, 100);
-  
+
   return (
-    <div className={`
-      relative p-4 rounded-lg border transition-all duration-300
-      ${earned 
-        ? `border-transparent bg-gradient-to-br ${badge.bgGradient} shadow-sm` 
-        : 'border-gray-200 bg-white'
-      }
-    `}>
-      <div className="flex flex-col items-center text-center space-y-3">
-        {/* Badge Icon - Fixed to show icon color properly */}
-        <div className={`
-          flex items-center justify-center w-14 h-14 rounded-xl transition-all relative
-          ${earned 
-            ? `bg-gradient-to-br ${badge.gradient} shadow` 
-            : 'bg-gray-200'
-          }
-        `}>
-          <div className={`
-            ${earned ? 'text-white' : badge.iconColor}
-          `}>
-            {badge.icon}
-          </div>
+    <div
+      className={`relative p-5 rounded-2xl border shadow-xs transition-all duration-200 flex flex-col items-center text-center justify-between ${
+        earned
+          ? `${badge.bgGradient} hover:shadow-md`
+          : "border-gray-200/80 bg-white"
+      }`}
+    >
+      <div className="flex flex-col items-center w-full">
+        {/* Badge Icon */}
+        <div
+          className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-3.5 shadow-xs relative ${
+            earned ? "bg-white border border-gray-100" : "bg-gray-50 border border-gray-200 text-gray-400"
+          }`}
+        >
+          <div className={earned ? badge.iconColor : "text-gray-400"}>{badge.icon}</div>
           {earned && (
-            <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center border border-white">
-              <span className="text-white text-[10px] font-bold">✓</span>
+            <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-emerald-600 text-white rounded-full flex items-center justify-center shadow-xs border-2 border-white">
+              <Check className="w-3 h-3 stroke-[3]" />
             </div>
           )}
         </div>
 
-        {/* Badge Content */}
-        <div className="space-y-2 w-full">
-          <h3 className={`
-            font-semibold text-sm transition-colors
-            ${earned ? 'text-gray-900' : 'text-gray-500'}
-          `}>
-            {badge.name}
-          </h3>
-          <p className="text-xs text-gray-500 leading-tight">
-            {badge.description}
-          </p>
+        {/* Badge Name & Description */}
+        <h3 className={`font-bold text-sm mb-1 ${earned ? "text-gray-900" : "text-gray-700"}`}>
+          {badge.name}
+        </h3>
+        <p className="text-xs text-gray-500 leading-relaxed mb-3 line-clamp-2">
+          {badge.description}
+        </p>
+      </div>
 
-          {/* Progress Bar */}
-          <div className="space-y-1.5">
-            <div className="w-full bg-gray-100 rounded-full h-1.5">
-              <div
-                className={`
-                  h-1.5 rounded-full transition-all duration-700
-                  ${earned ? `bg-gradient-to-r ${badge.gradient}` : 'bg-gray-300'}
-                `}
-                style={{ width: `${progress}%` }}
-              ></div>
-            </div>
-            
-            <p className={`
-              text-xs font-medium
-              ${earned ? 'text-green-600' : 'text-gray-500'}
-            `}>
-              {!earned && completed < badge.milestone
-                ? `${badge.milestone - completed} to go`
-                : earned
-                ? "Unlocked"
-                : "Ready!"}
-            </p>
-          </div>
+      {/* Progress & Milestone Footer */}
+      <div className="w-full pt-3 border-t border-black/5 mt-auto">
+        <div className="flex items-center justify-between text-xs mb-1.5">
+          <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${earned ? badge.pillColor : "bg-gray-100 text-gray-600"}`}>
+            Milestone {badge.milestone}
+          </span>
+          <span className={`font-semibold text-[11px] ${earned ? "text-emerald-700" : "text-gray-500"}`}>
+            {earned ? "Unlocked" : `${Math.max(badge.milestone - completed, 0)} to go`}
+          </span>
         </div>
+
+        {!earned && (
+          <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+            <div
+              className="h-1.5 rounded-full bg-emerald-600 transition-all duration-500"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

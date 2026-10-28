@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Users,
   Building2,
@@ -6,6 +6,10 @@ import {
   FileDown,
   Table,
   ChevronDown,
+  Clock,
+  Award,
+  BarChart3,
+  Calendar,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -23,17 +27,14 @@ import {
 import AdminSidebar from "@/shared/components/layout/sidebars/AdminSidebar";
 import AdminNavbar from "@/shared/components/layout/navbars/AdminNavbar";
 import { useAdminReports } from "@/features/admin/hooks/useAdminReports";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 import * as XLSX from "xlsx";
 
 export default function AdminReports() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
-  // TanStack Query reports hook
   const { reportsData, isLoading: loading } = useAdminReports();
 
-  const handleExport = async (format) => {
+  const handleExport = (format) => {
     if (!reportsData) {
       alert("No data available to export. Please wait for data to load.");
       return;
@@ -43,9 +44,6 @@ export default function AdminReports() {
 
     try {
       switch (format) {
-        // case "PDF":
-        //   await exportToPDF();
-        //   break;
         case "CSV":
           exportToCSV();
           break;
@@ -61,164 +59,36 @@ export default function AdminReports() {
     }
   };
 
-  // const exportToPDF = async () => {
-  //   const element = document.getElementById("reports-content");
-  //   if (!element) {
-  //     alert("Report content not found. Please refresh and try again.");
-  //     return;
-  //   }
-
-  //   try {
-  //     //  Clone node
-  //     const clone = element.cloneNode(true);
-  //     clone.id = "reports-content-clone";
-  //     clone.style.position = "absolute";
-  //     clone.style.left = "-9999px";
-  //     clone.style.top = "0";
-  //     clone.style.background = "#fff";
-  //     document.body.appendChild(clone);
-
-  //     // Replace any OKLCH or LAB colors with rgb fallbacks
-  //     const sanitizeColor = (color) => {
-  //       if (!color) return "rgb(255,255,255)";
-  //       if (color.startsWith("oklch") || color.startsWith("lab("))
-  //         return "rgb(255,255,255)";
-  //       return color;
-  //     };
-
-  //     const all = clone.querySelectorAll("*");
-  //     all.forEach((el) => {
-  //       const computed = window.getComputedStyle(el);
-  //       const color = sanitizeColor(computed.color);
-  //       const bg = sanitizeColor(computed.backgroundColor);
-  //       const border = sanitizeColor(computed.borderColor);
-
-  //       el.style.color = color;
-  //       el.style.backgroundColor = bg;
-  //       el.style.borderColor = border;
-  //       el.style.boxShadow = "none";
-  //     });
-
-  //     // Override Tailwind CSS vars that use oklch()
-  //     const vars = clone.querySelectorAll("[style], [class]");
-  //     vars.forEach((el) => {
-  //       const inline = el.getAttribute("style");
-  //       if (inline && inline.includes("oklch")) {
-  //         el.setAttribute(
-  //           "style",
-  //           inline.replace(/oklch\([^)]*\)/g, "rgb(255,255,255)")
-  //         );
-  //       }
-  //     });
-
-  //     // Snapshot
-  //     const canvas = await html2canvas(clone, {
-  //       scale: 2,
-  //       useCORS: true,
-  //       allowTaint: true,
-  //       backgroundColor: "#ffffff",
-  //     });
-
-  //     const imgData = canvas.toDataURL("image/png");
-  //     const pdf = new jsPDF("p", "mm", "a4");
-  //     const imgWidth = 210;
-  //     const pageHeight = 295;
-  //     const imgHeight = (canvas.height * imgWidth) / canvas.width;
-  //     let heightLeft = imgHeight;
-  //     let position = 0;
-
-  //     pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-  //     heightLeft -= pageHeight;
-
-  //     while (heightLeft >= 0) {
-  //       position = heightLeft - imgHeight;
-  //       pdf.addPage();
-  //       pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-  //       heightLeft -= pageHeight;
-  //     }
-
-  //     const fileName = `ServeSpot_Reports_${new Date().toISOString().split("T")[0]}.pdf`;
-  //     pdf.save(fileName);
-
-  //     document.body.removeChild(clone);
-  //   } catch (error) {
-  //     console.error("Error exporting PDF:", error);
-  //     alert("PDF export failed. Check console for details.");
-  //   }
-  // };
-
   const exportToCSV = () => {
     const csvData = [];
-
-    // Add summary data
     csvData.push(["ServeSpot Reports Summary"]);
     csvData.push(["Generated on:", new Date().toLocaleDateString()]);
     csvData.push([]);
-
-    // Top performers
     csvData.push(["Top Performers"]);
     csvData.push(["Top Volunteer:", reportsData.topVolunteer?.name || "N/A"]);
-    csvData.push([
-      "Tasks Completed:",
-      reportsData.topVolunteer?.tasksCompleted || 0,
-    ]);
-    csvData.push([
-      "Top Organization:",
-      reportsData.topOrganization?.name || "N/A",
-    ]);
-    csvData.push([
-      "Opportunities Posted:",
-      reportsData.topOrganization?.opportunitiesPosted || 0,
-    ]);
-    csvData.push([
-      "Total Volunteer Hours:",
-      reportsData.totalVolunteerHours || 0,
-    ]);
+    csvData.push(["Tasks Completed:", reportsData.topVolunteer?.tasksCompleted || 0]);
+    csvData.push(["Top Organization:", reportsData.topOrganization?.name || "N/A"]);
+    csvData.push(["Opportunities Posted:", reportsData.topOrganization?.opportunitiesPosted || 0]);
+    csvData.push(["Total Volunteer Hours:", reportsData.totalVolunteerHours || 0]);
     csvData.push([]);
 
-    // Monthly signups
     csvData.push(["Monthly Signups"]);
     csvData.push(["Month", "Volunteers", "Organizations"]);
-    reportsData.monthlySignups.forEach((month) => {
+    reportsData.monthlySignups?.forEach((month) => {
       csvData.push([month.month, month.volunteers, month.organizations]);
     });
     csvData.push([]);
 
-    // Tasks by category
-    csvData.push(["Tasks by Category"]);
-    csvData.push(["Category", "Count"]);
-    reportsData.tasksByCategory.forEach((category) => {
-      csvData.push([category.name, category.value]);
-    });
-    csvData.push([]);
-
-    // Recent activities
-    csvData.push(["Recent Activities"]);
-    csvData.push(["Name", "Role", "Activity", "Date"]);
-    reportsData.recentActivities.forEach((activity) => {
-      csvData.push([
-        activity.name,
-        activity.role,
-        activity.activity,
-        activity.date,
-      ]);
-    });
-
-    // Convert to CSV string
-    const csvString = csvData
-      .map((row) => row.map((cell) => `"${cell}"`).join(","))
-      .join("\n");
-
-    // Download CSV
-    const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      csvData.map((e) => e.join(",")).join("\n");
+    const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
+    link.setAttribute("href", encodedUri);
     link.setAttribute(
       "download",
       `ServeSpot_Reports_${new Date().toISOString().split("T")[0]}.csv`
     );
-    link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -227,7 +97,6 @@ export default function AdminReports() {
   const exportToExcel = () => {
     const workbook = XLSX.utils.book_new();
 
-    // Summary sheet
     const summaryData = [
       ["ServeSpot Reports Summary"],
       ["Generated on:", new Date().toLocaleDateString()],
@@ -236,56 +105,42 @@ export default function AdminReports() {
       ["Top Volunteer:", reportsData.topVolunteer?.name || "N/A"],
       ["Tasks Completed:", reportsData.topVolunteer?.tasksCompleted || 0],
       ["Top Organization:", reportsData.topOrganization?.name || "N/A"],
-      [
-        "Opportunities Posted:",
-        reportsData.topOrganization?.opportunitiesPosted || 0,
-      ],
+      ["Opportunities Posted:", reportsData.topOrganization?.opportunitiesPosted || 0],
       ["Total Volunteer Hours:", reportsData.totalVolunteerHours || 0],
     ];
     const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
     XLSX.utils.book_append_sheet(workbook, summarySheet, "Summary");
 
-    // Monthly signups sheet
     const monthlyData = [
       ["Month", "Volunteers", "Organizations"],
-      ...reportsData.monthlySignups.map((month) => [
-        month.month,
-        month.volunteers,
-        month.organizations,
+      ...(reportsData.monthlySignups || []).map((m) => [
+        m.month,
+        m.volunteers,
+        m.organizations,
       ]),
     ];
     const monthlySheet = XLSX.utils.aoa_to_sheet(monthlyData);
     XLSX.utils.book_append_sheet(workbook, monthlySheet, "Monthly Signups");
 
-    // Tasks by category sheet
     const categoryData = [
       ["Category", "Count"],
-      ...reportsData.tasksByCategory.map((category) => [
-        category.name,
-        category.value,
-      ]),
+      ...(reportsData.tasksByCategory || []).map((c) => [c.name, c.value]),
     ];
     const categorySheet = XLSX.utils.aoa_to_sheet(categoryData);
     XLSX.utils.book_append_sheet(workbook, categorySheet, "Tasks by Category");
 
-    // Recent activities sheet
     const activitiesData = [
       ["Name", "Role", "Activity", "Date"],
-      ...reportsData.recentActivities.map((activity) => [
-        activity.name,
-        activity.role,
-        activity.activity,
-        activity.date,
+      ...(reportsData.recentActivities || []).map((a) => [
+        a.name,
+        a.role,
+        a.activity,
+        a.date,
       ]),
     ];
     const activitiesSheet = XLSX.utils.aoa_to_sheet(activitiesData);
-    XLSX.utils.book_append_sheet(
-      workbook,
-      activitiesSheet,
-      "Recent Activities"
-    );
+    XLSX.utils.book_append_sheet(workbook, activitiesSheet, "Recent Activities");
 
-    // Download Excel file
     const fileName = `ServeSpot_Reports_${new Date().toISOString().split("T")[0]}.xlsx`;
     XLSX.writeFile(workbook, fileName);
   };
@@ -293,10 +148,10 @@ export default function AdminReports() {
   const SignupsTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
-          <p className="font-semibold text-gray-900">{label}</p>
+        <div className="bg-white/95 backdrop-blur-xs p-3 border border-gray-200/80 rounded-xl shadow-lg text-xs">
+          <p className="font-bold text-gray-900 mb-1">{label}</p>
           {payload.map((entry, index) => (
-            <p key={index} className="text-sm" style={{ color: entry.color }}>
+            <p key={index} className="font-medium" style={{ color: entry.color }}>
               {entry.name}: {entry.value}
             </p>
           ))}
@@ -309,188 +164,183 @@ export default function AdminReports() {
   const PieTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
       const total =
-        reportsData?.tasksByCategory?.reduce(
-          (sum, category) => sum + category.value,
-          0
-        ) || 0;
+        reportsData?.tasksByCategory?.reduce((sum, c) => sum + c.value, 0) || 0;
       const percentage =
         total > 0 ? ((payload[0].value / total) * 100).toFixed(1) : 0;
       return (
-        <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
-          <p className="font-semibold text-gray-900">{payload[0].name}</p>
-          <p className="text-sm" style={{ color: payload[0].color }}>
-            Tasks: {payload[0].value}
-          </p>
-          <p className="text-sm text-gray-600">{percentage}% of total</p>
+        <div className="bg-white/95 backdrop-blur-xs p-3 border border-gray-200/80 rounded-xl shadow-lg text-xs">
+          <p className="font-bold text-gray-900 mb-0.5">{payload[0].name}</p>
+          <p className="font-semibold text-emerald-600">Tasks: {payload[0].value}</p>
+          <p className="text-gray-400 text-[10px]">{percentage}% of all tasks</p>
         </div>
       );
     }
     return null;
   };
 
-  // Helper function to format data with loading state
-  const formatData = (data, defaultValue = []) => {
-    if (loading) return [];
-    if (!reportsData || !data) return defaultValue;
-    return data;
-  };
+  const civicColors = ["#059669", "#0284c7", "#0d9488", "#d97706", "#6366f1", "#e11d48"];
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <AdminSidebar
-        isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-      />
+    <div className="min-h-screen bg-slate-50 flex">
+      <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <AdminNavbar
-          onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-          notifCount={3}
-        />
+      <div className="flex-1 flex flex-col min-w-0">
+        <AdminNavbar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
-        <main className="flex-1 overflow-y-auto p-6">
-          <div id="reports-content" className="space-y-8">
-            {/* Header */}
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+        <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto">
+          <div className="max-w-7xl mx-auto w-full space-y-6">
+            {/* Header & Export Dropdown */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
-                <h1 className="text-2xl font-bold text-gray-800">
-                  Reports & Analytics
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-emerald-50 text-emerald-800 text-xs font-semibold mb-1.5 border border-emerald-100">
+                  <BarChart3 size={12} className="text-emerald-600" />
+                  <span>Platform Reports</span>
+                </div>
+                <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">
+                  System-Wide Analytics & Reports
                 </h1>
-                <p className="text-gray-500 text-sm">
-                  Analyze ServeSpot's yearly trends and generate exportable
-                  reports.
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Platform-wide growth trajectories, category concentrations, and audit logs.
                 </p>
               </div>
 
-              {/* Export dropdown */}
+              {/* Export Selector */}
               <div className="relative">
                 <button
                   onClick={() => setExportOpen(!exportOpen)}
-                  className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-all text-sm font-medium"
+                  className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white px-4 py-2 rounded-xl text-xs font-semibold transition shadow-xs cursor-pointer"
                 >
-                  <FileText className="h-4 w-4" />
-                  Export
-                  <ChevronDown className="h-4 w-4" />
+                  <FileText size={14} />
+                  <span>Export Report</span>
+                  <ChevronDown size={14} />
                 </button>
                 {exportOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                    {/* <button
-                      onClick={() => handleExport("PDF")}
-                      className="flex items-center gap-2 w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 border-b"
-                    >
-                      <FileText className="h-4 w-4" />
-                      Export as PDF
-                    </button> */}
+                  <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200/90 rounded-2xl shadow-xl z-20 p-1.5 animate-scaleIn">
                     <button
                       onClick={() => handleExport("CSV")}
-                      className="flex items-center gap-2 w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 border-b"
+                      className="flex items-center gap-2 w-full px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-slate-100 rounded-xl transition cursor-pointer"
                     >
-                      <Table className="h-4 w-4" />
-                      Export as CSV
+                      <Table size={14} className="text-gray-500" />
+                      <span>Export as CSV</span>
                     </button>
                     <button
                       onClick={() => handleExport("Excel")}
-                      className="flex items-center gap-2 w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-50"
+                      className="flex items-center gap-2 w-full px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-slate-100 rounded-xl transition cursor-pointer"
                     >
-                      <FileDown className="h-4 w-4" />
-                      Export as Excel
+                      <FileDown size={14} className="text-gray-500" />
+                      <span>Export as Excel</span>
                     </button>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Top Performers */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div className="bg-white p-5 rounded-xl shadow-sm border-l-4 border-purple-500 hover:shadow-md transition-all">
-                <p className="text-sm text-gray-500 font-medium">
-                  Top Volunteer
-                </p>
-                <h3 className="text-lg font-bold text-gray-800">
-                  {loading
-                    ? "Loading..."
-                    : reportsData?.topVolunteer?.name || "No data"}
-                </h3>
-                <p className="text-xs text-gray-500 mt-1">
-                  {reportsData?.topVolunteer?.tasksCompleted || "0"} tasks
-                  completed
-                </p>
+            {/* Top Performers Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="bg-white rounded-2xl border border-gray-200/80 shadow-xs p-5">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-100/60 shrink-0">
+                    <Award size={20} />
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block mb-0.5">
+                      Top Volunteer
+                    </span>
+                    <h3 className="text-base font-bold text-gray-900 truncate">
+                      {loading ? "…" : reportsData?.topVolunteer?.name || "No records"}
+                    </h3>
+                    <p className="text-xs text-emerald-700 font-semibold mt-0.5">
+                      {reportsData?.topVolunteer?.tasksCompleted || 0} tasks completed
+                    </p>
+                  </div>
+                </div>
               </div>
-              <div className="bg-white p-5 rounded-xl shadow-sm border-l-4 border-yellow-500 hover:shadow-md transition-all">
-                <p className="text-sm text-gray-500 font-medium">
-                  Top Organization
-                </p>
-                <h3 className="text-lg font-bold text-gray-800">
-                  {loading
-                    ? "Loading..."
-                    : reportsData?.topOrganization?.name || "No data"}
-                </h3>
-                <p className="text-xs text-gray-500 mt-1">
-                  {reportsData?.topOrganization?.opportunitiesPosted || "0"}{" "}
-                  opportunities posted
-                </p>
+
+              <div className="bg-white rounded-2xl border border-gray-200/80 shadow-xs p-5">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-11 h-11 rounded-xl bg-sky-50 text-sky-700 flex items-center justify-center border border-sky-100/60 shrink-0">
+                    <Building2 size={20} />
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block mb-0.5">
+                      Top Organization
+                    </span>
+                    <h3 className="text-base font-bold text-gray-900 truncate">
+                      {loading ? "…" : reportsData?.topOrganization?.name || "No records"}
+                    </h3>
+                    <p className="text-xs text-sky-700 font-semibold mt-0.5">
+                      {reportsData?.topOrganization?.opportunitiesPosted || 0} initiatives published
+                    </p>
+                  </div>
+                </div>
               </div>
-              <div className="bg-white p-5 rounded-xl shadow-sm border-l-4 border-green-500 hover:shadow-md transition-all">
-                <p className="text-sm text-gray-500 font-medium">
-                  Total Volunteer Hours
-                </p>
-                <h3 className="text-lg font-bold text-gray-800">
-                  {loading
-                    ? "..."
-                    : reportsData?.totalVolunteerHours?.toLocaleString() ||
-                      "0"}{" "}
-                  hrs
-                </h3>
-                <p className="text-xs text-green-600 mt-1">
-                  {loading
-                    ? "..."
-                    : reportsData
-                      ? "↑ 20% from last quarter"
-                      : "No data available"}
-                </p>
+
+              <div className="bg-white rounded-2xl border border-gray-200/80 shadow-xs p-5">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-11 h-11 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center border border-teal-100/60 shrink-0">
+                    <Clock size={20} />
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block mb-0.5">
+                      Total Volunteer Hours
+                    </span>
+                    <h3 className="text-base font-bold text-gray-900">
+                      {loading
+                        ? "…"
+                        : `${reportsData?.totalVolunteerHours?.toLocaleString() || 0} hrs`}
+                    </h3>
+                    <p className="text-xs text-teal-700 font-semibold mt-0.5">
+                      Platform-wide verified time
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
 
             {/* Charts Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Monthly Signups - Bar Chart */}
-              <div className="bg-white shadow-sm rounded-xl p-6 hover:shadow-md transition-all">
-                <h2 className="text-lg font-semibold text-gray-800 mb-4">
-                  Monthly Signups of Volunteer and Organizations
-                </h2>
-                <div className="w-full h-80">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Monthly Signups */}
+              <div className="bg-white rounded-2xl border border-gray-200/80 shadow-xs p-6">
+                <div className="flex items-center justify-between mb-5">
+                  <div>
+                    <h2 className="text-base font-bold text-gray-900 tracking-tight">
+                      Platform Acquisition Velocity
+                    </h2>
+                    <p className="text-xs text-gray-400 mt-0.5">Monthly registration of volunteers vs. organizations</p>
+                  </div>
+                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">
+                    Monthly
+                  </span>
+                </div>
+
+                <div className="w-full h-72">
                   {loading ? (
-                    <div className="h-full flex items-center justify-center">
-                      <div className="text-gray-500">Loading chart data...</div>
+                    <div className="h-full flex items-center justify-center text-xs text-gray-400">
+                      Loading acquisition metrics…
                     </div>
                   ) : !reportsData?.monthlySignups ? (
-                    <div className="h-full flex items-center justify-center">
-                      <div className="text-gray-500 text-center">
-                        <p>No signup data available</p>
-                        <p className="text-sm mt-2">
-                          Connect to your data source to display analytics
-                        </p>
-                      </div>
+                    <div className="h-full flex items-center justify-center text-xs text-gray-400">
+                      No acquisition data available.
                     </div>
                   ) : (
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={reportsData.monthlySignups}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
-                        <XAxis dataKey="month" />
-                        <YAxis />
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                        <XAxis dataKey="month" fontSize={11} stroke="#94a3b8" tickLine={false} axisLine={false} />
+                        <YAxis fontSize={11} stroke="#94a3b8" tickLine={false} axisLine={false} allowDecimals={false} />
                         <Tooltip content={<SignupsTooltip />} />
-                        <Legend />
+                        <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} />
                         <Bar
                           dataKey="volunteers"
-                          fill="#7C3AED"
+                          fill="#059669"
                           name="Volunteers"
-                          radius={[4, 4, 0, 0]}
+                          radius={[6, 6, 0, 0]}
                         />
                         <Bar
                           dataKey="organizations"
-                          fill="#10B981"
+                          fill="#0284c7"
                           name="Organizations"
-                          radius={[4, 4, 0, 0]}
+                          radius={[6, 6, 0, 0]}
                         />
                       </BarChart>
                     </ResponsiveContainer>
@@ -498,24 +348,28 @@ export default function AdminReports() {
                 </div>
               </div>
 
-              {/* Tasks by Category - Pie Chart */}
-              <div className="bg-white shadow-sm rounded-xl p-6 hover:shadow-md transition-all">
-                <h2 className="text-lg font-semibold text-gray-800 mb-4">
-                  Tasks by Category
-                </h2>
-                <div className="w-full h-80">
+              {/* Tasks by Category */}
+              <div className="bg-white rounded-2xl border border-gray-200/80 shadow-xs p-6">
+                <div className="flex items-center justify-between mb-5">
+                  <div>
+                    <h2 className="text-base font-bold text-gray-900 tracking-tight">
+                      Initiatives by Category
+                    </h2>
+                    <p className="text-xs text-gray-400 mt-0.5">Distribution of volunteer projects</p>
+                  </div>
+                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">
+                    Categories
+                  </span>
+                </div>
+
+                <div className="w-full h-72">
                   {loading ? (
-                    <div className="h-full flex items-center justify-center">
-                      <div className="text-gray-500">Loading chart data...</div>
+                    <div className="h-full flex items-center justify-center text-xs text-gray-400">
+                      Loading categories…
                     </div>
                   ) : !reportsData?.tasksByCategory ? (
-                    <div className="h-full flex items-center justify-center">
-                      <div className="text-gray-500 text-center">
-                        <p>No category data available</p>
-                        <p className="text-sm mt-2">
-                          Connect to your data source to display analytics
-                        </p>
-                      </div>
+                    <div className="h-full flex items-center justify-center text-xs text-gray-400">
+                      No category metrics available.
                     </div>
                   ) : (
                     <ResponsiveContainer width="100%" height="100%">
@@ -526,114 +380,91 @@ export default function AdminReports() {
                           nameKey="name"
                           cx="50%"
                           cy="50%"
-                          outerRadius={100}
+                          innerRadius={45}
+                          outerRadius={80}
+                          paddingAngle={3}
                           label={({ name, value }) => `${name}: ${value}`}
-                          labelLine={false}
                         >
                           {reportsData.tasksByCategory.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={entry.color || civicColors[index % civicColors.length]}
+                            />
                           ))}
                         </Pie>
                         <Tooltip content={<PieTooltip />} />
-                        <Legend />
+                        <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} />
                       </PieChart>
                     </ResponsiveContainer>
                   )}
                 </div>
-                {reportsData?.tasksByCategory && (
-                  <div className="mt-4 grid grid-cols-2 gap-2 text-center">
-                    {reportsData.tasksByCategory
-                      .slice(0, 4)
-                      .map((category, index) => (
-                        <div key={index} className="text-center">
-                          <div className="flex items-center justify-center mb-1">
-                            <div
-                              className="w-3 h-3 rounded-full mr-2"
-                              style={{ backgroundColor: category.color }}
-                            ></div>
-                            <span className="text-sm font-medium text-gray-900">
-                              {category.value}
-                            </span>
-                          </div>
-                          <p className="text-xs text-gray-600">
-                            {category.name}
-                          </p>
-                        </div>
-                      ))}
-                  </div>
-                )}
               </div>
             </div>
 
-            {/* Recent Activities Table */}
-            <div className="bg-white shadow-sm rounded-xl p-6 hover:shadow-md transition-all">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-lg font-semibold text-gray-800">
-                  Recent Activities
-                </h2>
-                <span className="text-sm text-gray-500">
-                  {loading
-                    ? "Loading..."
-                    : reportsData?.recentActivities
-                      ? `Showing ${reportsData.recentActivities.length} activities`
-                      : "No activities"}
+            {/* Recent Activities Audit Table */}
+            <div className="bg-white rounded-2xl border border-gray-200/80 shadow-xs overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-100 bg-slate-50/50 flex items-center justify-between">
+                <div>
+                  <h2 className="text-sm font-bold text-gray-900">
+                    Platform Audit Log
+                  </h2>
+                  <p className="text-[11px] text-gray-400 mt-0.5">
+                    Real-time transaction and participation activity
+                  </p>
+                </div>
+                <span className="text-xs font-semibold text-gray-500">
+                  {reportsData?.recentActivities?.length || 0} events
                 </span>
               </div>
+
               <div className="overflow-x-auto">
                 {loading ? (
-                  <div className="text-center py-8 text-gray-500">
-                    Loading activities...
+                  <div className="text-center py-12 text-gray-400 text-xs">
+                    Loading audit stream…
                   </div>
-                ) : !reportsData?.recentActivities ? (
-                  <div className="text-center py-8 text-gray-500">
-                    No recent activities available
+                ) : !reportsData?.recentActivities?.length ? (
+                  <div className="text-center py-12 text-gray-400 text-xs">
+                    No recent audit events recorded.
                   </div>
                 ) : (
-                  <table className="w-full text-sm border-collapse">
-                    <thead className="bg-gray-50 text-gray-700">
-                      <tr>
-                        <th className="px-4 py-3 text-left font-medium rounded-tl-lg">
-                          Name / Organization
+                  <table className="w-full text-xs min-w-[650px]">
+                    <thead>
+                      <tr className="bg-slate-50/70 border-b border-gray-100 text-left">
+                        <th className="px-6 py-3 font-semibold text-gray-500 uppercase tracking-wider">
+                          Participant
                         </th>
-                        <th className="px-4 py-3 text-left font-medium">
+                        <th className="px-6 py-3 font-semibold text-gray-500 uppercase tracking-wider">
                           Role
                         </th>
-                        <th className="px-4 py-3 text-left font-medium">
-                          Activity
+                        <th className="px-6 py-3 font-semibold text-gray-500 uppercase tracking-wider">
+                          Action
                         </th>
-                        <th className="px-4 py-3 text-left font-medium rounded-tr-lg">
-                          Date
+                        <th className="px-6 py-3 font-semibold text-gray-500 uppercase tracking-wider">
+                          Timestamp
                         </th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-gray-100">
                       {reportsData.recentActivities.map((activity, index) => (
-                        <tr
-                          key={activity.id}
-                          className={`border-b border-gray-100 hover:bg-gray-50 transition-colors duration-150 ${
-                            index === reportsData.recentActivities.length - 1
-                              ? "border-b-0"
-                              : ""
-                          }`}
-                        >
-                          <td className="px-4 py-3 font-medium text-gray-900">
+                        <tr key={activity.id || index} className="hover:bg-slate-50/60 transition">
+                          <td className="px-6 py-3.5 font-bold text-gray-900">
                             {activity.name}
                           </td>
-                          <td className="px-4 py-3">
+                          <td className="px-6 py-3.5">
                             <span
-                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                              className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${
                                 activity.role === "Volunteer"
-                                  ? "bg-green-100 text-green-800"
-                                  : "bg-green-100 text-green-800"
+                                  ? "bg-emerald-50 text-emerald-800 border-emerald-200/60"
+                                  : "bg-sky-50 text-sky-800 border-sky-200/60"
                               }`}
                             >
                               {activity.role}
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-gray-600">
+                          <td className="px-6 py-3.5 text-gray-700">
                             {activity.activity}
                           </td>
-                          <td className="px-4 py-3 text-gray-500">
+                          <td className="px-6 py-3.5 text-gray-400">
                             {activity.date}
                           </td>
                         </tr>

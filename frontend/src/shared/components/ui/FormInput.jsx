@@ -15,6 +15,7 @@ const FormInput = forwardRef(function FormInput({
   disabled = false,
   multi = false,
   icon,
+  rightElement,
   className = "",
   ...rest
 }, ref) {
@@ -91,18 +92,22 @@ const FormInput = forwardRef(function FormInput({
   };
 
   const borderClass = error
-    ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-    : "border-gray-300 focus:ring-green-500 focus:border-green-500";
+    ? "border-red-400 focus:ring-4 focus:ring-red-400/15 focus:border-red-500 bg-red-50/20"
+    : "border-gray-200 hover:border-gray-300 focus:ring-4 focus:ring-emerald-500/15 focus:border-emerald-600 bg-white";
 
   return (
-    <div className={`flex flex-col space-y-1 relative ${className}`}>
-      {label && <label className="text-sm font-medium text-gray-700">{label}</label>}
+    <div className={`flex flex-col space-y-1.5 relative ${className}`}>
+      {label && (
+        <label className="text-xs sm:text-sm font-medium text-gray-700">
+          {label}
+        </label>
+      )}
 
       {type === "textarea" ? (
         <textarea
           ref={ref}
           name={name}
-          className={`border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 ${borderClass}`}
+          className={`border rounded-xl px-3.5 py-2.5 text-sm transition-all focus:outline-none ${borderClass}`}
           value={value}
           onChange={handleStandardChange}
           onBlur={onBlur}
@@ -111,7 +116,7 @@ const FormInput = forwardRef(function FormInput({
           {...rest}
         />
       ) : type === "radio" ? (
-        <div className={`flex flex-wrap gap-4 rounded-md border px-3 py-2 ${error ? "border-red-500" : "border-gray-300"}`}>
+        <div className={`flex flex-wrap gap-4 rounded-xl border px-3.5 py-2.5 ${error ? "border-red-400" : "border-gray-200"}`}>
           {options.map((opt, i) => {
             const optionValue = opt.value || opt;
             const optionLabel = opt.label || opt;
@@ -135,7 +140,7 @@ const FormInput = forwardRef(function FormInput({
                   onChange={() => onChange && onChange(optionValue)}
                   onBlur={onBlur}
                   disabled={disabled}
-                  className="h-4 w-4 text-green-600 focus:ring-green-500"
+                  className="h-4 w-4 text-emerald-600 focus:ring-emerald-500"
                   {...rest}
                 />
                 <span>{optionLabel}</span>
@@ -149,7 +154,7 @@ const FormInput = forwardRef(function FormInput({
             ref={ref}
             name={name}
             multiple
-            className={`border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 w-full ${borderClass}`}
+            className={`border rounded-xl px-3.5 py-2.5 text-sm transition-all focus:outline-none w-full ${borderClass}`}
             value={value || []}
             onChange={(e) => {
               const selected = Array.from(e.target.selectedOptions, (option) => option.value);
@@ -174,7 +179,7 @@ const FormInput = forwardRef(function FormInput({
             <input
               ref={internalInputRef}
               type="text"
-              className={`border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 w-full ${borderClass} ${loading ? 'bg-gray-100' : ''}`}
+              className={`border rounded-xl px-3.5 py-2.5 text-sm transition-all focus:outline-none w-full ${borderClass} ${loading ? 'bg-gray-100' : ''}`}
               value={searchTerm}
               onChange={handleInputChange}
               onFocus={() => setIsOpen(true)}
@@ -184,7 +189,7 @@ const FormInput = forwardRef(function FormInput({
             {isOpen && filteredOptions.length > 0 && (
               <div
                 ref={dropdownRef}
-                className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto mt-1"
+                className="absolute z-10 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto mt-1"
               >
                 {filteredOptions.map((opt, i) => {
                   const optionValue = opt.value || opt;
@@ -192,7 +197,7 @@ const FormInput = forwardRef(function FormInput({
                   return (
                     <div
                       key={i}
-                      className="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                      className="px-3.5 py-2.5 hover:bg-emerald-50 hover:text-emerald-900 cursor-pointer text-sm transition-colors"
                       onClick={() => handleSelect(optionValue, optionLabel)}
                     >
                       {optionLabel}
@@ -209,7 +214,7 @@ const FormInput = forwardRef(function FormInput({
           name={name}
           type="file"
           accept={accept}
-          className={`border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 ${borderClass}`}
+          className={`border rounded-xl px-3.5 py-2.5 text-sm transition-all focus:outline-none ${borderClass}`}
           onChange={(e) => {
             if (!onChange) return;
             if (value !== undefined) {
@@ -225,7 +230,7 @@ const FormInput = forwardRef(function FormInput({
       ) : (
         <div className="relative">
           {icon && (
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
               {icon}
             </div>
           )}
@@ -233,7 +238,9 @@ const FormInput = forwardRef(function FormInput({
             ref={ref}
             name={name}
             type={type}
-            className={`border rounded-md ${icon ? "pl-9 pr-3" : "px-3"} py-2 text-sm focus:outline-none focus:ring-2 w-full ${borderClass}`}
+            className={`border rounded-xl ${icon ? "pl-10" : "px-3.5"} ${
+              rightElement ? "pr-11" : "pr-3.5"
+            } py-2.5 text-sm transition-all focus:outline-none w-full ${borderClass}`}
             value={value}
             onChange={handleStandardChange}
             onBlur={onBlur}
@@ -241,10 +248,19 @@ const FormInput = forwardRef(function FormInput({
             disabled={disabled}
             {...rest}
           />
+          {rightElement && (
+            <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center">
+              {rightElement}
+            </div>
+          )}
         </div>
       )}
 
-      {error && <span className="text-xs text-red-500 font-medium">{error}</span>}
+      {error && (
+        <span className="text-xs text-red-500 font-medium animate-fadeInUp">
+          {error}
+        </span>
+      )}
     </div>
   );
 });

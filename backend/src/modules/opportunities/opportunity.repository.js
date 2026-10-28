@@ -15,7 +15,7 @@ export class OpportunityRepository extends MongooseRepository {
       .find({ status: { $nin: ["Completed", "Closed"] } })
       .populate("organization", "orgName")
       .select(
-        "title description organization location date duration volunteersNeeded volunteers skills status fileUrl points"
+        "title description organization location date duration volunteersNeeded volunteers skills status fileUrl points completionProofs"
       )
       .sort({ createdAt: -1 });
   }

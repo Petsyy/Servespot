@@ -9,13 +9,13 @@ import {
   Users,
   Building2,
   Shield,
+  ExternalLink,
 } from "lucide-react";
 import AdminSidebar from "@/shared/components/layout/sidebars/AdminSidebar";
 import AdminNavbar from "@/shared/components/layout/navbars/AdminNavbar";
 import { getSession } from "@/shared/services/api";
 import { useRoleNotifications } from "@/features/notifications/hooks/useRoleNotifications";
-import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { getCookie, setCookie } from "@/shared/utils/cookies";
 
 export default function AdminNotifications() {
@@ -23,9 +23,7 @@ export default function AdminNotifications() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("inApp");
   const [filter, setFilter] = useState("All");
-  const [adminId, setAdminId] = useState(
-    () => getCookie("adminId") || null
-  );
+  const [adminId, setAdminId] = useState(() => getCookie("adminId") || null);
 
   useEffect(() => {
     (async () => {
@@ -50,136 +48,111 @@ export default function AdminNotifications() {
     })();
   }, [navigate]);
 
-  // TanStack Query custom notifications hook
   const {
-    items,
     inAppList,
     emailList,
     isLoading: loading,
     markAllAsRead,
   } = useRoleNotifications({ role: "admin", userId: adminId });
 
-  // =============================
   // Filter by System / Organization Events / Volunteer Events / All
-  // =============================
   const currentList = useMemo(() => {
     const src = activeTab === "inApp" ? inAppList : emailList;
-    
-    
     if (filter === "All") return src;
 
-    const filtered = src.filter((n) => {
+    return src.filter((n) => {
       if (filter === "System") {
         return ["maintenance", "security", "system"].includes(n.type);
       }
       if (filter === "Organization Events") {
         const orgTypes = [
-          "organization_signup", 
-          "organization_verification", 
-          "organization_suspension", 
-          "organization_reactivation", 
-          "organization_deleted", 
+          "organization_signup",
+          "organization_verification",
+          "organization_suspension",
+          "organization_reactivation",
+          "organization_deleted",
           "opportunity_posted",
-          // Legacy/alternative type names
           "org_signup",
-          "org_verification", 
+          "org_verification",
           "org_suspension",
           "org_reactivation",
           "org_deleted",
           "new_opportunity",
-          "opportunity_created"
+          "opportunity_created",
         ];
-        return orgTypes.includes(n.type) || 
-               (n.type && n.type.toLowerCase().includes('organization')) ||
-               (n.type && n.type.toLowerCase().includes('org')) ||
-               (n.type && n.type.toLowerCase().includes('opportunity'));
+        return (
+          orgTypes.includes(n.type) ||
+          (n.type && n.type.toLowerCase().includes("organization")) ||
+          (n.type && n.type.toLowerCase().includes("org")) ||
+          (n.type && n.type.toLowerCase().includes("opportunity"))
+        );
       }
       if (filter === "Volunteer Events") {
         const volunteerTypes = [
-          "volunteer_signup", 
-          "volunteer_suspension", 
-          "volunteer_reactivation", 
+          "volunteer_signup",
+          "volunteer_suspension",
+          "volunteer_reactivation",
           "volunteer_completion",
-          // Legacy/alternative type names
           "vol_signup",
-          "vol_suspension", 
+          "vol_suspension",
           "vol_reactivation",
           "vol_completion",
-          "user_registration", // Might be used for volunteers
-          "user_suspension",   // Might be used for volunteers
-          "user_reactivation"  // Might be used for volunteers
+          "user_registration",
+          "user_suspension",
+          "user_reactivation",
         ];
-        return volunteerTypes.includes(n.type) || 
-               (n.type && n.type.toLowerCase().includes('volunteer')) ||
-               (n.type && n.type.toLowerCase().includes('vol'));
+        return (
+          volunteerTypes.includes(n.type) ||
+          (n.type && n.type.toLowerCase().includes("volunteer")) ||
+          (n.type && n.type.toLowerCase().includes("vol"))
+        );
       }
       return true;
     });
-    
-    
-    return filtered;
-  }, [activeTab, filter, inAppList, emailList, items]);
+  }, [activeTab, filter, inAppList, emailList]);
 
+  const unreadInAppCount = useMemo(
+    () => inAppList.filter((n) => !n.isRead).length,
+    [inAppList]
+  );
+  const unreadEmailCount = useMemo(
+    () => emailList.filter((n) => !n.isRead).length,
+    [emailList]
+  );
 
-
-  // =============================
-  // Get appropriate icon for notification type
-  // =============================
   const getNotificationIcon = (type) => {
     switch (type) {
       case "email":
-        return <Mail className="text-green-600 w-5 h-5" />;
-      
-      // Organization Events
+        return <Mail size={16} className="text-emerald-700" />;
       case "organization_signup":
-        return <Building2 className="text-green-500 w-5 h-5" />;
+      case "org_signup":
+        return <Building2 size={16} className="text-sky-600" />;
       case "organization_verification":
-        return <CheckCircle className="text-green-500 w-5 h-5" />;
+      case "org_verification":
+        return <CheckCircle size={16} className="text-emerald-600" />;
       case "organization_suspension":
-        return <AlertCircle className="text-red-500 w-5 h-5" />;
-      case "organization_reactivation":
-        return <CheckCircle className="text-green-600 w-5 h-5" />;
-      case "organization_deleted":
-        return <AlertCircle className="text-red-600 w-5 h-5" />;
-      case "opportunity_posted":
-        return <Bell className="text-purple-500 w-5 h-5" />;
-      
-      // Volunteer Events
-      case "volunteer_signup":
-        return <Users className="text-green-500 w-5 h-5" />;
-      case "volunteer_suspension":
-        return <AlertCircle className="text-orange-500 w-5 h-5" />;
-      case "volunteer_reactivation":
-        return <CheckCircle className="text-green-600 w-5 h-5" />;
-      case "volunteer_completion":
-        return <CheckCircle className="text-emerald-500 w-5 h-5" />;
-      
-      // Legacy types for backward compatibility
-      case "user_registration":
-      case "user_verification":
-        return <Users className="text-green-500 w-5 h-5" />;
-      case "report":
+      case "org_suspension":
       case "user_suspension":
-        return <AlertCircle className="text-orange-500 w-5 h-5" />;
-      case "system":
-      case "status":
-      case "update":
+        return <AlertCircle size={16} className="text-rose-600" />;
+      case "organization_reactivation":
+      case "user_reactivation":
+        return <CheckCircle size={16} className="text-teal-600" />;
+      case "volunteer_signup":
+      case "vol_signup":
+        return <Users size={16} className="text-emerald-600" />;
+      case "volunteer_completion":
+        return <CheckCircle size={16} className="text-emerald-600" />;
       case "maintenance":
       case "security":
-        return <Shield className="text-green-500 w-5 h-5" />;
-      case "user_reactivation":
-        return <CheckCircle className="text-green-600 w-5 h-5" />;
-      
+      case "system":
+        return <Shield size={16} className="text-amber-600" />;
       default:
-        return <Bell className="text-gray-500 w-5 h-5" />;
+        return <Bell size={16} className="text-slate-600" />;
     }
   };
 
-  // =============================
-  // UI Rendering
-  // =============================
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-slate-50">
       <AdminSidebar
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
@@ -188,134 +161,169 @@ export default function AdminNotifications() {
       <div className="flex-1 flex flex-col min-w-0">
         <AdminNavbar onToggleSidebar={() => setIsSidebarOpen(true)} />
 
-        <main className="flex-1 p-6 md:p-8">
-          <div className="max-w-6xl mx-auto w-full">
+        <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto">
+          <div className="max-w-6xl mx-auto w-full space-y-6">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-1">
-                  Admin Notifications
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-emerald-50 text-emerald-800 text-xs font-semibold mb-1.5 border border-emerald-100">
+                  <Bell size={12} className="text-emerald-600" />
+                  <span>Administrative Feed</span>
+                </div>
+                <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">
+                  System Notifications & Broadcasts
                 </h1>
-                <p className="text-gray-600 text-sm">
-                  Stay updated on platform activities, user registrations, organization verifications, and system alerts.
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Platform activity telemetry, organization verifications, and compliance alerts.
                 </p>
               </div>
 
               {/* Filter + Mark all */}
-              <div className="relative flex items-center gap-3">
+              <div className="flex items-center gap-2.5">
                 <button
                   onClick={markAllAsRead}
-                  className="px-3 py-2 rounded-lg text-sm bg-white border border-gray-300 hover:bg-gray-50"
+                  className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white transition shadow-xs cursor-pointer"
                 >
                   Mark all read
                 </button>
-                
 
                 <div className="relative">
                   <select
                     value={filter}
                     onChange={(e) => setFilter(e.target.value)}
-                    className="appearance-none border border-gray-300 rounded-lg px-4 py-2.5 pr-10 bg-white text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="appearance-none border border-gray-300 rounded-xl px-3.5 py-2 pr-9 bg-white text-xs font-medium text-gray-700 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition cursor-pointer"
                   >
-                    <option>All</option>
-                    <option>System</option>
-                    <option>Organization Events</option>
-                    <option>Volunteer Events</option>
+                    <option value="All">All Categories</option>
+                    <option value="System">System Alerts</option>
+                    <option value="Organization Events">Organization Events</option>
+                    <option value="Volunteer Events">Volunteer Events</option>
                   </select>
-                  <Filter className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+                  <Filter className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 w-3.5 h-3.5 pointer-events-none" />
                 </div>
               </div>
             </div>
 
-            {/* Tabs */}
-            <div className="flex gap-3 mb-6 border-b border-gray-200">
+            {/* Segmented Controller Tabs */}
+            <div className="p-1 bg-slate-200/60 rounded-xl inline-flex gap-1 border border-gray-200/80">
               <button
                 onClick={() => setActiveTab("inApp")}
-                className={`px-4 py-2 font-medium text-sm rounded-t-lg ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition cursor-pointer ${
                   activeTab === "inApp"
-                    ? "text-green-600 border-b-2 border-green-600"
-                    : "text-gray-500 hover:text-gray-700"
+                    ? "bg-white text-emerald-950 shadow-xs border border-gray-200/50"
+                    : "text-gray-500 hover:text-gray-900"
                 }`}
               >
-                In-App Notifications
+                <span>In-App Stream</span>
+                {unreadInAppCount > 0 && (
+                  <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200/60">
+                    {unreadInAppCount}
+                  </span>
+                )}
               </button>
+
               <button
                 onClick={() => setActiveTab("email")}
-                className={`px-4 py-2 font-medium text-sm rounded-t-lg ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition cursor-pointer ${
                   activeTab === "email"
-                    ? "text-green-600 border-b-2 border-green-600"
-                    : "text-gray-500 hover:text-gray-700"
+                    ? "bg-white text-emerald-950 shadow-xs border border-gray-200/50"
+                    : "text-gray-500 hover:text-gray-900"
                 }`}
               >
-                Email Notifications
+                <span>Email Logs</span>
+                {unreadEmailCount > 0 && (
+                  <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200/60">
+                    {unreadEmailCount}
+                  </span>
+                )}
               </button>
             </div>
 
             {/* Notifications List */}
-            <div className="space-y-4">
+            <div className="space-y-3">
               {loading ? (
-                <div className="text-center py-16 bg-white rounded-2xl border border-gray-200 shadow-sm">
-                  <Bell className="mx-auto mb-3 text-gray-300 w-10 h-10 animate-pulse" />
-                  <h3 className="text-gray-600 font-medium">
-                    Loading notifications…
+                <div className="text-center py-16 bg-white rounded-2xl border border-gray-200/80 shadow-xs">
+                  <div className="inline-block animate-spin rounded-full h-7 w-7 border-2 border-emerald-600 border-t-transparent mb-2"></div>
+                  <h3 className="text-xs font-medium text-gray-500">
+                    Loading telemetry stream…
                   </h3>
                 </div>
               ) : currentList.length === 0 ? (
-                <div className="text-center py-16 bg-white rounded-2xl border border-gray-200 shadow-sm">
-                  <Bell className="mx-auto mb-3 text-gray-300 w-10 h-10" />
-                  <h3 className="text-gray-600 font-medium">
-                    No notifications found
+                <div className="text-center py-16 bg-white rounded-2xl border border-gray-200/80 shadow-xs">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-3 border border-emerald-100">
+                    <Bell size={22} />
+                  </div>
+                  <h3 className="text-sm font-bold text-gray-900">
+                    No notifications recorded
                   </h3>
-                  <p className="text-sm text-gray-500 mt-1">
-                    {filter !== "All" ? `Try changing the filter to "All"` : "You're all caught up!"}
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    {filter !== "All"
+                      ? 'Try switching your filter to "All Categories"'
+                      : "System telemetry is all clear!"}
                   </p>
                 </div>
               ) : (
                 currentList.map((n) => {
-                  // Add null checks and fallbacks
                   if (!n || !n._id) return null;
-                  
+                  const isUnread = !n.isRead;
+
                   return (
                     <div
                       key={n._id}
-                      className={`flex items-start gap-4 p-5 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition-all ${
-                        !n.isRead ? "bg-green-50/70 border-green-200" : ""
+                      className={`flex items-start gap-3.5 p-4 rounded-2xl border shadow-xs transition ${
+                        isUnread
+                          ? "bg-emerald-50/40 border-emerald-200/80 hover:border-emerald-300"
+                          : "bg-white border-gray-200/80 hover:border-gray-300"
                       }`}
                     >
-                      <div className="p-2 bg-gray-100 rounded-lg">
-                        {getNotificationIcon(n.type || "default")}
+                      <div
+                        className={`p-2.5 rounded-xl shrink-0 ${
+                          isUnread
+                            ? "bg-emerald-100 text-emerald-800 border border-emerald-200/60"
+                            : "bg-slate-100 text-slate-600 border border-gray-200/60"
+                        }`}
+                      >
+                        {getNotificationIcon(n.type)}
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between mb-1">
-                          <h4 className="font-semibold text-gray-900 text-sm">
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <h4 className="font-bold text-xs text-gray-900 tracking-tight">
                             {n.title || "Untitled Notification"}
                           </h4>
-                          {!n.isRead && (
-                            <span className="inline-block w-2 h-2 bg-green-500 rounded-full ml-2 mt-1 flex-shrink-0" />
+                          {isUnread && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] font-semibold rounded-full border border-emerald-200/60 shrink-0">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                              New
+                            </span>
                           )}
                         </div>
-                        <p className="text-gray-600 text-sm line-clamp-2">
+
+                        <p className="text-xs text-gray-600 leading-relaxed line-clamp-2">
                           {n.message || "No message available"}
                         </p>
-                        <div className="flex items-center gap-2 mt-2 text-xs text-gray-500">
-                          <Clock className="w-3.5 h-3.5" />
-                          <span>
-                            {n.createdAt ? new Date(n.createdAt).toLocaleString(undefined, {
-                              dateStyle: "medium",
-                              timeStyle: "short",
-                            }) : "Unknown date"}
-                          </span>
-                          {n.link ? (
-                            <a
-                              href={n.link}
-                              className="ml-3 text-green-600 hover:underline"
-                              target="_blank"
-                              rel="noopener noreferrer"
+
+                        <div className="flex items-center gap-3 mt-2 text-[11px] text-gray-400">
+                          <div className="flex items-center gap-1">
+                            <Clock size={12} />
+                            <span>
+                              {n.createdAt
+                                ? new Date(n.createdAt).toLocaleString(undefined, {
+                                    dateStyle: "medium",
+                                    timeStyle: "short",
+                                  })
+                                : "Recent"}
+                            </span>
+                          </div>
+
+                          {n.link && (
+                            <Link
+                              to={n.link}
+                              className="text-emerald-700 hover:text-emerald-800 font-semibold inline-flex items-center gap-1 transition"
                             >
-                              View Details
-                            </a>
-                          ) : null}
+                              <span>View incident</span>
+                              <ExternalLink size={10} />
+                            </Link>
+                          )}
                         </div>
                       </div>
                     </div>

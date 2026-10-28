@@ -1,7 +1,6 @@
 import React from "react";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { Link } from "react-router-dom";
-import Button from "@/shared/components/ui/Button";
 import FormInput from "@/shared/components/ui/FormInput";
 import { useLoginForm } from "@/features/auth/hooks/useLoginForm";
 
@@ -16,96 +15,105 @@ export default function LoginForm({ role = "Volunteer", icon: Icon }) {
   } = useLoginForm(role);
 
   return (
-    <div className="w-full max-w-md">
-      {/* Header */}
-      <div className="text-center mb-6">
+    <div className="w-full">
+      {/* Header Section */}
+      <div className="text-left sm:text-center mb-7">
         {Icon && (
-          <div className="w-12 h-12 mx-auto flex items-center justify-center rounded-full bg-green-100 mb-3">
-            <Icon className="w-6 h-6 text-green-600" />
+          <div className="w-12 h-12 sm:mx-auto flex items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 mb-4 border border-emerald-100 shadow-xs">
+            <Icon className="w-6 h-6" />
           </div>
         )}
-        <h2 className="text-2xl font-bold text-gray-900">Welcome Back</h2>
-        <p className="text-gray-600">
-          Sign in to your {role.toLowerCase()} account
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
+          {role} Sign In
+        </h2>
+        <p className="text-sm text-gray-500 mt-1.5 leading-relaxed">
+          Enter your credentials to access your {role.toLowerCase()} dashboard
         </p>
       </div>
 
-      {/* Form */}
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white rounded-xl shadow p-6 space-y-5"
-        noValidate
-      >
-        <div className="flex flex-col items-center text-center mb-4">
-          <h3 className="font-semibold text-lg">{role} Login</h3>
-          <p className="text-gray-500 text-sm">
-            Enter your credentials to access your {role.toLowerCase()} dashboard
-          </p>
-        </div>
-
+      {/* Form Fields */}
+      <form onSubmit={handleSubmit} className="space-y-4" noValidate>
         {/* Email */}
         <FormInput
           label="Email Address"
           type="email"
-          placeholder="Enter your email"
+          placeholder="name@example.com"
           icon={<Mail className="w-4 h-4 text-gray-400" />}
           error={errors.email?.message}
           {...register("email")}
         />
 
         {/* Password */}
-        <div className="relative">
-          <FormInput
-            label="Password"
-            type={showPassword ? "text" : "password"}
-            placeholder="Enter your password"
-            icon={<Lock className="w-4 h-4 text-gray-400" />}
-            error={errors.password?.message}
-            {...register("password")}
-          />
-          <button
-            type="button"
-            onClick={toggleShowPassword}
-            className="absolute right-3 top-[35px] text-gray-500 hover:text-gray-700"
-            aria-label={showPassword ? "Hide password" : "Show password"}
-          >
-            {showPassword ? (
-              <EyeOff className="w-4 h-4" />
-            ) : (
-              <Eye className="w-4 h-4" />
-            )}
-          </button>
-        </div>
+        <FormInput
+          label="Password"
+          type={showPassword ? "text" : "password"}
+          placeholder="Enter your password"
+          icon={<Lock className="w-4 h-4 text-gray-400" />}
+          rightElement={
+            <button
+              type="button"
+              onClick={toggleShowPassword}
+              className="text-gray-400 hover:text-gray-600 focus:outline-none transition-colors p-1"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? (
+                <EyeOff className="w-4 h-4" />
+              ) : (
+                <Eye className="w-4 h-4" />
+              )}
+            </button>
+          }
+          error={errors.password?.message}
+          {...register("password")}
+        />
 
-        {/* Submit */}
-        <Button
-          type="submit"
-          variant="primary"
-          className="w-full"
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? "Signing in..." : "Sign In"}
-        </Button>
-
-        {/* Links */}
-        <div className="flex justify-center text-sm">
+        {/* Ergonomic Helper Row: Remember Me & Forgot Password */}
+        <div className="flex items-center justify-between pt-1 text-xs sm:text-sm">
+          <label className="flex items-center gap-2 cursor-pointer select-none text-gray-600 hover:text-gray-900 transition-colors group">
+            <input
+              type="checkbox"
+              className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 focus:ring-offset-0 cursor-pointer"
+            />
+            <span className="font-normal group-hover:text-gray-800">Remember me</span>
+          </label>
           <Link
             to={`/${role.toLowerCase()}/forgot-password`}
-            className="text-green-600 hover:underline flex"
+            className="font-medium text-emerald-600 hover:text-emerald-700 transition-colors"
           >
             Forgot password?
           </Link>
         </div>
 
-        <p className="text-sm text-center text-gray-600">
-          Don’t have an account?{" "}
-          <Link
-            to={`/${role.toLowerCase()}/signup`}
-            className="text-green-600 hover:underline"
+        {/* Submit Button */}
+        <div className="pt-2">
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full py-3 px-4 rounded-xl font-semibold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow transition-all duration-150 flex items-center justify-center gap-2 cursor-pointer"
           >
-            Sign up here
-          </Link>
-        </p>
+            {isSubmitting ? (
+              <>
+                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <span>Signing in...</span>
+              </>
+            ) : (
+              `Sign In as ${role}`
+            )}
+          </button>
+        </div>
+
+        {/* Sign Up Footer */}
+        <div className="pt-4 text-center border-t border-gray-100 mt-6">
+          <p className="text-sm text-gray-500">
+            Don’t have a {role.toLowerCase()} account?{" "}
+            <Link
+              to={`/${role.toLowerCase()}/signup`}
+              className="font-semibold text-emerald-600 hover:text-emerald-700 hover:underline transition-colors"
+            >
+              Sign up here
+            </Link>
+          </p>
+        </div>
       </form>
     </div>
   );
