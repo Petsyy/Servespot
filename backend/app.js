@@ -24,6 +24,8 @@ const allowedOrigins = [
   ...(process.env.CLIENT_URLS || "").split(","),
   "http://localhost:5173",
   "https://servespot.onrender.com",
+  "https://servespot.vercel.app",
+  "https://servespot-omega.vercel.app",
 ].map(normalizeOrigin).filter(Boolean);
 
 export const isAllowedOrigin = (origin) => {
@@ -36,21 +38,32 @@ export const isAllowedOrigin = (origin) => {
 
   try {
     const url = new URL(normalizedOrigin);
+    const host = url.hostname.toLowerCase();
+
     // Allow local development on localhost or 127.0.0.1 on any port
     if (
       url.protocol === "http:" &&
-      (url.hostname === "localhost" || url.hostname === "127.0.0.1")
+      (host === "localhost" || host === "127.0.0.1")
     ) {
       return true;
     }
 
     // Allow legitimate Servespot production & preview Vercel domains
-    return (
+    const isVercelAllowed =
       url.protocol === "https:" &&
-      /^servespot(\.vercel\.app|(-[a-z0-9]+)*-petsyys-projects\.vercel\.app)$/.test(
-        url.hostname
-      )
-    );
+      (host === "servespot.vercel.app" ||
+        host === "servespot-omega.vercel.app" ||
+        /^servespot(-[a-z0-9]+)*-petsyys-projects\.vercel\.app$/.test(host) ||
+        /^servespot(-[a-z0-9]+)*-petsyy\.vercel\.app$/.test(host));
+
+    if (isVercelAllowed) {
+      return true;
+    }
+
+    if (process.env.NODE_ENV !== "test") {
+      console.warn(`[CORS Blocked] Origin not allowed: ${origin}`);
+    }
+    return false;
   } catch {
     return false;
   }
@@ -66,6 +79,8 @@ app.use(
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    optionsSuccessStatus: 200,
+    maxAge: 86400,
   })
 );
 app.use(express.json());
