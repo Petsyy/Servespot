@@ -45,6 +45,12 @@ export function useAdminLoginForm() {
         throw new Error("Invalid login response from server");
       }
 
+      const adminToken = response.data?.token || response.token;
+      if (adminToken) {
+        localStorage.setItem("token", adminToken);
+        setCookie("adminToken", adminToken);
+      }
+
       setCookie("role", "admin");
       const adminId = adminData._id || adminData.id;
       if (adminId) {

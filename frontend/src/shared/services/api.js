@@ -9,8 +9,27 @@ const API = axios.create({
   withCredentials: true,
 });
 
+API.interceptors.request.use((config) => {
+  if (typeof window !== "undefined") {
+    const token =
+      localStorage.getItem("token") ||
+      localStorage.getItem("authToken") ||
+      sessionStorage.getItem("token");
+
+    if (token && !config.headers.Authorization) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+  }
+  return config;
+});
+
 const clearStoredSession = () => {
   clearClientSessionCookies();
+
+  // Token cleanup
+  localStorage.removeItem("token");
+  localStorage.removeItem("authToken");
+  sessionStorage.removeItem("token");
 
   // Legacy storage cleanup
   localStorage.removeItem("role");

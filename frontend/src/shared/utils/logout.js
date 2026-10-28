@@ -51,6 +51,10 @@ export function logout(role) {
 
   localStorage.removeItem("role");
   localStorage.removeItem("activeRole");
+  localStorage.removeItem("token");
+  localStorage.removeItem("authToken");
+  removeCookie("authToken");
+  removeCookie("adminToken");
 
   // Best effort cookie cleanup from server.
   logoutSession().catch(() => {});

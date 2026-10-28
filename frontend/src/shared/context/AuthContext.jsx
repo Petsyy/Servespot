@@ -38,6 +38,11 @@ export const AuthProvider = ({ children }) => {
   const clearStorage = () => {
     clearClientSessionCookies();
 
+    // Token cleanup
+    localStorage.removeItem("token");
+    localStorage.removeItem("authToken");
+    sessionStorage.removeItem("token");
+
     // Legacy storage cleanup
     localStorage.removeItem("role");
     localStorage.removeItem("adminId");
@@ -85,7 +90,11 @@ export const AuthProvider = ({ children }) => {
     checkSession();
   }, [checkSession]);
 
-  const login = (userData, userRole) => {
+  const login = (userData, userRole, token) => {
+    if (token) {
+      localStorage.setItem("token", token);
+      setCookie("authToken", token);
+    }
     setUser(userData);
     setRole(userRole);
     syncCookies(userData, userRole);

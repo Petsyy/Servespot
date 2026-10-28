@@ -1,5 +1,9 @@
 import jwt from "jsonwebtoken";
-import { authService, isDatabaseUnavailableError, normalizeEmail } from "./auth.service.js";
+import {
+  authService,
+  isDatabaseUnavailableError,
+  normalizeEmail,
+} from "./auth.service.js";
 import { clearAuthCookies, setAuthCookie } from "../../utils/authCookies.js";
 
 export { isDatabaseUnavailableError, normalizeEmail };
@@ -25,7 +29,6 @@ export const parseCookies = (req) => {
     }, {});
 };
 
-// VOLUNTEER SIGNUP
 export const registerVolunteer = async (req, res) => {
   try {
     const result = await authService.registerVolunteer(req.body);
@@ -47,7 +50,6 @@ export const registerVolunteer = async (req, res) => {
   }
 };
 
-// ORGANIZATION SIGNUP
 export const registerOrganization = async (req, res) => {
   try {
     const result = await authService.registerOrganization({
@@ -72,7 +74,6 @@ export const registerOrganization = async (req, res) => {
   }
 };
 
-// VOLUNTEER LOGIN
 export const loginVolunteer = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -105,7 +106,6 @@ export const loginVolunteer = async (req, res) => {
   }
 };
 
-// ORGANIZATION LOGIN
 export const loginOrganization = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -138,7 +138,6 @@ export const loginOrganization = async (req, res) => {
   }
 };
 
-// STEP 1: SEND OTP
 export const sendOTP = async (req, res) => {
   try {
     const { email, role } = req.body;
@@ -149,22 +148,24 @@ export const sendOTP = async (req, res) => {
       return res.status(404).json({ message: error.message });
     }
     console.error("❌ OTP send error:", error);
-    res.status(error.status || 500).json({ message: error.message || "Failed to send OTP" });
+    res
+      .status(error.status || 500)
+      .json({ message: error.message || "Failed to send OTP" });
   }
 };
 
-// STEP 2: VERIFY OTP
 export const verifyOTP = async (req, res) => {
   try {
     const { email, role, otp } = req.body;
     const result = await authService.verifyOTP({ email, role, otp });
     res.status(200).json({ message: "OTP verified successfully", ...result });
   } catch (error) {
-    res.status(error.status || 500).json({ message: error.message || "OTP verification failed" });
+    res
+      .status(error.status || 500)
+      .json({ message: error.message || "OTP verification failed" });
   }
 };
 
-// STEP 3: RESET PASSWORD
 export const resetPassword = async (req, res) => {
   try {
     const { email, role, newPassword, resetToken } = req.body;
@@ -184,7 +185,6 @@ export const resetPassword = async (req, res) => {
   }
 };
 
-// LOGOUT
 export const logoutSession = (_req, res) => {
   clearAuthCookies(res);
   res.status(200).json({ message: "Logged out successfully" });
@@ -193,47 +193,49 @@ export const logoutSession = (_req, res) => {
 // SESSION VERIFICATION
 export const getSession = (req, res) => {
   try {
+    let bearerToken = "";
+    if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith("Bearer ")
+    ) {
+      bearerToken = req.headers.authorization.split(" ")[1];
+    }
+
     const cookies = parseCookies(req);
+    const candidateTokens = [
+      cookies.adminToken,
+      cookies.authToken,
+      bearerToken,
+    ].filter(Boolean);
 
-    if (cookies.adminToken) {
+    for (const token of candidateTokens) {
       try {
-        const decoded = jwt.verify(cookies.adminToken, process.env.JWT_SECRET);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         return res.status(200).json({
           authenticated: true,
           user: {
             id: decoded.id,
-            role: decoded.role || "admin",
+            role:
+              decoded.role ||
+              (token === cookies.adminToken ? "admin" : undefined),
             email: decoded.email || null,
           },
         });
       } catch {
-        // Fall back to checking authToken
+        // Fall back to next token candidate
       }
     }
 
-    if (cookies.authToken) {
-      try {
-        const decoded = jwt.verify(cookies.authToken, process.env.JWT_SECRET);
-        return res.status(200).json({
-          authenticated: true,
-          user: {
-            id: decoded.id,
-            role: decoded.role,
-            email: decoded.email || null,
-          },
-        });
-      } catch {
-        // Expired or invalid auth token
-      }
-    }
-
-    return res.status(401).json({ authenticated: false, message: "No active session" });
+    return res
+      .status(401)
+      .json({ authenticated: false, message: "No active session" });
   } catch {
-    return res.status(401).json({ authenticated: false, message: "Invalid session" });
+    return res
+      .status(401)
+      .json({ authenticated: false, message: "Invalid session" });
   }
 };
 
-// EMAIL AVAILABILITY
 export const checkEmailAvailability = async (req, res) => {
   try {
     const rawEmail = req.query?.email ?? req.body?.email;

@@ -33,6 +33,11 @@ export function useLoginForm(role = "Volunteer") {
 
       const data = await loginMutation.mutateAsync(formData);
 
+      if (data?.token) {
+        localStorage.setItem("token", data.token);
+        setCookie("authToken", data.token);
+      }
+
       if (role.toLowerCase() === "volunteer") {
         const userId = data.user?.id || data.user?._id;
         setCookie("role", "volunteer");
@@ -42,7 +47,7 @@ export function useLoginForm(role = "Volunteer") {
         setCookie("volunteerName", volunteerName);
 
         registerUserSocket(userId, "volunteer");
-        login(data.user, "volunteer");
+        login(data.user, "volunteer", data.token);
         navigate("/volunteer/homepage");
       } else {
         const orgId = data.organization?._id || data.orgId;
@@ -57,7 +62,7 @@ export function useLoginForm(role = "Volunteer") {
         setCookie("orgName", orgName);
 
         registerUserSocket(orgId, "organization");
-        login(data.organization || data.user, "organization");
+        login(data.organization || data.user, "organization", data.token);
         navigate("/organization/homepage");
       }
     } catch (err) {

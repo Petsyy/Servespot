@@ -241,7 +241,12 @@ export default function OrganizationProfileStep({
       }
       const res = await signupOrganization(form);
 
-      const { orgId, user } = res.data;
+      const { orgId, user, token } = res.data;
+
+      if (token) {
+        localStorage.setItem("token", token);
+        setCookie("authToken", token);
+      }
 
       // Save session data for organization dashboard
       setCookie("orgId", orgId);

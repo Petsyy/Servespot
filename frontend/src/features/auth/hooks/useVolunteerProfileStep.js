@@ -68,9 +68,15 @@ export function useVolunteerProfileStep({
         password: formData.password,
       });
 
+      const token = loginRes.data?.token;
+      if (token) {
+        localStorage.setItem("token", token);
+        setCookie("authToken", token);
+      }
+
       const user = loginRes.data?.user;
       if (user) {
-        login(user, "volunteer");
+        login(user, "volunteer", token);
       }
 
       const welcomeName = user?.firstName || user?.fullName || "Volunteer";

@@ -106,6 +106,26 @@ describe("Session Verification (getSession)", () => {
     assert.equal(res.body.user.role, "volunteer");
     assert.equal(res.body.user.email, "vol88@example.com");
   });
+
+  it("authenticates session via Authorization Bearer token when cookies are blocked", () => {
+    const bearerToken = jwt.sign(
+      { id: "vol-77", role: "volunteer", email: "bearer-vol@example.com" },
+      JWT_SECRET
+    );
+    const req = {
+      headers: {
+        authorization: `Bearer ${bearerToken}`,
+      },
+    };
+    const res = createMockRes();
+
+    getSession(req, res);
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.body.authenticated, true);
+    assert.equal(res.body.user.id, "vol-77");
+    assert.equal(res.body.user.role, "volunteer");
+    assert.equal(res.body.user.email, "bearer-vol@example.com");
+  });
 });
 
 describe("Password Reset Security", () => {

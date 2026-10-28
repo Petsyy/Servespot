@@ -38,5 +38,11 @@ export const clearClientSessionCookies = () => {
   removeCookie("adminId");
   removeCookie("volunteerName");
   removeCookie("orgName");
+  removeCookie("authToken");
+  removeCookie("adminToken");
+  if (typeof localStorage !== "undefined") {
+    localStorage.removeItem("token");
+    localStorage.removeItem("authToken");
+  }
 };
 
