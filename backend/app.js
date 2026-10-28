@@ -23,6 +23,7 @@ const allowedOrigins = [
   process.env.CLIENT_URL,
   ...(process.env.CLIENT_URLS || "").split(","),
   "http://localhost:5173",
+  "https://servespot.onrender.com",
 ].map(normalizeOrigin).filter(Boolean);
 
 export const isAllowedOrigin = (origin) => {
