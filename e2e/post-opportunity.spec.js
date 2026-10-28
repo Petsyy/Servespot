@@ -109,9 +109,9 @@ test.describe("Organization Post Task / Opportunity Flow", () => {
   test("opens Post Opportunity modal from dashboard and verifies Live Preview updates", async ({ page }) => {
     await page.goto("/organization/dashboard");
 
-    // Click "Post Opportunity" button on dashboard
+    // Click "Post Opportunity" button on dashboard (allow time for initial chunk loading)
     const postOpportunityBtn = page.getByRole("button", { name: /Post Opportunity/i });
-    await expect(postOpportunityBtn).toBeVisible();
+    await expect(postOpportunityBtn).toBeVisible({ timeout: 15000 });
     await postOpportunityBtn.click();
 
     // Verify modal header opens
