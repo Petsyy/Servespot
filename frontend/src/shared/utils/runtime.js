@@ -44,17 +44,18 @@ function isServespotVercelHost() {
 const defaultApiBaseUrl = isLocalhost() ? LOCAL_API_ORIGIN : getBrowserOrigin();
 const envApiBaseUrl = sanitizeApiUrl(import.meta.env.VITE_API_BASE || "");
 const envApiUrl = sanitizeApiUrl(import.meta.env.VITE_API_URL || "");
+const envFileBaseUrl = sanitizeApiUrl(import.meta.env.VITE_FILE_BASE || "");
 
 export const API_BASE_URL = stripTrailingSlash(
-  isServespotVercelHost() ? getBrowserOrigin() : (envApiBaseUrl || defaultApiBaseUrl)
+  envApiBaseUrl || (isServespotVercelHost() ? getBrowserOrigin() : defaultApiBaseUrl)
 );
 
 export const API_URL = stripTrailingSlash(
-  isServespotVercelHost() ? `${getBrowserOrigin()}/api` : (envApiUrl || `${API_BASE_URL}/api`)
+  envApiUrl || (isServespotVercelHost() && !envApiBaseUrl ? `${getBrowserOrigin()}/api` : `${API_BASE_URL}/api`)
 );
 
 export const FILE_BASE_URL = stripTrailingSlash(
-  import.meta.env.VITE_FILE_BASE || API_BASE_URL
+  envFileBaseUrl || API_BASE_URL
 );
 
 const socketFlag = import.meta.env.VITE_ENABLE_SOCKET;

@@ -7,10 +7,10 @@ import { connectDB, getLastDbError } from "./src/config/db.js";
 import { UPLOADS_DIR } from "./src/config/paths.js";
 import { generalLimiter } from "./src/middlewares/rateLimit.middleware.js";
 
-// EXPRESS APP SETUP
 const app = express();
 
-// Secure HTTP response headers (CSP, nosniff, HSTS, frame protection)
+app.set("trust proxy", 1);
+
 app.use(
   helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" },

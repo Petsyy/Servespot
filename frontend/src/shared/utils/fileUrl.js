@@ -7,6 +7,11 @@ export function buildFileUrl(filePath) {
     return filePath;
   }
   
+  // Frontend public static assets (such as seeded opportunities)
+  if (filePath.startsWith('/images/') || filePath.startsWith('images/')) {
+    return filePath.startsWith('/') ? filePath : `/${filePath}`;
+  }
+  
   const base = FILE_BASE_URL.replace(/\/+$/, '');
   const path = filePath.startsWith("/") ? filePath : `/${filePath}`;
   return `${base}${path}`;
