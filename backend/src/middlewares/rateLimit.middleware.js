@@ -8,7 +8,7 @@ export const authLimiter = rateLimit({
   message: {
     message: "Too many authentication attempts. Please try again after 15 minutes.",
   },
-  skip: () => process.env.NODE_ENV === "test",
+  skip: (req) => process.env.NODE_ENV === "test" || req.method === "OPTIONS",
 });
 
 export const generalLimiter = rateLimit({
@@ -19,5 +19,5 @@ export const generalLimiter = rateLimit({
   message: {
     message: "Too many requests. Please slow down and try again later.",
   },
-  skip: () => process.env.NODE_ENV === "test",
+  skip: (req) => process.env.NODE_ENV === "test" || req.method === "OPTIONS",
 });

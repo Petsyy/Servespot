@@ -248,6 +248,9 @@ export default function OpportunityBoard({
             src={buildFileUrl(fileUrl)}
             alt={title}
             className="w-full h-[140px] object-cover"
+            onError={(e) => {
+              e.currentTarget.style.display = "none";
+            }}
           />
         )}
 
