@@ -111,8 +111,8 @@ test.describe("Volunteer Browse Opportunities Flow", () => {
   test("renders Opportunity Board header and displays all cards", async ({ page }) => {
     await page.goto("/volunteer/opportunities");
 
-    // Board header
-    await expect(page.getByRole("heading", { name: /Opportunity Board/i })).toBeVisible();
+    // Board header (allow time for initial lazy chunk compilation)
+    await expect(page.getByRole("heading", { name: /Opportunity Board/i })).toBeVisible({ timeout: 15000 });
 
     // Verify all 3 mocked cards render
     await expect(page.getByText("Metro Green: Urban Tree Planting")).toBeVisible();
@@ -128,7 +128,7 @@ test.describe("Volunteer Browse Opportunities Flow", () => {
     await page.goto("/volunteer/opportunities");
 
     const searchInput = page.getByPlaceholder("Search opportunities...");
-    await expect(searchInput).toBeVisible();
+    await expect(searchInput).toBeVisible({ timeout: 15000 });
 
     // Search for "Monsoon"
     await searchInput.fill("Monsoon");
