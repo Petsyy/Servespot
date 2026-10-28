@@ -26,6 +26,8 @@ export const socket = SOCKET_ENABLED
       autoConnect: false,
       reconnection: true,
       reconnectionAttempts: 5,
+      withCredentials: true,
+      transports: ["websocket", "polling"],
     })
   : noopSocket;
 
